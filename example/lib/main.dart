@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:scrolling_effects/scroll_phase.dart';
 import 'package:scrolling_effects/scrolling_effects.dart';
@@ -27,6 +29,13 @@ class MyApp extends StatelessWidget {
 class MyScreen extends StatelessWidget {
   const MyScreen({super.key});
 
+  Color randomColor(int index) {
+    final r = Random(index * 100).nextInt(255);
+    final g = Random(index * 200).nextInt(255);
+    final b = Random(index * 300).nextInt(255);
+    return Color.fromARGB(255, r, g, b);
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
@@ -36,7 +45,7 @@ class MyScreen extends StatelessWidget {
           key: ValueKey(index),
           index: index,
           effectsBuilder: (phase) => [
-            ScaleEffect(phase.isIdentity ? 1 : 0.5),
+            ScaleEffect(scale: phase.isIdentity ? 1 : 0.5),
             OffsetEffect(
               x: switch (phase) {
                 ScrollPhase.topLeading => 200,
