@@ -7,20 +7,39 @@ import 'package:flutter/scheduler.dart';
 
 import 'scroll_phase.dart';
 
+/// A function that builds a list of effects to apply to a widget based on the
+/// current phase of the scroll animation.
 typedef EffectsBuilder = List<ScrollEffect> Function(ScrollPhase phase);
 
+/// A function that builds a widget based on the current phase of the scroll
+/// animation.
 typedef PhasedWidgetBuilder = Widget Function(
   BuildContext context,
   Widget child,
   ScrollPhase phase,
 );
 
+/// A widget that applies a set of effects to its child based on the current
+/// phase and position of the scroll position of the parent scrollable widget.
 class ScrollAnimation extends StatefulWidget {
+
+  /// The index of the scroll animation in the parent scrollable widget.
   final int index;
+
+  /// A function that builds a list of effects to apply to a widget based on the
+  /// current phase of the scroll animation.
   final EffectsBuilder? effectsBuilder;
+
+  /// A function that builds a widget based on the current phase of the scroll
+  /// animation.
   final PhasedWidgetBuilder? builder;
+
+  /// The child widget to apply the effects to.
   final Widget child;
 
+  /// Creates a widget that applies a set of effects to its child based on the
+  /// current phase and position of the scroll position of the parent scrollable
+  /// widget.
   const ScrollAnimation({
     super.key,
     required this.child,
@@ -34,15 +53,17 @@ class ScrollAnimation extends StatefulWidget {
 }
 
 class _ScrollAnimationState extends State<ScrollAnimation> {
-  /// The current phase of the scroll animation.
-  ScrollPhase currentPhase = ScrollPhase.identity;
-
   /// The parent scrollable widget.
+  /// TODO: Could this crash if the widget tree is modified?
   late final ScrollableState? scrollable = Scrollable.maybeOf(context);
 
   /// The scroll controller of the parent scrollable widget.
+  /// TODO: Could this crash if the widget tree is modified?
   late final ScrollController? scrollController =
       scrollable?.widget.controller ?? PrimaryScrollController.maybeOf(context);
+
+  /// The current phase of the scroll animation.
+  ScrollPhase currentPhase = ScrollPhase.identity;
 
   /// The current animation value indicating the progress of the scroll
   /// animation through its phase in the parent viewport.
@@ -68,46 +89,6 @@ class _ScrollAnimationState extends State<ScrollAnimation> {
     super.dispose();
   }
 
-  void updateCurrentState([VoidCallback? onChanged]) {
-    final (:phase, :value) = calculatePhase();
-    if (phase != currentPhase || value != currentValue) {
-      currentPhase = phase;
-      currentValue = value;
-      final currentEffects = widget.effectsBuilder?.call(currentPhase) ?? [];
-      final identityEffects =
-          widget.effectsBuilder?.call(ScrollPhase.identity) ?? [];
-      effects = {
-        for (final (index, effect) in identityEffects.indexed)
-          effect: currentEffects.elementAtOrNull(index) ?? effect,
-      };
-
-      onChanged?.call();
-    }
-  }
-
-  void onScrollChanged() {
-    updateCurrentState(() {
-      if (mounted) setState(() {});
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    Widget child = widget.builder?.call(context, widget.child, currentPhase) ??
-        widget.child;
-
-    if (scrollable == null) return child;
-    if (effects.isEmpty) return child;
-
-    for (final MapEntry(key: identity, value: destination) in effects.entries) {
-      if (identity.runtimeType == destination.runtimeType) {
-        child = identity.apply(context, child, destination, currentValue);
-      }
-    }
-
-    return child;
-  }
-
   /// Calculates the current phase of the scroll animation.
   /// Returns a record of the current phase and it's associated progress
   /// through the viewport as a value between 0 and 1.
@@ -131,6 +112,56 @@ class _ScrollAnimationState extends State<ScrollAnimation> {
       }
     }
     return (phase: ScrollPhase.identity, value: 1);
+  }
+
+  /// Calculates the current phase of the scroll animation and its associated
+  /// progress through the viewport as a value between 0 and 1.
+  ///
+  /// If the phase or value has changed, the current phase and value are updated
+  /// and the effects are recalculated.
+  ///
+  /// If the [onChanged] callback is provided, it is called if the phase or
+  /// value has changed.
+  void updateCurrentState([VoidCallback? onChanged]) {
+    final (:phase, :value) = calculatePhase();
+    if (phase != currentPhase || value != currentValue) {
+      currentPhase = phase;
+      currentValue = value;
+      final currentEffects = widget.effectsBuilder?.call(currentPhase) ?? [];
+      final identityEffects =
+          widget.effectsBuilder?.call(ScrollPhase.identity) ?? [];
+      effects = {
+        for (final (index, effect) in identityEffects.indexed)
+          effect: currentEffects.elementAtOrNull(index) ?? effect,
+      };
+
+      onChanged?.call();
+    }
+  }
+
+  /// Called when the parent scrollable widget sends a notification that the
+  /// scroll position has changed.
+  void onScrollChanged() {
+    updateCurrentState(() {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget child = widget.builder?.call(context, widget.child, currentPhase) ??
+        widget.child;
+
+    if (scrollable == null) return child;
+    if (effects.isEmpty) return child;
+
+    for (final MapEntry(key: identity, value: destination) in effects.entries) {
+      if (identity.runtimeType == destination.runtimeType) {
+        child = identity.apply(context, child, destination, currentValue);
+      }
+    }
+
+    return child;
   }
 }
 
