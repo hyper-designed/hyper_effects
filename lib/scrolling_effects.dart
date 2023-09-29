@@ -182,7 +182,10 @@ abstract class ScrollEffect {
 /// An effect that scales its child along the 2D plane during a scroll animation.
 class ScaleEffect extends ScrollEffect {
   /// The matrix to transform the child by during painting.
-  final Matrix4 transform;
+  // final Matrix4 transform;
+
+  final double scaleX;
+  final double scaleY;
 
   /// The origin of the coordinate system (relative to the upper left corner of
   /// this render object) in which to apply the matrix.
@@ -236,11 +239,13 @@ class ScaleEffect extends ScrollEffect {
     this.transformHitTests = true,
     this.filterQuality,
   })  : assert(!(scale == null && scaleX == null && scaleY == null),
-            "At least one of 'scale', 'scaleX' and 'scaleY' is required to be non-null"),
+          "At least one of 'scale', 'scaleX' and 'scaleY' is required to be non-null",
+        ),
         assert(scale == null || (scaleX == null && scaleY == null),
-            "If 'scale' is non-null then 'scaleX' and 'scaleY' must be left null"),
-        transform = Matrix4.diagonal3Values(
-            scale ?? scaleX ?? 1.0, scale ?? scaleY ?? 1.0, 1.0);
+          "If 'scale' is non-null then 'scaleX' and 'scaleY' must be left null",
+        ),
+        scaleX = scaleX ?? scale ?? 1.0,
+        scaleY = scaleY ?? scale ?? 1.0;
 
   @override
   Widget apply(
@@ -249,8 +254,12 @@ class ScaleEffect extends ScrollEffect {
     ScaleEffect begin,
     double value,
   ) {
+    final lerpX = lerpDouble(begin.scaleX, scaleX, value) ?? 1.0;
+    final lerpY = lerpDouble(begin.scaleY, scaleY, value) ?? 1.0;
+    final transform = Matrix4.diagonal3Values(lerpX, lerpY, 1.0);
+
     return Transform(
-      transform: Matrix4.diagonal3Values(value, value, 1),
+      transform: transform,
       origin: origin,
       alignment: alignment,
       transformHitTests: transformHitTests,

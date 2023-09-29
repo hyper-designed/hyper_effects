@@ -45,11 +45,11 @@ class MyScreen extends StatelessWidget {
           key: ValueKey(index),
           index: index,
           effectsBuilder: (phase) => [
-            ScaleEffect(scale: phase.isIdentity ? 1 : 0.5),
+            ScaleEffect(scale: phase.isIdentity ? 1 : 0.1),
             OffsetEffect(
               x: switch (phase) {
-                ScrollPhase.topLeading => 200,
-                ScrollPhase.bottomTrailing => -200,
+                ScrollPhase.topLeading => 1000,
+                ScrollPhase.bottomTrailing => -1000,
                 ScrollPhase.identity => 0,
               },
             ),
