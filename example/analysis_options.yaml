@@ -1,0 +1,6 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    use_super_parameters: true
+    prefer_const_constructors: true
