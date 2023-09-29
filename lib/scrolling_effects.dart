@@ -6,15 +6,21 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
+import 'scroll_phase.dart';
 
+typedef EffectsBuilder = List<ScrollEffect> Function(ScrollPhase phase);
+
+typedef PhasedWidgetBuilder = Widget Function(
+  BuildContext context,
+  Widget child,
+  ScrollPhase phase,
+);
 
 class ScrollAnimation extends StatefulWidget {
   final int index;
+  final EffectsBuilder? effectsBuilder;
+  final PhasedWidgetBuilder? builder;
   final Widget child;
-  final List<ScrollEffect> Function(ScrollPhase phase)? effectsBuilder;
-
-  final Widget Function(BuildContext context, Widget child, ScrollPhase phase)?
-  builder;
 
   const ScrollAnimation({
     super.key,
@@ -30,31 +36,43 @@ class ScrollAnimation extends StatefulWidget {
 
 class _ScrollAnimationState extends State<ScrollAnimation>
     with SingleTickerProviderStateMixin {
+  /// The current phase of the scroll animation.
   ScrollPhase currentPhase = ScrollPhase.identity;
 
+  /// The parent scrollable widget.
   late final ScrollableState? scrollable = Scrollable.maybeOf(context);
 
+  /// The scroll controller of the parent scrollable widget.
   late final ScrollController? scrollController =
       scrollable?.widget.controller ?? PrimaryScrollController.maybeOf(context);
 
-  double animationValue = 0;
+  /// The current animation value indicating the progress of the scroll
+  /// animation through its phase in the parent viewport.
+  double currentValue = 0;
 
-  // identity -> current
+  /// identity -> current
   Map<ScrollEffect, ScrollEffect> effects = {};
 
   @override
   void initState() {
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-      onFirstFrame();
+      updateCurrentState();
+      scrollController?.addListener(onScrollChanged);
     });
   }
 
-  void onScrollChanged() {
-    final (newPhase, newAnimationValue) = calculatePhase();
-    if (newPhase != currentPhase || newAnimationValue != animationValue) {
-      currentPhase = newPhase;
-      animationValue = newAnimationValue;
+  @override
+  void dispose() {
+    scrollController?.removeListener(onScrollChanged);
+    super.dispose();
+  }
+
+  void updateCurrentState([VoidCallback? onChanged]) {
+    final (:phase, :value) = calculatePhase();
+    if (phase != currentPhase || value != currentValue) {
+      currentPhase = phase;
+      currentValue = value;
       final currentEffects = widget.effectsBuilder?.call(currentPhase) ?? [];
       final identityEffects =
           widget.effectsBuilder?.call(ScrollPhase.identity) ?? [];
@@ -62,36 +80,46 @@ class _ScrollAnimationState extends State<ScrollAnimation>
         for (final (index, effect) in identityEffects.indexed)
           effect: currentEffects.elementAtOrNull(index) ?? effect,
       };
-      if (mounted) setState(() {});
+
+      onChanged?.call();
     }
   }
 
-  void onFirstFrame() {
-    if (scrollable == null) return;
-    final result = calculatePhase();
-    currentPhase = result.$1;
-    animationValue = result.$2;
-    final currentEffects = widget.effectsBuilder?.call(currentPhase) ?? [];
-    final identityEffects =
-        widget.effectsBuilder?.call(ScrollPhase.identity) ?? [];
-    effects = {
-      for (final (index, effect) in identityEffects.indexed)
-        effect: currentEffects.elementAtOrNull(index) ?? effect,
-    };
-    // NotificationListener(child: child);
-    // ScrollNotificationObserver.of(scrollable!.context!).addListener((_) => onScrollChanged);
-    scrollController?.addListener(onScrollChanged);
+  void onScrollChanged() {
+    updateCurrentState(() {
+      if (mounted) setState(() {});
+    });
+  }
+
+  Widget _buildScaleEffect(
+      Widget child, ScaleEffect currentEffect, ScaleEffect identityEffect) {
+    final double scale =
+        lerpDouble(currentEffect.scale, identityEffect.scale, currentValue) ??
+            1;
+    return Transform.scale(
+      scale: scale,
+      child: child,
+    );
+  }
+
+  Widget _buildOffsetEffect(
+      Widget child, OffsetEffect currentEffect, OffsetEffect identityEffect) {
+    final double x =
+        lerpDouble(currentEffect.x, identityEffect.x, currentValue) ?? 1;
+    final double y =
+        lerpDouble(currentEffect.y, identityEffect.y, currentValue) ?? 1;
+    return Transform.translate(
+      offset: Offset(x, y),
+      child: child,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final ScrollableState? scrollable = Scrollable.maybeOf(context);
-    if (scrollable == null) return widget.child;
+    Widget child = widget.builder?.call(context, widget.child, currentPhase) ??
+        widget.child;
 
-    Widget child = widget.builder == null
-        ? widget.child
-        : widget.builder!(context, widget.child, currentPhase);
-
+    if (scrollable == null) return child;
     if (effects.isEmpty) return child;
 
     for (final MapEntry(key: destinationEffect, value: currentEffect)
@@ -107,69 +135,32 @@ class _ScrollAnimationState extends State<ScrollAnimation>
     return child;
   }
 
-  (ScrollPhase, double) calculatePhase() {
+  /// Calculates the current phase of the scroll animation.
+  /// Returns a record of the current phase and it's associated progress
+  /// through the viewport as a value between 0 and 1.
+  ({ScrollPhase phase, double value}) calculatePhase() {
     if (scrollable case var scrollable?) {
       final viewPort = scrollable.context.globalPaintBounds;
       final paintBounds = context.globalPaintBounds;
       if (paintBounds != null && viewPort != null) {
         if (viewPort.contains(paintBounds.topLeft) &&
             viewPort.contains(paintBounds.bottomRight)) {
-          return (ScrollPhase.identity, 1);
+          return (phase: ScrollPhase.identity, value: 1);
         } else if (viewPort.top > paintBounds.top) {
           final value =
               1 - (viewPort.top - paintBounds.top) / paintBounds.height;
-          return (ScrollPhase.topLeading, value);
+          return (phase: ScrollPhase.topLeading, value: value);
         } else if (viewPort.bottom < paintBounds.bottom) {
           final value =
               1 - (paintBounds.bottom - viewPort.bottom) / paintBounds.height;
-          return (ScrollPhase.bottomTrailing, value);
+          return (phase: ScrollPhase.bottomTrailing, value: value);
         }
       }
     }
-    return (ScrollPhase.identity, 1);
-  }
-
-  @override
-  void dispose() {
-    scrollController?.removeListener(onScrollChanged);
-    super.dispose();
-  }
-
-  Widget _buildScaleEffect(
-      Widget child, ScaleEffect currentEffect, ScaleEffect identityEffect) {
-    final double scale =
-        lerpDouble(currentEffect.scale, identityEffect.scale, animationValue) ??
-            1;
-    return Transform.scale(
-      scale: scale,
-      child: child,
-    );
-  }
-
-  Widget _buildOffsetEffect(
-      Widget child, OffsetEffect currentEffect, OffsetEffect identityEffect) {
-    final double x =
-        lerpDouble(currentEffect.x, identityEffect.x, animationValue) ?? 1;
-    final double y =
-        lerpDouble(currentEffect.y, identityEffect.y, animationValue) ?? 1;
-    return Transform.translate(
-      offset: Offset(x, y),
-      child: child,
-    );
+    return (phase: ScrollPhase.identity, value: 1);
   }
 }
 
-enum ScrollPhase {
-  topLeading,
-  identity,
-  bottomTrailing;
-
-  bool get isTopLeading => this == ScrollPhase.topLeading;
-
-  bool get isIdentity => this == ScrollPhase.identity;
-
-  bool get isBottomTrailing => this == ScrollPhase.bottomTrailing;
-}
 
 abstract class ScrollEffect {
   const ScrollEffect();

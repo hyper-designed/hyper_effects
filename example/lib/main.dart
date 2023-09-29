@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scrolling_effects/scroll_phase.dart';
 import 'package:scrolling_effects/scrolling_effects.dart';
 
 void main() {
@@ -35,7 +36,7 @@ class MyScreen extends StatelessWidget {
           key: ValueKey(index),
           index: index,
           effectsBuilder: (phase) => [
-            ScaleEffect(phase.isIdentity ? 1 : 0.8),
+            ScaleEffect(phase.isIdentity ? 1 : 0.5),
             OffsetEffect(
               x: switch (phase) {
                 ScrollPhase.topLeading => 200,
@@ -44,24 +45,6 @@ class MyScreen extends StatelessWidget {
               },
             ),
           ],
-          builder: (context, child, phase) {
-            return Container(
-              height: 350,
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: randomColor(index),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                'Item $index',
-                style: const TextStyle(
-                  fontSize: 24,
-                  color: Colors.white,
-                ),
-              ),
-            );
-          },
           child: Container(
             height: 350,
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
