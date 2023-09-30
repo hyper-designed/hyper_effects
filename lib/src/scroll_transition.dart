@@ -7,22 +7,35 @@ import 'scroll_phase.dart';
 
 /// A function that builds a widget based on the current phase of the scroll
 /// animation.
-typedef PhasedWidgetBuilder = Widget Function(
+typedef ScrollTransitionBuilder = Widget Function(
   BuildContext context,
-  Widget child,
+  Widget widget,
   ScrollPhase phase,
 );
 
-typedef ScrollTransitionBuilder = Widget Function(
+typedef CustomScrollTransitionBuilder = Widget Function(
+  BuildContext context,
   Widget widget,
   ScrollPhase phase,
+  ScrollPosition position,
 );
 
 extension ScrollTransitionExt on Widget {
   Widget scrollTransition(int index, ScrollTransitionBuilder builder) {
     return ScrollTransition(
       index: index,
-      builder: (context, child, phase) => builder(child, phase),
+      builder: (context, widget, phase, position) =>
+          builder(context, widget, phase),
+      child: this,
+    );
+  }
+
+  Widget customScrollTransition(
+      int index, CustomScrollTransitionBuilder builder) {
+    return ScrollTransition(
+      index: index,
+      builder: (context, widget, phase, position) =>
+          builder(context, widget, phase, position),
       child: this,
     );
   }
@@ -36,7 +49,7 @@ class ScrollTransition extends StatefulWidget {
 
   /// A function that builds a widget based on the current phase of the scroll
   /// animation.
-  final PhasedWidgetBuilder? builder;
+  final CustomScrollTransitionBuilder? builder;
 
   /// The child widget to apply the effects to.
   final Widget child;
@@ -168,8 +181,11 @@ class _ScrollTransitionState extends State<ScrollTransition> {
 
   @override
   Widget build(BuildContext context) {
-    Widget child = widget.builder?.call(context, widget.child, currentPhase) ??
-        widget.child;
+    Widget child = scrollable != null
+        ? widget.builder
+                ?.call(context, widget.child, currentPhase, scrollPosition!) ??
+            widget.child
+        : widget.child;
 
     final visible = !isFirstFrame || scrollable == null;
 

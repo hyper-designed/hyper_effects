@@ -55,7 +55,7 @@ class _MyScreenState extends State<MyScreen> {
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: randomColor(index).withOpacity(0.5),
+              color: randomColor(index),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Text(
@@ -73,7 +73,7 @@ class _MyScreenState extends State<MyScreen> {
               )
               .scrollTransition(
                 index,
-                (widget, phase) =>
+                (context, widget, phase) =>
                     widget.scale(phase.isIdentity ? 1 : 0.7).translateX(
                           switch (phase) {
                             ScrollPhase.identity => 0,

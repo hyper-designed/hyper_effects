@@ -98,7 +98,6 @@ class ScaleEffect extends Effect {
           Alignment.center,
       origin: Offset.lerp(origin, other.origin, value) ?? Offset.zero,
     );
-    print('scale animation value: $value | scale: ${effect.scale}');
     return effect;
   }
 
