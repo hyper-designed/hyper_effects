@@ -1,4 +1,4 @@
-library scrolling_effects;
+library hyper_effects;
 
 export 'src/animated_effect.dart';
 export 'src/effect_builder.dart';
