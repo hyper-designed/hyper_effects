@@ -66,9 +66,9 @@ class TranslateEffect extends Effect {
   }
 
   @override
-  Effect lerp(Effect other, double value) {
+  TranslateEffect lerp(covariant TranslateEffect other, double value) {
     return TranslateEffect(
-      offset: Offset.lerp(offset, (other as TranslateEffect).offset, value) ??
+      offset: Offset.lerp(offset, other.offset, value) ??
           Offset.zero,
     );
   }

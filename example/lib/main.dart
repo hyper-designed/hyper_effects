@@ -73,9 +73,9 @@ class _MyScreenState extends State<MyScreen> {
               )
               .scrollTransition(
                 index,
-                (context, widget, phase) =>
-                    widget.scale(phase.isIdentity ? 1 : 0.7).translateX(
-                          switch (phase) {
+                (context, widget, event) =>
+                    widget.scale(event.phase.isIdentity ? 1 : 0.7).translateX(
+                          switch (event.phase) {
                             ScrollPhase.identity => 0,
                             ScrollPhase.topLeading => 200,
                             ScrollPhase.bottomTrailing => -200,
