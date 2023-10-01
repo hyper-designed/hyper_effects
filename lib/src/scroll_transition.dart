@@ -5,37 +5,46 @@ import 'animated_effect.dart';
 import 'extensions.dart';
 import 'scroll_phase.dart';
 
+class ScrollTransitionEvent {
+  final ScrollPhase phase;
+
+  /// The current progress an element's phase is going through.
+  /// If [phase] is identity this value is 1.
+  /// If [phase] is topLeading, it goes from 0 towards 1 as it leaves the
+  /// screen.
+  /// If [phase] is bottomTrailing, it goes from 0 towards 1 as it enters the
+  /// screen.
+  final double phaseOffsetFraction;
+
+  /// The current progress an element is going through the scrolling viewport.
+  /// If the item is near the center of the scroll view, the value tends towards
+  /// 0.
+  /// As the item moves towards the ceiling of the scroll view, the value tends
+  /// towards 1. It clamps to 1 when the item is fully out of the scroll view.
+  /// As the item moves towards the floor of the scroll view, the value tends
+  /// towards -1. It clamps to -1 when the item is fully out of the scroll view.
+  final double screenOffsetFraction;
+
+  ScrollTransitionEvent({
+    required this.phase,
+    required this.phaseOffsetFraction,
+    required this.screenOffsetFraction,
+  });
+}
+
 /// A function that builds a widget based on the current phase of the scroll
 /// animation.
 typedef ScrollTransitionBuilder = Widget Function(
   BuildContext context,
   Widget widget,
-  ScrollPhase phase,
-);
-
-typedef CustomScrollTransitionBuilder = Widget Function(
-  BuildContext context,
-  Widget widget,
-  ScrollPhase phase,
-  ScrollPosition position,
+  ScrollTransitionEvent event,
 );
 
 extension ScrollTransitionExt on Widget {
   Widget scrollTransition(int index, ScrollTransitionBuilder builder) {
     return ScrollTransition(
       index: index,
-      builder: (context, widget, phase, position) =>
-          builder(context, widget, phase),
-      child: this,
-    );
-  }
-
-  Widget customScrollTransition(
-      int index, CustomScrollTransitionBuilder builder) {
-    return ScrollTransition(
-      index: index,
-      builder: (context, widget, phase, position) =>
-          builder(context, widget, phase, position),
+      builder: builder,
       child: this,
     );
   }
@@ -45,11 +54,13 @@ extension ScrollTransitionExt on Widget {
 /// phase and position of the scroll position of the parent scrollable widget.
 class ScrollTransition extends StatefulWidget {
   /// The index of the scroll animation in the parent scrollable widget.
+  /// TODO
+  @Deprecated('Delete')
   final int index;
 
   /// A function that builds a widget based on the current phase of the scroll
   /// animation.
-  final CustomScrollTransitionBuilder? builder;
+  final ScrollTransitionBuilder? builder;
 
   /// The child widget to apply the effects to.
   final Widget child;
@@ -75,11 +86,13 @@ class _ScrollTransitionState extends State<ScrollTransition> {
   ScrollPosition? scrollPosition;
 
   /// The current phase of the scroll animation.
-  ScrollPhase currentPhase = ScrollPhase.identity;
+  ScrollPhase phase = ScrollPhase.identity;
 
   /// The current animation value indicating the progress of the scroll
   /// animation through its phase in the parent viewport.
-  double currentValue = 0;
+  double phaseOffsetFraction = 0;
+
+  double screenOffsetFraction = 0;
 
   bool isFirstFrame = true;
 
@@ -114,48 +127,72 @@ class _ScrollTransitionState extends State<ScrollTransition> {
   /// Calculates the current phase of the scroll animation.
   /// Returns a record of the current phase and it's associated progress
   /// through the viewport as a value between 0 and 1.
-  ({ScrollPhase phase, double value}) calculatePhase() {
+  ({
+    ScrollPhase phase,
+    double phaseOffsetFraction,
+    double screenOffsetFraction,
+  }) calculatePhase() {
     if (scrollable case var scrollable?) {
       final viewPort = scrollable.context.globalPaintBounds;
       final paintBounds = context.globalPaintBounds;
 
       if (paintBounds != null && viewPort != null) {
-        final double paintBoundsStart = scrollPosition!.axis == Axis.vertical
-            ? paintBounds.top
-            : paintBounds.left;
-        final double paintBoundsEnd = scrollPosition!.axis == Axis.vertical
-            ? paintBounds.bottom
-            : paintBounds.right;
-        final double paintBoundsSize = scrollPosition!.axis == Axis.vertical
-            ? paintBounds.height
-            : paintBounds.width;
+        final bool isVertical = scrollPosition!.axis == Axis.vertical;
+        final double paintBoundsStart =
+            isVertical ? paintBounds.top : paintBounds.left;
+        final double paintBoundsEnd =
+            isVertical ? paintBounds.bottom : paintBounds.right;
+        final double paintBoundsSize =
+            isVertical ? paintBounds.height : paintBounds.width;
 
-        final double viewPortStart = scrollPosition!.axis == Axis.vertical
-            ? viewPort.top
-            : viewPort.left;
-        final double viewPortEnd = scrollPosition!.axis == Axis.vertical
-            ? viewPort.bottom
-            : viewPort.right;
+        final double viewPortStart = isVertical ? viewPort.top : viewPort.left;
+        final double viewPortEnd =
+            isVertical ? viewPort.bottom : viewPort.right;
 
-        if (viewPort.contains(paintBounds.topLeft) &&
-            viewPort.contains(paintBounds.bottomRight)) {
-          // completely inside the viewport. no effects.
-          return (phase: ScrollPhase.identity, value: 1);
+        final bool doesFit = isVertical
+            ? viewPort.top <= paintBounds.top &&
+                viewPort.bottom >= paintBounds.bottom
+            : viewPort.left <= paintBounds.left &&
+                viewPort.right >= paintBounds.right;
+
+        double screenOffsetFraction = isVertical
+            ? (viewPort.center.dy - paintBounds.center.dy) / viewPort.height
+            : (viewPort.center.dx - paintBounds.center.dx) / viewPort.width;
+        screenOffsetFraction *= 2;
+
+        if (doesFit) {
+          return (
+            phase: ScrollPhase.identity,
+            phaseOffsetFraction: 1.0,
+            screenOffsetFraction: screenOffsetFraction
+          );
         } else if (viewPortStart > paintBoundsStart) {
           // Cutting at the top.
           double value = (viewPortStart - paintBoundsStart) / paintBoundsSize;
           value = value.clamp(0, 1);
           if (scrollPosition!.atStart) value = 0;
-          return (phase: ScrollPhase.topLeading, value: value);
+          return (
+            phase: ScrollPhase.topLeading,
+            phaseOffsetFraction: value,
+            screenOffsetFraction: screenOffsetFraction,
+          );
         } else if (viewPortEnd < paintBoundsEnd) {
           double value = (paintBoundsEnd - viewPortEnd) / paintBoundsSize;
           value = value.clamp(0, 1);
           if (scrollPosition!.atEnd) value = 0;
-          return (phase: ScrollPhase.bottomTrailing, value: value);
+          return (
+            phase: ScrollPhase.bottomTrailing,
+            phaseOffsetFraction: value,
+            screenOffsetFraction: screenOffsetFraction,
+          );
         }
       }
     }
-    return (phase: ScrollPhase.identity, value: 1);
+    return (
+      phase: ScrollPhase.identity,
+      phaseOffsetFraction: 1,
+      screenOffsetFraction: screenOffsetFraction,
+    );
   }
 
   /// Calculates the current phase of the scroll animation and its associated
@@ -167,12 +204,13 @@ class _ScrollTransitionState extends State<ScrollTransition> {
   /// If the [onChanged] callback is provided, it is called if the phase or
   /// value has changed.
   void updateCurrentState() {
-    final (:phase, :value) = calculatePhase();
-    if (phase != currentPhase || value != currentValue) {
-      currentPhase = phase;
-      currentValue = value;
-      if (mounted) setState(() {});
-    }
+    final (:phase, :phaseOffsetFraction, :screenOffsetFraction) =
+        calculatePhase();
+    this.phase = phase;
+    this.phaseOffsetFraction = phaseOffsetFraction;
+    this.screenOffsetFraction = screenOffsetFraction;
+
+    if (mounted) setState(() {});
   }
 
   /// Called when the parent scrollable widget sends a notification that the
@@ -181,11 +219,21 @@ class _ScrollTransitionState extends State<ScrollTransition> {
 
   @override
   Widget build(BuildContext context) {
-    Widget child = scrollable != null
-        ? widget.builder
-                ?.call(context, widget.child, currentPhase, scrollPosition!) ??
-            widget.child
-        : widget.child;
+    Widget child;
+
+    if (scrollable != null) {
+      child = widget.builder?.call(
+              context,
+              widget.child,
+              ScrollTransitionEvent(
+                phase: phase,
+                phaseOffsetFraction: phaseOffsetFraction,
+                screenOffsetFraction: screenOffsetFraction,
+              )) ??
+          widget.child;
+    } else {
+      child = widget.child;
+    }
 
     final visible = !isFirstFrame || scrollable == null;
 
@@ -195,7 +243,7 @@ class _ScrollTransitionState extends State<ScrollTransition> {
       maintainState: true,
       maintainAnimation: true,
       child: EffectAnimationValue(
-        value: currentValue,
+        value: phaseOffsetFraction,
         isTransition: true,
         child: child,
       ),
