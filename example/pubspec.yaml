@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  storybook_flutter: ^0.14.0
   hyper_effects:
     path: ../
 
