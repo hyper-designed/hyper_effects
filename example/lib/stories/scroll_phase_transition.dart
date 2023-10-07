@@ -24,7 +24,7 @@ class _ScrollPhaseTransitionState extends State<ScrollPhaseTransition> {
       itemBuilder: (context, index) {
         return Container(
           width: 350,
-          height: 100,
+          height: 200,
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           alignment: Alignment.center,
           decoration: BoxDecoration(

@@ -1,4 +1,6 @@
 /// Defines the state of an object in the context of its associated scroll view.
+/// This mainly indicates whether the object is visible in the scroll view or
+/// is either leaving or entering the scroll view.
 enum ScrollPhase {
   /// The object is leaving the top/left edge of the scroll view.
   topLeading,

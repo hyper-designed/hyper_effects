@@ -1,6 +1,15 @@
 import 'package:flutter/widgets.dart';
 
+/// Provides extension methods for [Widget] to animate it's appearance.
 extension AnimatedEffectExt on Widget {
+  /// Animate the effects applied to this widget.
+  ///
+  /// The [toggle] parameter is used to trigger the animation. As long as the
+  /// value of [toggle] is the same, the animation will not be triggered again.
+  ///
+  /// The [duration] parameter is used to set the duration of the animation.
+  ///
+  /// The [curve] parameter is used to set the curve of the animation.
   Widget animate({
     required Object? toggle,
     Duration duration = const Duration(milliseconds: 350),
@@ -15,12 +24,22 @@ extension AnimatedEffectExt on Widget {
   }
 }
 
+/// A widget that animates the effects applied to it's child.
 class AnimatedEffect extends StatefulWidget {
+  /// The widget below this widget in the tree.
   final Widget child;
+
+  /// The value used to trigger the animation. As long as the value of [toggle]
+  /// is the same, the animation will not be triggered again.
   final Object? toggle;
+
+  /// The duration of the animation.
   final Duration duration;
+
+  /// The curve of the animation.
   final Curve curve;
 
+  /// Creates [AnimatedEffect] widget.
   const AnimatedEffect({
     super.key,
     required this.child,
@@ -32,6 +51,8 @@ class AnimatedEffect extends StatefulWidget {
   @override
   State<AnimatedEffect> createState() => _AnimatedEffectState();
 
+  /// Returns the animation value of the nearest [EffectAnimationValue] ancestor.
+  /// If there is no ancestor, it returns null.
   EffectAnimationValue? maybeOf(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<EffectAnimationValue>();
 }
@@ -71,10 +92,20 @@ class _AnimatedEffectState extends State<AnimatedEffect>
   }
 }
 
+/// An inherited widget that provides the animation value to it's descendants.
+///
+/// This widget is used by [AnimatedEffect] and [ScrollTransition] widgets to
+/// provide the animation value to it's descendants in order to animate them.
 class EffectAnimationValue extends InheritedWidget {
+  /// The animation value. It's value is between 0 and 1.
   final double value;
+
+  /// Whether the animation is in scroll transition or not. Animations behaves
+  /// differently in scroll transition. This flag is used to determine the
+  /// behavior of the animation.
   final bool isTransition;
 
+  /// Creates [EffectAnimationValue] widget.
   const EffectAnimationValue({
     super.key,
     required super.child,

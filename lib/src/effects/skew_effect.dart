@@ -5,7 +5,15 @@ import 'package:flutter/widgets.dart';
 import '../effect_builder.dart';
 import 'effect.dart';
 
+/// Provides a extension method to apply a [SkewEffect] to a [Widget].
 extension SkewEffectExt on Widget {
+  /// Applies a [SkewEffect] to a [Widget] with the given [skew] on both axes.
+  ///
+  /// [alignment] is the alignment of the origin, relative to the size of
+  /// the [Widget].
+  ///
+  /// [origin] is the origin of the skew. This allows to translate the origin
+  /// of the skew to a different point.
   Widget skew(
     double? skew, {
     AlignmentGeometry alignment = Alignment.center,
@@ -21,6 +29,13 @@ extension SkewEffectExt on Widget {
     );
   }
 
+  /// Applies a [SkewEffect] to a [Widget] only on the x-axis.
+  ///
+  /// [alignment] is the alignment of the origin, relative to the size of
+  /// the [Widget].
+  ///
+  /// [origin] is the origin of the skew. This allows to translate the origin
+  /// of the skew to a different point.
   Widget skewX(
     double? skewX, {
     AlignmentGeometry alignment = Alignment.center,
@@ -36,6 +51,13 @@ extension SkewEffectExt on Widget {
     );
   }
 
+  /// Applies a [SkewEffect] to a [Widget] only on the y-axis.
+  ///
+  /// [alignment] is the alignment of the origin, relative to the size of
+  /// the [Widget].
+  ///
+  /// [origin] is the origin of the skew. This allows to translate the origin
+  /// of the skew to a different point.
   Widget skewY(
     double? skewY, {
     AlignmentGeometry alignment = Alignment.center,
@@ -51,6 +73,13 @@ extension SkewEffectExt on Widget {
     );
   }
 
+  /// Applies a [SkewEffect] to a [Widget] with the given [skewX] and [skewY].
+  ///
+  /// [alignment] is the alignment of the origin, relative to the size of
+  /// the [Widget].
+  ///
+  /// [origin] is the origin of the skew. This allows to translate the origin
+  /// of the skew to a different point.
   Widget skewXY(
     double? skewX,
     double? skewY, {
@@ -69,13 +98,29 @@ extension SkewEffectExt on Widget {
   }
 }
 
+/// An [Effect] that applies a skew to a [Widget].
 class SkewEffect extends Effect {
+  /// The amount to skew the [Widget] in both the x and y directions. This
+  /// must be null if [skewX] and [skewY] are provided.
   final double? skew;
+
+  /// The amount to skew the [Widget] in the x direction. This must be null if
+  /// [skew] is provided.
   final double? skewX;
+
+  /// The amount to skew the [Widget] in the y direction. This must be null if
+  /// [skew] is provided.
   final double? skewY;
+
+  /// The alignment of the skew, relative to the size of the [Widget].
+  /// Directly mapped to the [Transform] widget.
   final AlignmentGeometry alignment;
+
+  /// The origin of the skew. This allows to translate the origin of the skew
+  /// to a different point. Directly mapped to the [Transform] widget.
   final Offset origin;
 
+  /// Creates a [SkewEffect].
   SkewEffect({
     this.skew,
     this.skewX,

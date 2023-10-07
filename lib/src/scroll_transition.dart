@@ -5,7 +5,9 @@ import 'animated_effect.dart';
 import 'extensions.dart';
 import 'scroll_phase.dart';
 
+/// Represents the scroll event for [ScrollTransition].
 class ScrollTransitionEvent {
+  /// The current phase of the scroll animation on given [Widget].
   final ScrollPhase phase;
 
   /// The current progress an element's phase is going through.
@@ -25,6 +27,7 @@ class ScrollTransitionEvent {
   /// towards -1. It clamps to -1 when the item is fully out of the scroll view.
   final double screenOffsetFraction;
 
+  /// Creates a [ScrollTransitionEvent].
   ScrollTransitionEvent({
     required this.phase,
     required this.phaseOffsetFraction,
@@ -40,7 +43,9 @@ typedef ScrollTransitionBuilder = Widget Function(
   ScrollTransitionEvent event,
 );
 
+/// Provides extension methods for [Widget] to apply scroll transition effects.
 extension ScrollTransitionExt on Widget {
+  /// Applies scroll transition effects to this widget.
   Widget scrollTransition(int index, ScrollTransitionBuilder builder) {
     return ScrollTransition(
       index: index,
