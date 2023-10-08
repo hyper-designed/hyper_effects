@@ -5,7 +5,9 @@ import 'package:flutter/widgets.dart';
 import '../effect_builder.dart';
 import 'effect.dart';
 
+/// Provides extension methods for [Widget] to apply blur effects.
 extension BlurEffectExt on Widget {
+  /// Applies a blur effect to this widget with given [blur] value.
   Widget blur(double? blur) {
     return AnimatableEffect(
       effect: BlurEffect(blur: blur),
@@ -13,6 +15,8 @@ extension BlurEffectExt on Widget {
     );
   }
 
+  /// Applies a blur effect to only the horizontal axis of this widget with
+  /// given [blurX] value.
   Widget blurX(double? blurX) {
     return AnimatableEffect(
       effect: BlurEffect(blurX: blurX),
@@ -20,6 +24,8 @@ extension BlurEffectExt on Widget {
     );
   }
 
+  /// Applies a blur effect to only the vertical axis of this widget with
+  /// given [blurY] value.
   Widget blurY(double? blurY) {
     return AnimatableEffect(
       effect: BlurEffect(blurY: blurY),
@@ -27,6 +33,7 @@ extension BlurEffectExt on Widget {
     );
   }
 
+  /// Applies a blur effect to this widget with given [blurX] and [blurY] values.
   Widget blurXY(double? blurX, double? blurY) {
     return AnimatableEffect(
       effect: BlurEffect(blurX: blurX, blurY: blurY),
@@ -35,11 +42,21 @@ extension BlurEffectExt on Widget {
   }
 }
 
+/// An effect that applies a blur effect to its child.
 class BlurEffect extends Effect {
+  /// The blur value to apply to the child. This must be null if [blurX] or
+  /// [blurY] is provided.
   final double? blur;
+
+  /// The blur value to apply to the horizontal axis of the child. This must be
+  /// null if [blur] is provided.
   final double? blurX;
+
+  /// The blur value to apply to the vertical axis of the child. This must be
+  /// null if [blur] is provided.
   final double? blurY;
 
+  /// Creates a [BlurEffect].
   BlurEffect({
     this.blur,
     this.blurX,
@@ -61,10 +78,9 @@ class BlurEffect extends Effect {
   Widget apply(BuildContext context, Widget child) {
     return ImageFiltered(
       imageFilter: ImageFilter.blur(
-        sigmaX: blurX ?? blur ?? 0,
-        sigmaY: blurY ?? blur ?? 0,
-        tileMode: TileMode.decal
-      ),
+          sigmaX: blurX ?? blur ?? 0,
+          sigmaY: blurY ?? blur ?? 0,
+          tileMode: TileMode.decal),
       child: child,
     );
   }
