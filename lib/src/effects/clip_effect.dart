@@ -94,13 +94,13 @@ class ClipEffect extends Effect {
 
   @override
   Widget apply(BuildContext context, Widget child) {
-    // if (clip == Clip.none) return child;
-    // if (borderRadius == BorderRadius.zero) {
-    //   return ClipRect(
-    //     clipBehavior: clip,
-    //     child: child,
-    //   );
-    // }
+    if (clip == Clip.none) return child;
+    if (borderRadius == BorderRadius.zero) {
+      return ClipRect(
+        clipBehavior: clip,
+        child: child,
+      );
+    }
     return ClipRRect(
       clipBehavior: clip,
       borderRadius: borderRadius,
