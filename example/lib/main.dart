@@ -3,6 +3,8 @@ import 'package:example/stories/scroll_wheel_transition.dart';
 import 'package:flutter/material.dart';
 import 'package:storybook_flutter/storybook_flutter.dart';
 
+import 'stories/scroll_wheel_blur.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -26,6 +28,11 @@ class MyApp extends StatelessWidget {
             name: 'Scroll Wheel Transition',
             description: 'Warping elements to mimic a cylindrical effect.',
             builder: (context) => const ScrollWheelTransition(),
+          ),
+          Story(
+            name: 'Scroll Phase Blur',
+            description: 'A focus effect where elements outside the view are blurred',
+            builder: (context) => const ScrollWheelBlurTransition(),
           ),
         ],
       ),
