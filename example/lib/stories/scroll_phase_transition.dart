@@ -39,7 +39,6 @@ class _ScrollPhaseTransitionState extends State<ScrollPhaseTransition> {
             ),
           ),
         ).scrollTransition(
-          index,
           (context, widget, event) =>
               widget.scale(event.phase.isIdentity ? 1 : 0.7).translateX(
                     switch (event.phase) {

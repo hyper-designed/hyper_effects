@@ -1,3 +1,4 @@
+import 'package:example/stories/windows_settings_transition.dart';
 import 'package:example/stories/scroll_phase_transition.dart';
 import 'package:example/stories/scroll_wheel_transition.dart';
 import 'package:flutter/material.dart';
@@ -31,8 +32,14 @@ class MyApp extends StatelessWidget {
           ),
           Story(
             name: 'Scroll Phase Blur',
-            description: 'A focus effect where elements outside the view are blurred',
+            description:
+                'A focus effect where elements outside the view are blurred',
             builder: (context) => const ScrollWheelBlurTransition(),
+          ),
+          Story(
+            name: 'Pointer Transition',
+            description: 'Moves elements slightly with the pointer',
+            builder: (context) => const WindowsSettingsTransition(),
           ),
         ],
       ),

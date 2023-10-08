@@ -1,4 +1,7 @@
 import 'package:flutter/widgets.dart';
+import 'package:hyper_effects/src/apple_curve.dart';
+
+import 'effect_animation_value.dart';
 
 /// Provides extension methods for [Widget] to animate it's appearance.
 extension AnimatedEffectExt on Widget {
@@ -13,7 +16,7 @@ extension AnimatedEffectExt on Widget {
   Widget animate({
     required Object? toggle,
     Duration duration = const Duration(milliseconds: 350),
-    Curve curve = Curves.easeInOut,
+    Curve curve = appleEaseInOut,
   }) {
     return AnimatedEffect(
       toggle: toggle,
@@ -45,7 +48,7 @@ class AnimatedEffect extends StatefulWidget {
     required this.child,
     required this.toggle,
     required this.duration,
-    this.curve = Curves.easeInOut,
+    this.curve = appleEaseInOut,
   });
 
   @override
@@ -65,6 +68,11 @@ class _AnimatedEffectState extends State<AnimatedEffect>
     duration: widget.duration,
   );
 
+  late final Animation<double> _animation = CurvedAnimation(
+    parent: _controller,
+    curve: widget.curve,
+  );
+
   @override
   void didUpdateWidget(covariant AnimatedEffect oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -75,9 +83,9 @@ class _AnimatedEffectState extends State<AnimatedEffect>
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _controller,
+      animation: _animation,
       builder: (context, child) => EffectAnimationValue(
-        value: _controller.value,
+        value: _animation.value,
         isTransition: false,
         child: child!,
       ),
@@ -89,32 +97,5 @@ class _AnimatedEffectState extends State<AnimatedEffect>
   void dispose() {
     _controller.dispose();
     super.dispose();
-  }
-}
-
-/// An inherited widget that provides the animation value to it's descendants.
-///
-/// This widget is used by [AnimatedEffect] and [ScrollTransition] widgets to
-/// provide the animation value to it's descendants in order to animate them.
-class EffectAnimationValue extends InheritedWidget {
-  /// The animation value. It's value is between 0 and 1.
-  final double value;
-
-  /// Whether the animation is in scroll transition or not. Animations behaves
-  /// differently in scroll transition. This flag is used to determine the
-  /// behavior of the animation.
-  final bool isTransition;
-
-  /// Creates [EffectAnimationValue] widget.
-  const EffectAnimationValue({
-    super.key,
-    required super.child,
-    required this.value,
-    required this.isTransition,
-  });
-
-  @override
-  bool updateShouldNotify(covariant EffectAnimationValue oldWidget) {
-    return oldWidget.value != value || oldWidget.isTransition != isTransition;
   }
 }

@@ -6,43 +6,57 @@ import 'effect.dart';
 /// Provides a extension method to apply a [TranslateEffect] to a [Widget].
 extension TranslateEffectExt on Widget {
   /// Applies a [TranslateEffect] to a [Widget] with the given [offset].
-  Widget translate(Offset offset) {
+  /// [fractional] determines whether the [offset] moves the [Widget] by using
+  /// its own size as a percentage or by a fixed amount.
+  Widget translate(Offset offset, {bool fractional = false}) {
     return AnimatableEffect(
       effect: TranslateEffect(
         offset: offset,
+        fractional: fractional,
       ),
       child: this,
     );
   }
 
   /// Applies a [TranslateEffect] to a [Widget] only on the x-axis.
-  Widget translateX(double x) {
+  /// [fractional] determines whether the [offset] moves the [Widget] by using
+  /// its own size as a percentage or by a fixed amount.
+  Widget translateX(double x, {bool fractional = false}) {
     return AnimatableEffect(
       effect: TranslateEffect(
         offset: Offset(x, 0),
+        fractional: fractional,
       ),
       child: this,
     );
   }
 
   /// Applies a [TranslateEffect] to a [Widget] only on the y-axis.
-  Widget translateY(double y) {
+  /// [fractional] determines whether the [offset] moves the [Widget] by using
+  /// its own size as a percentage or by a fixed amount.
+  Widget translateY(double y, {bool fractional = false}) {
     return AnimatableEffect(
       effect: TranslateEffect(
         offset: Offset(0, y),
+        fractional: fractional,
       ),
       child: this,
     );
   }
 
-  /// Applies a [TranslateEffect] to a [Widget] with the given [x] and [y] values.
+  /// Applies a [TranslateEffect] to a [Widget] with the given [x] and [y]
+  /// values.
+  /// [fractional] determines whether the [offset] moves the [Widget] by using
+  /// its own size as a percentage or by a fixed amount.
   Widget translateXY(
     double x,
-    double y,
-  ) {
+    double y, {
+    bool fractional = false,
+  }) {
     return AnimatableEffect(
       effect: TranslateEffect(
         offset: Offset(x, y),
+        fractional: fractional,
       ),
       child: this,
     );
@@ -54,9 +68,14 @@ class TranslateEffect extends Effect {
   /// The offset by which the [Widget] is translated.
   final Offset offset;
 
-  /// Creates a [TranslateEffect] with the given [offset].
+  /// Whether the [offset] is fractional. If true, the [offset] is a percentage
+  /// of the [Widget]'s size. If false, the [offset] is a fixed amount.
+  final bool fractional;
+
+  /// Creates a [TranslateEffect] with the given [offset] and [fractional].
   TranslateEffect({
     this.offset = Offset.zero,
+    this.fractional = false,
   });
 
   @override
@@ -68,12 +87,19 @@ class TranslateEffect extends Effect {
 
   @override
   Widget apply(BuildContext context, Widget child) {
-    return Transform.translate(
-      offset: offset,
-      child: child,
-    );
+    if (fractional) {
+      return FractionalTranslation(
+        translation: offset,
+        child: child,
+      );
+    } else {
+      return Transform.translate(
+        offset: offset,
+        child: child,
+      );
+    }
   }
 
   @override
-  List<Object?> get props => [offset];
+  List<Object?> get props => [offset, fractional];
 }

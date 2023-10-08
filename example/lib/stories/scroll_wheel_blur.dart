@@ -40,20 +40,21 @@ class _ScrollWheelBlurTransitionState extends State<ScrollWheelBlurTransition> {
             ),
           ),
         ).scrollTransition(
-          index,
-          (context, widget, event) => widget.blur(
-            switch (event.phase) {
-              ScrollPhase.identity => 0,
-              ScrollPhase.topLeading => 10,
-              ScrollPhase.bottomTrailing => 10,
-            },
-          ).scale(
-            switch (event.phase) {
-              ScrollPhase.identity => 1,
-              ScrollPhase.topLeading => 0.9,
-              ScrollPhase.bottomTrailing => 0.9,
-            },
-          ),
+          (context, widget, event) => widget
+              .blur(
+                switch (event.phase) {
+                  ScrollPhase.identity => 0,
+                  ScrollPhase.topLeading => 10,
+                  ScrollPhase.bottomTrailing => 10,
+                },
+              )
+              .scale(
+                switch (event.phase) {
+                  ScrollPhase.identity => 1,
+                  ScrollPhase.topLeading => 0.9,
+                  ScrollPhase.bottomTrailing => 0.9,
+                },
+              ),
         );
       },
     );
