@@ -1,8 +1,8 @@
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
 import 'animated_effect.dart';
 import 'extensions.dart';
+import 'post_frame_widget.dart';
 import 'scroll_phase.dart';
 
 /// Represents the scroll event for [ScrollTransition].
@@ -98,17 +98,6 @@ class _ScrollTransitionState extends State<ScrollTransition> {
   double phaseOffsetFraction = 0;
 
   double screenOffsetFraction = 0;
-
-  bool isFirstFrame = true;
-
-  @override
-  void initState() {
-    super.initState();
-    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-      isFirstFrame = false;
-      updateCurrentState();
-    });
-  }
 
   @override
   void didChangeDependencies() {
@@ -222,6 +211,9 @@ class _ScrollTransitionState extends State<ScrollTransition> {
   /// scroll position has changed.
   void onScrollChanged() => updateCurrentState();
 
+  /// Called after the first frame is rendered.
+  void onPostFrame() => updateCurrentState();
+
   @override
   Widget build(BuildContext context) {
     Widget child;
@@ -240,13 +232,9 @@ class _ScrollTransitionState extends State<ScrollTransition> {
       child = widget.child;
     }
 
-    final visible = !isFirstFrame || scrollable == null;
-
-    return Visibility(
-      visible: visible,
-      maintainSize: true,
-      maintainState: true,
-      maintainAnimation: true,
+    return PostFrameWidget(
+      enabled: scrollable != null,
+      onPostFrame: onPostFrame,
       child: EffectAnimationValue(
         value: phaseOffsetFraction,
         isTransition: true,
