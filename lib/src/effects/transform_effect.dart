@@ -6,7 +6,6 @@ import '../../hyper_effects.dart';
 
 /// Provides a extension method to apply a [TransformEffect] to a [Widget].
 extension TransformEffectExt on Widget {
-
   /// Applies a [TransformEffect] to a [Widget].
   ///
   /// The [translateX], [translateY], [translateZ], [rotateX], [rotateY],
@@ -48,7 +47,6 @@ extension TransformEffectExt on Widget {
 
 /// An [Effect] that applies a transform to a [Widget].
 class TransformEffect extends Effect {
-
   /// The amount to translate the [Widget] in the x direction. Directly mapped
   /// to the [Transform] widget.
   final double translateX;
@@ -153,4 +151,20 @@ class TransformEffect extends Effect {
       child: child,
     );
   }
+
+  @override
+  List<Object?> get props => [
+        translateX,
+        translateY,
+        translateZ,
+        rotateX,
+        rotateY,
+        rotateZ,
+        scaleX,
+        scaleY,
+        scaleZ,
+        depth,
+        alignment,
+        origin,
+      ];
 }

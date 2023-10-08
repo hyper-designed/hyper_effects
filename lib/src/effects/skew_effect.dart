@@ -157,4 +157,7 @@ class SkewEffect extends Effect {
       child: child,
     );
   }
+
+  @override
+  List<Object?> get props => [skew, skewX, skewY, alignment, origin];
 }

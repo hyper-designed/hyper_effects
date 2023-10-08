@@ -69,4 +69,7 @@ class RotationEffect extends Effect {
       child: child,
     );
   }
+
+  @override
+  List<Object?> get props => [angle, origin, alignment];
 }

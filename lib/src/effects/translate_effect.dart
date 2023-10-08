@@ -51,7 +51,6 @@ extension TranslateEffectExt on Widget {
 
 /// An effect that translates a [Widget] by a given [offset].
 class TranslateEffect extends Effect {
-
   /// The offset by which the [Widget] is translated.
   final Offset offset;
 
@@ -74,4 +73,7 @@ class TranslateEffect extends Effect {
       child: child,
     );
   }
+
+  @override
+  List<Object?> get props => [offset];
 }

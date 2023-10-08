@@ -32,4 +32,7 @@ class OpacityEffect extends Effect {
   @override
   Widget apply(BuildContext context, Widget child) =>
       Opacity(opacity: opacity, child: child);
+
+  @override
+  List<Object?> get props => [opacity];
 }

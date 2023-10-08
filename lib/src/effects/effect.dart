@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 
 /// An [Effect] that can be applied to a [Widget]. This is the base class for
@@ -15,7 +16,7 @@ import 'package:flutter/widgets.dart';
 ///
 /// If no parent [AnimatedEffect] or [ScrollTransition] is provided, the
 /// animation value is 0.
-abstract class Effect {
+abstract class Effect with EquatableMixin {
   /// Creates an [Effect].
   const Effect();
 

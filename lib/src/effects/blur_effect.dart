@@ -78,10 +78,14 @@ class BlurEffect extends Effect {
   Widget apply(BuildContext context, Widget child) {
     return ImageFiltered(
       imageFilter: ImageFilter.blur(
-          sigmaX: blurX ?? blur ?? 0,
-          sigmaY: blurY ?? blur ?? 0,
-          tileMode: TileMode.decal),
+        sigmaX: blurX ?? blur ?? 0,
+        sigmaY: blurY ?? blur ?? 0,
+        tileMode: TileMode.decal,
+      ),
       child: child,
     );
   }
+
+  @override
+  List<Object?> get props => [blur, blurX, blurY];
 }

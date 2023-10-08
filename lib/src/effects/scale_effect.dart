@@ -168,4 +168,13 @@ class ScaleEffect extends Effect {
         origin: origin,
         child: child,
       );
+
+  @override
+  List<Object?> get props => [
+        scale,
+        scaleX,
+        scaleY,
+        alignment,
+        origin,
+      ];
 }
