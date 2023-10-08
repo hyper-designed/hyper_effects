@@ -38,15 +38,13 @@ class _ScrollWheelTransitionState extends State<ScrollWheelTransition> {
               color: Colors.white,
             ),
           ),
-        ).scrollTransition(
-            index,
-            (context, widget, event) => TransformEffect(
-                  rotateX: -90 * event.screenOffsetFraction * pi / 180,
-                  translateY: (event.screenOffsetFraction * -1) * 200,
-                  translateZ: event.screenOffsetFraction.abs() * 100,
-                  scaleX: 1 - (event.screenOffsetFraction.abs() / 2),
-                  depth: 0.002,
-                ).apply(context, widget));
+        ).scrollTransition((context, widget, event) => TransformEffect(
+              rotateX: -90 * event.screenOffsetFraction * pi / 180,
+              translateY: (event.screenOffsetFraction * -1) * 200,
+              translateZ: event.screenOffsetFraction.abs() * 100,
+              scaleX: 1 - (event.screenOffsetFraction.abs() / 2),
+              depth: 0.002,
+            ).apply(context, widget));
       },
     );
   }

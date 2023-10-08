@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import 'animated_effect.dart';
+import 'effect_animation_value.dart';
 import 'effects/effect.dart';
 
 /// A widget that applies given [Effect] to a [Widget]. This widget is hardly
@@ -15,7 +15,6 @@ import 'effects/effect.dart';
 /// interpolate between two [Effect]s. The resulting [Effect] is then applied
 /// to the [child] by calling [Effect.apply].
 class AnimatableEffect extends StatefulWidget {
-
   /// The effect to apply to the [child].
   final Effect effect;
 
@@ -72,7 +71,11 @@ class _AnimatableEffectState extends State<AnimatableEffect> {
 
   @override
   Widget build(BuildContext context) {
-    final Effect newEffect = begin.lerp(end, animationValue);
-    return newEffect.apply(context, widget.child);
+    if (effectAnimationValue?.lerpValues == false) {
+      return end.apply(context, widget.child);
+    } else {
+      final Effect newEffect = begin.lerp(end, animationValue);
+      return newEffect.apply(context, widget.child);
+    }
   }
 }

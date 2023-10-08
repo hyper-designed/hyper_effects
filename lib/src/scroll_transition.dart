@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import 'animated_effect.dart';
+import 'effect_animation_value.dart';
 import 'extensions.dart';
 import 'post_frame_widget.dart';
 import 'scroll_phase.dart';
@@ -46,9 +46,8 @@ typedef ScrollTransitionBuilder = Widget Function(
 /// Provides extension methods for [Widget] to apply scroll transition effects.
 extension ScrollTransitionExt on Widget {
   /// Applies scroll transition effects to this widget.
-  Widget scrollTransition(int index, ScrollTransitionBuilder builder) {
+  Widget scrollTransition(ScrollTransitionBuilder builder) {
     return ScrollTransition(
-      index: index,
       builder: builder,
       child: this,
     );
@@ -58,11 +57,6 @@ extension ScrollTransitionExt on Widget {
 /// A widget that applies a set of effects to its child based on the current
 /// phase and position of the scroll position of the parent scrollable widget.
 class ScrollTransition extends StatefulWidget {
-  /// The index of the scroll animation in the parent scrollable widget.
-  /// TODO
-  @Deprecated('Delete')
-  final int index;
-
   /// A function that builds a widget based on the current phase of the scroll
   /// animation.
   final ScrollTransitionBuilder? builder;
@@ -70,14 +64,11 @@ class ScrollTransition extends StatefulWidget {
   /// The child widget to apply the effects to.
   final Widget child;
 
-  /// Creates a widget that applies a set of effects to its child based on the
-  /// current phase and position of the scroll position of the parent scrollable
-  /// widget.
+  /// Creates a new [ScrollTransition] with the given [builder] and [child].
   const ScrollTransition({
     super.key,
     required this.child,
     this.builder,
-    this.index = 0,
   });
 
   @override
@@ -88,6 +79,7 @@ class _ScrollTransitionState extends State<ScrollTransition> {
   /// The parent scrollable widget.
   ScrollableState? scrollable;
 
+  /// The current scroll position of the parent scrollable widget.
   ScrollPosition? scrollPosition;
 
   /// The current phase of the scroll animation.
@@ -97,6 +89,8 @@ class _ScrollTransitionState extends State<ScrollTransition> {
   /// animation through its phase in the parent viewport.
   double phaseOffsetFraction = 0;
 
+  /// The current animation value indicating the progress of the scroll
+  /// animation through the parent viewport.
   double screenOffsetFraction = 0;
 
   @override
