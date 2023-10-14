@@ -10,7 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  storybook_flutter: ^0.14.0
+  adaptive_theme: ^3.4.1
+  flutter_box_transform: ^0.4.2
   hyper_effects:
     path: ../
 

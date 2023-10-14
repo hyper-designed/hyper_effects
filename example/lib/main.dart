@@ -1,11 +1,17 @@
-import 'package:hyper_effects_demo/stories/color_filter_scroll_transition.dart';
-import 'package:hyper_effects_demo/stories/windows_settings_transition.dart';
-import 'package:hyper_effects_demo/stories/scroll_phase_transition.dart';
-import 'package:hyper_effects_demo/stories/scroll_wheel_transition.dart';
-import 'package:flutter/material.dart';
-import 'package:storybook_flutter/storybook_flutter.dart';
+import 'dart:math';
 
-import 'stories/scroll_wheel_blur.dart';
+import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_box_transform/flutter_box_transform.dart';
+import 'package:hyper_effects_demo/stories/color_filter_scroll_transition.dart';
+import 'package:hyper_effects_demo/stories/scroll_phase_transition.dart';
+import 'package:hyper_effects_demo/stories/scroll_wheel_blur.dart';
+import 'package:hyper_effects_demo/stories/scroll_wheel_transition.dart';
+import 'package:hyper_effects_demo/stories/windows_settings_transition.dart';
+
+import 'story.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,40 +22,229 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Hyper Effects Story Book',
-      debugShowCheckedModeBanner: false,
-      home: Storybook(
-        initialStory: 'Scroll Phase Offset',
-        stories: [
-          Story(
-            name: 'Scroll Phase Offset',
-            description: 'Offsetting elements based on the phase of the scroll.',
-            builder: (context) => const ScrollPhaseTransition(),
+    return AdaptiveTheme(
+      light: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.light,
+        colorSchemeSeed: Colors.blue,
+        inputDecorationTheme: InputDecorationTheme(
+          isDense: true,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6),
           ),
-          Story(
-            name: 'Scroll Phase Color Filter Transition',
-            description: 'Blending and changing image colors based on scroll phase.',
-            builder: (context) => const ColorFilterScrollTransition(),
+        ),
+      ),
+      dark: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        colorSchemeSeed: Colors.blue,
+        inputDecorationTheme: InputDecorationTheme(
+          isDense: true,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6),
           ),
-          Story(
-            name: 'Scroll Wheel Transition',
-            description: 'Warping elements to mimic a cylindrical effect.',
-            builder: (context) => const ScrollWheelTransition(),
+        ),
+      ),
+      initial: AdaptiveThemeMode.system,
+      builder: (theme, darkTheme) => MaterialApp(
+        title: 'Hyper Effects Storyboard',
+        debugShowCheckedModeBanner: false,
+        theme: theme,
+        darkTheme: darkTheme,
+        home: const Storyboard(),
+      ),
+    );
+  }
+}
+
+class Storyboard extends StatefulWidget {
+  const Storyboard({super.key});
+
+  @override
+  State<Storyboard> createState() => _StoryboardState();
+}
+
+class _StoryboardState extends State<Storyboard> {
+  final List<Story> stories = [
+    const Story(
+      title: 'Scroll Phase Transition',
+      child: ScrollPhaseTransition(),
+    ),
+    const Story(
+      title: 'Scroll Wheel Blur Transition',
+      child: ScrollWheelBlurTransition(),
+    ),
+    const Story(
+      title: 'Scroll Wheel Transition',
+      child: ScrollWheelTransition(),
+    ),
+    const Story(
+      title: 'Windows Settings Effect',
+      child: WindowsSettingsTransition(),
+    ),
+    const Story(
+      title: 'Color Filter Scroll Transition',
+      child: ColorFilterScrollTransition(),
+    ),
+  ];
+  int? selectedStory;
+
+  void onStorySelected(int index) {
+    setState(() {
+      selectedStory = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Row(
+        children: [
+          SizedBox(
+            width: 300,
+            child: ListView(
+              children: [
+                for (final Story story in stories)
+                  ListTile(
+                    title: Text(story.title),
+                    onTap: () => onStorySelected(stories.indexOf(story)),
+                    selected: stories.indexOf(story) == selectedStory,
+                  ),
+              ],
+            ),
           ),
-          Story(
-            name: 'Scroll Phase Blur',
-            description:
-            'A focus effect where elements outside the view are blurred',
-            builder: (context) => const ScrollWheelBlurTransition(),
-          ),
-          Story(
-            name: 'Pointer Transition',
-            description: 'Moves elements slightly with the pointer',
-            builder: (context) => const WindowsSettingsTransition(),
-          ),
+          const VerticalDivider(width: 2),
+          Expanded(
+              flex: 3,
+              child: ContentView(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: selectedStory != null
+                      ? stories[selectedStory!].child
+                      : const Center(
+                          child: Text('Select a story to view.'),
+                        ),
+                ),
+              )),
         ],
       ),
+    );
+  }
+}
+
+class ContentView extends StatefulWidget {
+  final Widget child;
+
+  const ContentView({super.key, required this.child});
+
+  @override
+  State<ContentView> createState() => _ContentViewState();
+}
+
+class _ContentViewState extends State<ContentView> with WidgetsBindingObserver {
+  final GlobalKey _key = GlobalKey();
+
+  final TransformableBoxController controller = TransformableBoxController(
+    resizeModeResolver: () {
+      final pressedKeys = WidgetsBinding.instance.keyboard.logicalKeysPressed;
+
+      final isShiftPressed =
+          pressedKeys.contains(LogicalKeyboardKey.shiftLeft) ||
+              pressedKeys.contains(LogicalKeyboardKey.shiftRight);
+
+      if (isShiftPressed) {
+        return ResizeMode.symmetricScale;
+      } else {
+        return ResizeMode.symmetric;
+      }
+    },
+    allowFlippingWhileResizing: false,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller
+        .setConstraints(const BoxConstraints(minHeight: 200, minWidth: 200));
+
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      controller.setClampingRect(getArea(), notify: false);
+      controller.setRect(controller.clampingRect);
+      if (mounted) setState(() {});
+    });
+
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeMetrics() {
+    super.didChangeMetrics();
+
+    controller.setClampingRect(getArea());
+    controller.setRect(getRect(), recalculate: true);
+
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void didUpdateWidget(covariant ContentView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    controller.setRect(getRect(), recalculate: true);
+  }
+
+  Rect getArea() {
+    final RenderBox renderBox =
+        _key.currentContext?.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+    return Rect.fromLTWH(0, 0, size.width, size.height).deflate(16);
+  }
+
+  Rect getRect() {
+    Rect rect = controller.rect;
+    rect = Rect.fromCenter(
+      center: controller.clampingRect.center,
+      width: min(controller.clampingRect.width, rect.width),
+      height: min(controller.clampingRect.height, rect.height),
+    );
+    return rect;
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      key: _key,
+      children: [
+        TransformableBox(
+          controller: controller,
+          draggable: false,
+          allowContentFlipping: false,
+          contentBuilder: (BuildContext context, Rect rect, Flip flip) {
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.primary,
+                  width: 2,
+                  strokeAlign: BorderSide.strokeAlignOutside,
+                ),
+              ),
+              child: Center(child: widget.child),
+            );
+          },
+        ),
+      ],
     );
   }
 }

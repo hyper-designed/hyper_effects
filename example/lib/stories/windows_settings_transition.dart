@@ -14,8 +14,8 @@ class _WindowsSettingsTransitionState extends State<WindowsSettingsTransition> {
   Widget build(BuildContext context) {
     return Center(
       child: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 200,
           crossAxisSpacing: 4,
           mainAxisSpacing: 4,
         ),
