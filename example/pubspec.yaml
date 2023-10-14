@@ -1,5 +1,5 @@
-name: example
-description: A new Flutter project.
+name: hyper_effects_demo
+description: A demo that showcases the hyper_effects package.
 publish_to: 'none'
 
 version: 1.0.0+1

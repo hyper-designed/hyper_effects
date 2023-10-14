@@ -8,6 +8,8 @@
 inspired from SwiftUI's syntax to create beautiful effects in Flutter. With just a few lines of code after your
 widget, you can add any number of effects and transitions with ease.
 
+Demo: [hyper-effects-demo.web.app](https://hyper-effects-demo.web.app/)
+
 ## Features
 
 * 📏 **Compact Syntax:** Write a single line of code for a whole suite of complex effects.
@@ -352,6 +354,8 @@ decides whether the transition should animate or not.
 Like the scroll transition, be careful when using `value` and `valueOffset` as it can be a bit tricky to use. The
 pointer transition internally uses the `value` property to internally lerp between values. This means that if you use
 other properties and expect them to transition perfectly, you may get unexpected results sometimes.
+
+### Demo: [hyper-effects-demo.web.app](https://hyper-effects-demo.web.app/)
 
 ## Contributing
 

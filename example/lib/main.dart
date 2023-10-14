@@ -1,7 +1,7 @@
-import 'package:example/stories/color_filter_scroll_transition.dart';
-import 'package:example/stories/windows_settings_transition.dart';
-import 'package:example/stories/scroll_phase_transition.dart';
-import 'package:example/stories/scroll_wheel_transition.dart';
+import 'package:hyper_effects_demo/stories/color_filter_scroll_transition.dart';
+import 'package:hyper_effects_demo/stories/windows_settings_transition.dart';
+import 'package:hyper_effects_demo/stories/scroll_phase_transition.dart';
+import 'package:hyper_effects_demo/stories/scroll_wheel_transition.dart';
 import 'package:flutter/material.dart';
 import 'package:storybook_flutter/storybook_flutter.dart';
 
