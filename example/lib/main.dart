@@ -1,3 +1,4 @@
+import 'package:example/stories/color_filter_scroll_transition.dart';
 import 'package:example/stories/windows_settings_transition.dart';
 import 'package:example/stories/scroll_phase_transition.dart';
 import 'package:example/stories/scroll_wheel_transition.dart';
@@ -23,8 +24,13 @@ class MyApp extends StatelessWidget {
         stories: [
           Story(
             name: 'Scroll Phase Offset',
-            description: 'Offsetting elements based on the phase of the scroll',
+            description: 'Offsetting elements based on the phase of the scroll.',
             builder: (context) => const ScrollPhaseTransition(),
+          ),
+          Story(
+            name: 'Scroll Phase Color Filter Transition',
+            description: 'Blending and changing image colors based on scroll phase.',
+            builder: (context) => const ColorFilterScrollTransition(),
           ),
           Story(
             name: 'Scroll Wheel Transition',
@@ -34,7 +40,7 @@ class MyApp extends StatelessWidget {
           Story(
             name: 'Scroll Phase Blur',
             description:
-                'A focus effect where elements outside the view are blurred',
+            'A focus effect where elements outside the view are blurred',
             builder: (context) => const ScrollWheelBlurTransition(),
           ),
           Story(

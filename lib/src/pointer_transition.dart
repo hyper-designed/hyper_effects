@@ -54,6 +54,8 @@ extension PointerTransitionExt on Widget {
     bool useGlobalPointer = false,
     bool transitionBetweenBounds = true,
     bool resetOnExitBounds = true,
+    Curve curve = appleEaseInOut,
+    Duration duration = const Duration(milliseconds: 125),
   }) {
     return PointerTransition(
       builder: builder,
@@ -61,6 +63,8 @@ extension PointerTransitionExt on Widget {
       useGlobalPointer: useGlobalPointer,
       transitionBetweenBounds: transitionBetweenBounds,
       resetOnExitBounds: resetOnExitBounds,
+      curve: curve,
+      duration: duration,
       child: this,
     );
   }
@@ -75,9 +79,9 @@ class PointerTransition extends StatefulWidget {
 
   /// Defines where the origin of the pointer should be.
   /// If the origin is set to [Alignment.center], as the pointer moves away
-  /// from the center of the screen, the [currentValue] value will increase.
+  /// from the center of the screen, the [value] value will increase.
   /// If the origin is set to [Alignment.topLeft], as the pointer moves away
-  /// from the top left corner of the screen, the [currentValue] value will
+  /// from the top left corner of the screen, the [value] value will
   /// increase.
   final Alignment origin;
 

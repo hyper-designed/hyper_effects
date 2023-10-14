@@ -69,9 +69,11 @@ class ColorFilterEffect extends Effect {
   List<Object?> get props => [color, mode, matrix];
 }
 
+/// A set of predefined color filter matrices.
 class ColorFilterMatrix {
   ColorFilterMatrix._();
 
+  /// A matrix that inverts the colors.
   static const List<double> invert = <double>[
     -1,
     0,
@@ -95,6 +97,7 @@ class ColorFilterMatrix {
     0,
   ];
 
+  /// A matrix that turns the image into sepia-tone.
   static const List<double> sepia = <double>[
     0.393,
     0.769,
@@ -118,6 +121,7 @@ class ColorFilterMatrix {
     0,
   ];
 
+  /// A matrix that turns the image into greyscale.
   static const List<double> greyscale = <double>[
     0.2126,
     0.7152,
@@ -141,6 +145,7 @@ class ColorFilterMatrix {
     0,
   ];
 
+  /// A matrix that does nothing.
   static const List<double> identity = <double>[
     1,
     0,
