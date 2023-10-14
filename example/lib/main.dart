@@ -19,6 +19,7 @@ class MyApp extends StatelessWidget {
       title: 'Hyper Effects Story Book',
       debugShowCheckedModeBanner: false,
       home: Storybook(
+        initialStory: 'Scroll Phase Offset',
         stories: [
           Story(
             name: 'Scroll Phase Offset',
