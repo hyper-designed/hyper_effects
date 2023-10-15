@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_box_transform/flutter_box_transform.dart';
+import 'package:hyper_effects_demo/stories/animate_buttons.dart';
 import 'package:hyper_effects_demo/stories/color_filter_scroll_transition.dart';
 import 'package:hyper_effects_demo/stories/scroll_phase_transition.dart';
 import 'package:hyper_effects_demo/stories/scroll_wheel_blur.dart';
@@ -69,7 +70,13 @@ class Storyboard extends StatefulWidget {
 }
 
 class _StoryboardState extends State<Storyboard> {
-  final List<Story> stories = [
+  final List<Story> animationStories = [
+    const Story(
+      title: 'Animated Buttons',
+      child: SpringAnimation(),
+    ),
+  ];
+  final List<Story> transitionStories = [
     const Story(
       title: 'Scroll Phase Transition',
       child: ScrollPhaseTransition(),
@@ -88,16 +95,13 @@ class _StoryboardState extends State<Storyboard> {
     ),
     const Story(
       title: 'Color Filter Scroll Transition',
-      child: ColorFilterScrollTransition(),
+      child: FashionScrollTransition(),
     ),
   ];
-  int? selectedStory;
 
-  void onStorySelected(int index) {
-    setState(() {
-      selectedStory = index;
-    });
-  }
+  int? selectedAnimation;
+  int? selectedTransition;
+  int? selectedCategory;
 
   @override
   Widget build(BuildContext context) {
@@ -106,14 +110,98 @@ class _StoryboardState extends State<Storyboard> {
         children: [
           SizedBox(
             width: 300,
-            child: ListView(
+            child: Column(
               children: [
-                for (final Story story in stories)
-                  ListTile(
-                    title: Text(story.title),
-                    onTap: () => onStorySelected(stories.indexOf(story)),
-                    selected: stories.indexOf(story) == selectedStory,
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    'Hyper Effects Storyboard',
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
+                ),
+                const Divider(height: 0),
+                CustomExpansionTile(
+                  title: const Text('Animations'),
+                  isExpanded: selectedCategory == 0,
+                  onExpansionChanged: () {
+                    setState(() {
+                      if (selectedCategory == 0) {
+                        selectedCategory = null;
+                      } else {
+                        selectedCategory = 0;
+                      }
+                    });
+                  },
+                  children: [
+                    for (final Story story in animationStories)
+                      ColoredBox(
+                        color: (animationStories.indexOf(story) ==
+                                selectedAnimation)
+                            ? Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withOpacity(0.1)
+                            : Colors.transparent,
+                        child: ListTile(
+                          title: Padding(
+                            padding: const EdgeInsets.only(left: 16),
+                            child: Text(story.title),
+                          ),
+                          onTap: () {
+                            setState(() {
+                              selectedAnimation =
+                                  animationStories.indexOf(story);
+                              selectedTransition = null;
+                            });
+                          },
+                          selected: animationStories.indexOf(story) ==
+                              selectedAnimation,
+                        ),
+                      ),
+                  ],
+                ),
+                const Divider(height: 0),
+                CustomExpansionTile(
+                  title: const Text('Transitions'),
+                  isExpanded: selectedCategory == 1,
+                  onExpansionChanged: () {
+                    setState(() {
+                      if (selectedCategory == 1) {
+                        selectedCategory = null;
+                      } else {
+                        selectedCategory = 1;
+                      }
+                    });
+                  },
+                  children: [
+                    for (final Story story in transitionStories)
+                      ColoredBox(
+                        color: (transitionStories.indexOf(story) ==
+                                selectedTransition)
+                            ? Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withOpacity(0.1)
+                            : Colors.transparent,
+                        child: ListTile(
+                          title: Padding(
+                            padding: const EdgeInsets.only(left: 16),
+                            child: Text(story.title),
+                          ),
+                          onTap: () {
+                            setState(() {
+                              selectedTransition =
+                                  transitionStories.indexOf(story);
+                              selectedAnimation = null;
+                            });
+                          },
+                          selected: transitionStories.indexOf(story) ==
+                              selectedTransition,
+                        ),
+                      ),
+                  ],
+                ),
+                const Divider(height: 0),
               ],
             ),
           ),
@@ -123,13 +211,16 @@ class _StoryboardState extends State<Storyboard> {
               child: ContentView(
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
-                  child: selectedStory != null
-                      ? stories[selectedStory!].child
-                      : const Center(
+                child: selectedAnimation != null
+                    ? animationStories[selectedAnimation!].child
+                    : selectedTransition != null
+                        ? transitionStories[selectedTransition!].child
+                        : const Center(
                           child: Text('Select a story to view.'),
                         ),
                 ),
-              )),
+            ),
+          ),
         ],
       ),
     );
@@ -174,7 +265,12 @@ class _ContentViewState extends State<ContentView> with WidgetsBindingObserver {
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
       controller.setClampingRect(getArea(), notify: false);
-      controller.setRect(controller.clampingRect);
+      controller.setRect(Rect.fromLTWH(
+        controller.clampingRect.left,
+        controller.clampingRect.top,
+        min(500, controller.clampingRect.width),
+        controller.clampingRect.height,
+      ));
       if (mounted) setState(() {});
     });
 
@@ -243,6 +339,56 @@ class _ContentViewState extends State<ContentView> with WidgetsBindingObserver {
               child: Center(child: widget.child),
             );
           },
+        ),
+      ],
+    );
+  }
+}
+
+class CustomExpansionTile extends StatefulWidget {
+  final Widget title;
+  final List<Widget> children;
+  final bool isExpanded;
+  final VoidCallback onExpansionChanged;
+
+  const CustomExpansionTile({
+    super.key,
+    required this.title,
+    required this.isExpanded,
+    required this.onExpansionChanged,
+    required this.children,
+  });
+
+  @override
+  State<CustomExpansionTile> createState() => _CustomExpansionTileState();
+}
+
+class _CustomExpansionTileState extends State<CustomExpansionTile> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        ListTile(
+          title: widget.title,
+          trailing: const Icon(Icons.expand_more),
+          onTap: widget.onExpansionChanged,
+        ),
+        ClipRect(
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutQuart,
+            heightFactor: widget.isExpanded ? 1 : 0,
+            alignment: Alignment.topCenter,
+            child: ColoredBox(
+              color: Theme.of(context)
+                  .colorScheme
+                  .primaryContainer
+                  .withOpacity(0.05),
+              child: Column(
+                children: widget.children,
+              ),
+            ),
+          ),
         ),
       ],
     );

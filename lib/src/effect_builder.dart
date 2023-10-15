@@ -33,7 +33,10 @@ class AnimatableEffect extends StatefulWidget {
 }
 
 class _AnimatableEffectState extends State<AnimatableEffect> {
+  /// The [Effect] to interpolate to.
   late Effect end = widget.effect;
+
+  /// The [Effect] to interpolate from.
   late Effect begin = widget.effect;
 
   /// caches the previous animation value to use in didUpdateWidget

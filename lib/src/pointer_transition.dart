@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:hyper_effects/src/post_frame_widget.dart';
 
-import 'apple_curve.dart';
+import 'apple_curves.dart';
 import 'effect_animation_value.dart';
 
 /// Represents the pointer event for [PointerTransition].

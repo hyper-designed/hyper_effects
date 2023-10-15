@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:hyper_effects/src/apple_curve.dart';
+import 'package:hyper_effects/src/apple_curves.dart';
 
 import 'effect_animation_value.dart';
 
@@ -17,11 +17,13 @@ extension AnimatedEffectExt on Widget {
     required Object? toggle,
     Duration duration = const Duration(milliseconds: 350),
     Curve curve = appleEaseInOut,
+    VoidCallback? onEnd,
   }) {
     return AnimatedEffect(
       toggle: toggle,
       duration: duration,
       curve: curve,
+      onEnd: onEnd,
       child: this,
     );
   }
@@ -42,6 +44,9 @@ class AnimatedEffect extends StatefulWidget {
   /// The curve of the animation.
   final Curve curve;
 
+  /// A callback that is called when the animation ends.
+  final VoidCallback? onEnd;
+
   /// Creates [AnimatedEffect] widget.
   const AnimatedEffect({
     super.key,
@@ -49,6 +54,7 @@ class AnimatedEffect extends StatefulWidget {
     required this.toggle,
     required this.duration,
     this.curve = appleEaseInOut,
+    this.onEnd,
   });
 
   @override
@@ -66,9 +72,13 @@ class _AnimatedEffectState extends State<AnimatedEffect>
     vsync: this,
     value: 1,
     duration: widget.duration,
-  );
+  )..addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        widget.onEnd?.call();
+      }
+    });
 
-  late final Animation<double> _animation = CurvedAnimation(
+  late Animation<double> _animation = CurvedAnimation(
     parent: _controller,
     curve: widget.curve,
   );
@@ -76,8 +86,17 @@ class _AnimatedEffectState extends State<AnimatedEffect>
   @override
   void didUpdateWidget(covariant AnimatedEffect oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.toggle != oldWidget.toggle) _controller.forward(from: 0);
     _controller.duration = widget.duration;
+
+    // Update curve.
+    if (widget.curve != oldWidget.curve) {
+      _animation = CurvedAnimation(
+        parent: _controller,
+        curve: widget.curve,
+      );
+    }
+
+    if (widget.toggle != oldWidget.toggle) _controller.forward(from: 0);
   }
 
   @override

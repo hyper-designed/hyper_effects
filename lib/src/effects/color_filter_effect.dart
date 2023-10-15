@@ -39,13 +39,14 @@ class ColorFilterEffect extends Effect {
     required this.mode,
     this.matrix,
   }) : assert(color != null || matrix != null,
-            'Either color or matrix4 must be provided.');
+          'Either color or matrix4 must be provided.',
+        );
 
   @override
   ColorFilterEffect lerp(covariant ColorFilterEffect other, double value) {
     final List<double> lerped = [];
-    for (final (index, item) in matrix?.indexed ?? [].indexed) {
-      final val = lerpDouble(item, other.matrix?[index], value);
+    for (final (index, item) in (matrix ?? []).indexed) {
+      final double? val = lerpDouble(item, other.matrix?[index], value);
       lerped.add(val ?? 0);
     }
     return ColorFilterEffect(
