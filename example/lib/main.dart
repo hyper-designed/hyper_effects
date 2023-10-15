@@ -265,11 +265,10 @@ class _ContentViewState extends State<ContentView> with WidgetsBindingObserver {
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
       controller.setClampingRect(getArea(), notify: false);
-      controller.setRect(Rect.fromLTWH(
-        controller.clampingRect.left,
-        controller.clampingRect.top,
-        min(500, controller.clampingRect.width),
-        controller.clampingRect.height,
+      controller.setRect(Rect.fromCenter(
+        center: controller.clampingRect.center,
+        width: min(500, controller.clampingRect.width),
+        height: controller.clampingRect.height,
       ));
       if (mounted) setState(() {});
     });
