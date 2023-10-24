@@ -359,9 +359,7 @@ other properties and expect them to transition perfectly, you may get unexpected
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/BirjuVachhani/adaptive_theme/blob/main/CONTRIBUTING.md) for details.
-
-See [DEVELOPMENT.md](https://github.com/BirjuVachhani/adaptive_theme/blob/main/development.md) for development setup.
+You are welcome to contribute on this package. See [CONTRIBUTING.md](https://github.com/hyper-designed/hyper_effects/blob/main/CONTRIBUTING.md) for details.
 
 ## Authors
 
