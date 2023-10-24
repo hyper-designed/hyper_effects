@@ -1,8 +1,14 @@
 name: Deploy to Firebase Hosting on merge
-'on':
+
+on:
   push:
+    paths:
+      - '**.dart'
+      - '**.yaml'
+      - '**.yml'
     branches:
       - main
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
