@@ -8,6 +8,7 @@ on:
       - '**.yml'
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build_and_deploy:
