@@ -1,4 +1,4 @@
-![Banner](https://raw.githubusercontent.com/hyper-designed/box_transform/main/docs/assets/banner.png)
+![Banner](https://raw.githubusercontent.com/hyper-designed/box_transform/main/.github/assets/banner.png)
 
 # Hyper Effects
 
