@@ -212,18 +212,18 @@ class _StoryboardState extends State<Storyboard> {
           ),
           const VerticalDivider(width: 2),
           Expanded(
-              flex: 3,
-              child: ContentView(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
+            flex: 3,
+            child: ContentView(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
                 child: selectedAnimation != null
                     ? animationStories[selectedAnimation!].child
                     : selectedTransition != null
                         ? transitionStories[selectedTransition!].child
                         : const Center(
-                          child: Text('Select a story to view.'),
-                        ),
-                ),
+                            child: Text('Select a story to view.'),
+                          ),
+              ),
             ),
           ),
         ],

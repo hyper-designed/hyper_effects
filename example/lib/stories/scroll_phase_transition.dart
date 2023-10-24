@@ -39,14 +39,14 @@ class _ScrollPhaseTransitionState extends State<ScrollPhaseTransition> {
             ),
           ),
         ).scrollTransition(
-              (context, widget, event) =>
+          (context, widget, event) =>
               widget.scale(event.phase.isIdentity ? 1 : 0.7).translateX(
-                switch (event.phase) {
-                  ScrollPhase.identity => 0,
-                  ScrollPhase.topLeading => 200,
-                  ScrollPhase.bottomTrailing => -200,
-                },
-              ),
+                    switch (event.phase) {
+                      ScrollPhase.identity => 0,
+                      ScrollPhase.topLeading => 200,
+                      ScrollPhase.bottomTrailing => -200,
+                    },
+                  ),
         );
       },
     );

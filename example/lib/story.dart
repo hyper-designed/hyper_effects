@@ -8,5 +8,4 @@ class Story {
     required this.title,
     required this.child,
   });
-
 }

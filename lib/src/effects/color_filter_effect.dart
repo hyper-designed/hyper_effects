@@ -38,7 +38,8 @@ class ColorFilterEffect extends Effect {
     this.color,
     required this.mode,
     this.matrix,
-  }) : assert(color != null || matrix != null,
+  }) : assert(
+          color != null || matrix != null,
           'Either color or matrix4 must be provided.',
         );
 
