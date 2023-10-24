@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_box_transform/flutter_box_transform.dart';
-import 'package:hyper_effects_demo/stories/chained_animation.dart';
 import 'package:hyper_effects_demo/stories/spring_animation.dart';
 import 'package:hyper_effects_demo/stories/color_filter_scroll_transition.dart';
 import 'package:hyper_effects_demo/stories/scroll_phase_transition.dart';
