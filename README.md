@@ -19,6 +19,45 @@ Demo: [hyper-effects-demo.web.app](https://hyper-effects-demo.web.app/)
 pointer events.
 * 🚀 **Easy Integration:** Missing an effect? The API is designed to be simple and easy to extend.
 
+##  Examples
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/scroll_transition.gif" width="320px">
+      <br />
+      Scroll Transition
+    </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/scroll_wheel.gif" width="320px">
+      <br />
+      Scroll Wheel
+    </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/scroll_blur.gif" width="320px">
+      <br />
+      Scroll Blur
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/windows.gif" width="320px">
+      <br />
+      Windows Hover Effect
+    </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/scroll_color_filter.gif" width="320px">
+      <br />
+      Scroll Color Filter
+    </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/spring.gif" width="320px">
+      <br />
+      Spring Animation
+    </td>
+  </tr>
+</table>
+
 ## Getting started
 
 ### Installation
