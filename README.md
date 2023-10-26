@@ -24,34 +24,34 @@ pointer events.
 <table>
   <tr>
     <td align="center">
-      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/scroll_transition.gif" width="320px">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/scroll_transition.gif" width="200px">
       <br />
       Scroll Transition
     </td>
     <td align="center">
-      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/scroll_wheel.gif" width="320px">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/scroll_wheel.gif" width="200px">
       <br />
       Scroll Wheel
     </td>
     <td align="center">
-      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/scroll_blur.gif" width="320px">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/scroll_blur.gif" width="200px">
       <br />
       Scroll Blur
     </td>
   </tr>
   <tr>
     <td align="center">
-      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/windows.gif" width="320px">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/windows.gif" width="200px">
       <br />
       Windows Hover Effect
     </td>
     <td align="center">
-      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/scroll_color_filter.gif" width="320px">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/scroll_color_filter.gif" width="200px">
       <br />
       Scroll Color Filter
     </td>
     <td align="center">
-      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/spring.gif" width="320px">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/spring.gif" width="200px">
       <br />
       Spring Animation
     </td>
