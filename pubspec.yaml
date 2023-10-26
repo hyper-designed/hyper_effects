@@ -6,7 +6,10 @@ version: 0.1.0
 homepage: https://hyperdesigned.dev/
 repository: https://github.com/hyper-designed/hyper_effects
 issue_tracker: https://github.com/hyper-designed/hyper_effects/issues
-documentation: https://docs.page/hyper-designed/hyper_effects
+
+screenshots:
+  - description: Hyper Effects by hyperdesigned.dev
+    path: screenshots/logo.png
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -23,3 +26,9 @@ dev_dependencies:
   flutter_lints: ^3.0.0
 
 flutter:
+
+topics:
+  - animation
+  - effects
+  - transitions
+  - scroll-effects
