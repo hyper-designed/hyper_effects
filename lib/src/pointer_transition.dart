@@ -355,7 +355,7 @@ class _PointerTransitionState extends State<PointerTransition>
         ) ??
         widget.child;
 
-    return PostFrameWidget(
+    return PostFrame(
       child: AnimatedBuilder(
         animation: _animation,
         builder: (context, child) => EffectAnimationValue(

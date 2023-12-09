@@ -9,3 +9,4 @@ export 'src/scroll_transition.dart';
 export 'src/effect_animation_value.dart';
 export 'src/pointer_transition.dart';
 export 'src/apple_curves.dart';
+export 'src/post_frame_widget.dart';

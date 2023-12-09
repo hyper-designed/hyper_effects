@@ -1,5 +1,6 @@
 library effects;
 
+export 'align_effect.dart';
 export 'blur_effect.dart';
 export 'clip_effect.dart';
 export 'color_filter_effect.dart';
@@ -10,3 +11,4 @@ export 'scale_effect.dart';
 export 'skew_effect.dart';
 export 'transform_effect.dart';
 export 'translate_effect.dart';
+export 'text_effect.dart';

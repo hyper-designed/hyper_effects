@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// A widget that doesn't render first frame. This is useful for widgets that
 /// need to be rendered after the first frame
-class PostFrameWidget extends StatefulWidget {
+class PostFrame extends StatefulWidget {
   /// The widget below this widget in the tree.
   final Widget child;
 
@@ -12,8 +12,8 @@ class PostFrameWidget extends StatefulWidget {
   /// Whether to render the first frame or not.
   final bool enabled;
 
-  /// Creates a [PostFrameWidget] widget.
-  const PostFrameWidget({
+  /// Creates a [PostFrame] widget.
+  const PostFrame({
     super.key,
     required this.child,
     this.onPostFrame,
@@ -21,10 +21,10 @@ class PostFrameWidget extends StatefulWidget {
   });
 
   @override
-  State<PostFrameWidget> createState() => _PostFrameWidgetState();
+  State<PostFrame> createState() => _PostFrameState();
 }
 
-class _PostFrameWidgetState extends State<PostFrameWidget> {
+class _PostFrameState extends State<PostFrame> {
   bool _isFirstFrame = true;
 
   @override

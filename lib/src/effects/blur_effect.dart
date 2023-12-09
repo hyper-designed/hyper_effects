@@ -7,36 +7,55 @@ import 'effect.dart';
 
 /// Provides extension methods for [Widget] to apply blur effects.
 extension BlurEffectExt on Widget {
-  /// Applies a blur effect to this widget with given [blur] value.
+  /// Applies a [BlurEffect] to this widget with given [blur] value.
   Widget blur(double? blur) {
     return AnimatableEffect(
-      effect: BlurEffect(blur: blur),
+      end: BlurEffect(blur: blur),
       child: this,
     );
   }
 
-  /// Applies a blur effect to only the horizontal axis of this widget with
+  /// Applies a [BlurEffect] to only the horizontal axis of this widget with
   /// given [blurX] value.
   Widget blurX(double? blurX) {
     return AnimatableEffect(
-      effect: BlurEffect(blurX: blurX),
+      end: BlurEffect(blurX: blurX),
       child: this,
     );
   }
 
-  /// Applies a blur effect to only the vertical axis of this widget with
+  /// Applies a [BlurEffect] to only the vertical axis of this widget with
   /// given [blurY] value.
   Widget blurY(double? blurY) {
     return AnimatableEffect(
-      effect: BlurEffect(blurY: blurY),
+      end: BlurEffect(blurY: blurY),
       child: this,
     );
   }
 
-  /// Applies a blur effect to this widget with given [blurX] and [blurY] values.
+  /// Applies a [BlurEffect] to this widget with given [blurX] and [blurY]
+  /// values.
   Widget blurXY(double? blurX, double? blurY) {
     return AnimatableEffect(
-      effect: BlurEffect(blurX: blurX, blurY: blurY),
+      end: BlurEffect(blurX: blurX, blurY: blurY),
+      child: this,
+    );
+  }
+
+  /// Applies a [BlurEffect] to this widget with a default blur in animation.
+  Widget blurIn({double blur = 10}) {
+    return AnimatableEffect(
+      start: BlurEffect(blur: blur),
+      end: BlurEffect(blur: 0),
+      child: this,
+    );
+  }
+
+  /// Applies a [BlurEffect] to this widget with a default blur out animation.
+  Widget blurOut({double blur = 10}) {
+    return AnimatableEffect(
+      start: BlurEffect(blur: 0),
+      end: BlurEffect(blur: blur),
       child: this,
     );
   }

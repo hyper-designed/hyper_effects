@@ -26,7 +26,7 @@ extension TransformEffectExt on Widget {
     Offset origin = Offset.zero,
   }) {
     return AnimatableEffect(
-      effect: TransformEffect(
+      end: TransformEffect(
         translateX: translateX,
         translateY: translateY,
         translateZ: translateZ,

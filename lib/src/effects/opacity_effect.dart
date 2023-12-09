@@ -6,9 +6,39 @@ import 'package:hyper_effects/hyper_effects.dart';
 /// Provides a extension method to apply an [OpacityEffect] to a [Widget].
 extension OpacityEffectExtension on Widget {
   /// Applies an [OpacityEffect] to a [Widget].
-  Widget opacity(double opacity) {
+  Widget opacity(double opacity, {double? from}) {
     return AnimatableEffect(
-      effect: OpacityEffect(opacity: opacity),
+      end: OpacityEffect(opacity: opacity),
+      start: from != null ? OpacityEffect(opacity: from) : null,
+      child: this,
+    );
+  }
+
+  /// Alias to [opacity].
+  Widget fade(double opacity, {double? from}) {
+    return AnimatableEffect(
+      end: OpacityEffect(opacity: opacity),
+      start: from != null ? OpacityEffect(opacity: from) : null,
+      child: this,
+    );
+  }
+
+  /// Applies an [OpacityEffect] to a [Widget] with a default fade in
+  /// animation.
+  Widget fadeIn({double? start, double? end}) {
+    return AnimatableEffect(
+      start: OpacityEffect(opacity: start ?? 0),
+      end: OpacityEffect(opacity: end ?? 1),
+      child: this,
+    );
+  }
+
+  /// Applies an [OpacityEffect] to a [Widget] with a default fade out
+  /// animation.
+  Widget fadeOut({double? start, double? end}) {
+    return AnimatableEffect(
+      start: OpacityEffect(opacity: start ?? 1),
+      end: OpacityEffect(opacity: end ?? 0),
       child: this,
     );
   }

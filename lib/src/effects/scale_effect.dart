@@ -20,7 +20,7 @@ extension ScaleEffectExt on Widget {
     Offset origin = Offset.zero,
   }) {
     return AnimatableEffect(
-      effect: ScaleEffect(
+      end: ScaleEffect(
         scale: scale,
         alignment: alignment,
         origin: origin,
@@ -42,7 +42,7 @@ extension ScaleEffectExt on Widget {
     Offset origin = Offset.zero,
   }) {
     return AnimatableEffect(
-      effect: ScaleEffect(
+      end: ScaleEffect(
         scaleX: scaleX,
         alignment: alignment,
         origin: origin,
@@ -64,7 +64,7 @@ extension ScaleEffectExt on Widget {
     Offset origin = Offset.zero,
   }) {
     return AnimatableEffect(
-      effect: ScaleEffect(
+      end: ScaleEffect(
         scaleY: scaleY,
         alignment: alignment,
         origin: origin,
@@ -88,12 +88,43 @@ extension ScaleEffectExt on Widget {
     Offset origin = Offset.zero,
   }) {
     return AnimatableEffect(
-      effect: ScaleEffect(
+      end: ScaleEffect(
         scaleX: scaleX,
         scaleY: scaleY,
         alignment: alignment,
         origin: origin,
       ),
+      child: this,
+    );
+  }
+
+  /// Applies an [ScaleEffect] to a [Widget] with a default scale in
+  /// animation.
+  Widget scaleIn({
+    double? start,
+    double? end,
+    AlignmentGeometry alignment = Alignment.center,
+    Offset origin = Offset.zero,
+  }) {
+    return AnimatableEffect(
+      start:
+          ScaleEffect(scale: start ?? 0, alignment: alignment, origin: origin),
+      end: ScaleEffect(scale: end ?? 1, alignment: alignment, origin: origin),
+      child: this,
+    );
+  }
+
+  /// Applies an [ScaleEffect] to a [Widget] with a default scale out
+  /// animation.
+  Widget scaleOut({
+    double? start,
+    double? end,
+    AlignmentGeometry alignment = Alignment.center,
+    Offset origin = Offset.zero,
+  }) {
+    return AnimatableEffect(
+      start: ScaleEffect(scale: start ?? 1, alignment: alignment, origin: origin),
+      end: ScaleEffect(scale: end ?? 0, alignment: alignment, origin: origin),
       child: this,
     );
   }

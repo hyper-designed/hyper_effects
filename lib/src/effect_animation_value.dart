@@ -10,7 +10,7 @@ class EffectAnimationValue extends InheritedWidget {
   /// The animation value. It's value is between 0 and 1.
   final double value;
 
-  /// Whether the animation is in scroll transition or not. Animations behaves
+  /// Whether the animation is in scroll transition or not. Animations behave
   /// differently in scroll transition. This flag is used to determine the
   /// behavior of the animation.
   final bool isTransition;

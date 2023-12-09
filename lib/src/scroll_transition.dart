@@ -226,7 +226,7 @@ class _ScrollTransitionState extends State<ScrollTransition> {
       child = widget.child;
     }
 
-    return PostFrameWidget(
+    return PostFrame(
       enabled: scrollable != null,
       onPostFrame: onPostFrame,
       child: EffectAnimationValue(

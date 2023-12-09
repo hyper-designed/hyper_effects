@@ -1,18 +1,60 @@
 import 'dart:ui';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:hyper_effects/hyper_effects.dart';
 
 /// Provides a extension method to apply an [ColorFilterEffect] to a [Widget].
 extension ColorFilterEffectExtension on Widget {
   /// Applies an [ColorFilterEffect] to a [Widget].
-  Widget colorFilter({
+  Widget color({
     Color? color,
     BlendMode mode = BlendMode.overlay,
     List<double>? matrix,
   }) {
     return AnimatableEffect(
-      effect: ColorFilterEffect(
+      end: ColorFilterEffect(
+        color: color,
+        mode: mode,
+        matrix: matrix,
+      ),
+      child: this,
+    );
+  }
+
+  /// Applies an [ColorFilterEffect] to a [Widget] with a default
+  /// flash in animation.
+  Widget flashIn({
+    Color color = Colors.white,
+    BlendMode mode = BlendMode.overlay,
+    List<double>? matrix,
+  }) {
+    return AnimatableEffect(
+      start: ColorFilterEffect(
+        color: color,
+        mode: mode,
+        matrix: matrix,
+      ),
+      end: ColorFilterEffect(
+        matrix: ColorFilterMatrix.identity,
+        mode: mode,
+      ),
+      child: this,
+    );
+  }
+
+  /// Applies an [ColorFilterEffect] to a [Widget] with a default
+  /// flash out animation.
+  Widget flashOut({
+    Color color = Colors.white,
+    BlendMode mode = BlendMode.overlay,
+    List<double>? matrix,
+  }) {
+    return AnimatableEffect(
+      start: ColorFilterEffect(
+        matrix: ColorFilterMatrix.identity,
+        mode: mode,
+      ),
+      end: ColorFilterEffect(
         color: color,
         mode: mode,
         matrix: matrix,
