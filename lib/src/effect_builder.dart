@@ -16,15 +16,18 @@ import 'effects/effect.dart';
 /// to the [child] by calling [Effect.apply].
 class AnimatableEffect extends StatefulWidget {
   /// The effect to apply to the [child].
-  final Effect effect;
+  final Effect end;
 
-  /// The [Widget] to apply the [effect] to.
+  final Effect? start;
+
+  /// The [Widget] to apply the [end] to.
   final Widget child;
 
   /// Creates an [AnimatableEffect].
   const AnimatableEffect({
     super.key,
-    required this.effect,
+    this.start,
+    required this.end,
     required this.child,
   });
 
@@ -34,10 +37,10 @@ class AnimatableEffect extends StatefulWidget {
 
 class _AnimatableEffectState extends State<AnimatableEffect> {
   /// The [Effect] to interpolate to.
-  late Effect end = widget.effect;
+  late Effect end = widget.end;
 
   /// The [Effect] to interpolate from.
-  late Effect begin = widget.effect;
+  late Effect begin = widget.start ?? widget.end;
 
   /// caches the previous animation value to use in didUpdateWidget
   /// to calculate the begin value. This is used to create a smooth transition
@@ -49,11 +52,7 @@ class _AnimatableEffectState extends State<AnimatableEffect> {
       context.dependOnInheritedWidgetOfExactType<EffectAnimationValue>();
 
   /// Pulls the animation value from the parent [EffectAnimationValue] widget.
-  double get animationValue =>
-      context
-          .dependOnInheritedWidgetOfExactType<EffectAnimationValue>()
-          ?.value ??
-      1;
+  double get animationValue => effectAnimationValue?.value ?? 1;
 
   @override
   void didChangeDependencies() {
@@ -64,11 +63,14 @@ class _AnimatableEffectState extends State<AnimatableEffect> {
   @override
   void didUpdateWidget(covariant AnimatableEffect oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.effect != widget.effect) {
-      if (effectAnimationValue != null && !effectAnimationValue!.isTransition) {
+    if (oldWidget.end != widget.end &&
+        oldWidget.end.runtimeType == widget.end.runtimeType) {
+      if (effectAnimationValue != null &&
+          !effectAnimationValue!.isTransition) {
         begin = begin.lerp(end, previousAnimationValue);
       }
-      end = widget.effect;
+
+      end = widget.end;
     }
   }
 
@@ -77,6 +79,8 @@ class _AnimatableEffectState extends State<AnimatableEffect> {
     if (effectAnimationValue?.lerpValues == false) {
       return end.apply(context, widget.child);
     } else {
+      if (begin.runtimeType != end.runtimeType) return widget.child;
+
       final Effect newEffect = begin.lerp(end, animationValue);
       return newEffect.apply(context, widget.child);
     }

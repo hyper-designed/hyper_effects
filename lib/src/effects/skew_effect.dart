@@ -20,7 +20,7 @@ extension SkewEffectExt on Widget {
     Offset origin = Offset.zero,
   }) {
     return AnimatableEffect(
-      effect: SkewEffect(
+      end: SkewEffect(
         skew: skew,
         alignment: alignment,
         origin: origin,
@@ -42,7 +42,7 @@ extension SkewEffectExt on Widget {
     Offset origin = Offset.zero,
   }) {
     return AnimatableEffect(
-      effect: SkewEffect(
+      end: SkewEffect(
         skewX: skewX,
         alignment: alignment,
         origin: origin,
@@ -64,7 +64,7 @@ extension SkewEffectExt on Widget {
     Offset origin = Offset.zero,
   }) {
     return AnimatableEffect(
-      effect: SkewEffect(
+      end: SkewEffect(
         skewY: skewY,
         alignment: alignment,
         origin: origin,
@@ -87,7 +87,7 @@ extension SkewEffectExt on Widget {
     Offset origin = Offset.zero,
   }) {
     return AnimatableEffect(
-      effect: SkewEffect(
+      end: SkewEffect(
         skewX: skewX,
         skewY: skewY,
         alignment: alignment,

@@ -14,13 +14,12 @@ extension RotationEffectExt on Widget {
   ///
   /// [origin] is the origin of the rotation. This allows to translate the
   /// origin of the rotation to a different point.
-  Widget rotate(
-    double angle, {
+  Widget rotate(double angle, {
     Offset origin = Offset.zero,
     AlignmentGeometry alignment = Alignment.center,
   }) {
     return AnimatableEffect(
-      effect: RotationEffect(
+      end: RotationEffect(
         angle: angle,
         origin: origin,
         alignment: alignment,
