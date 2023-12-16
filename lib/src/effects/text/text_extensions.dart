@@ -51,16 +51,28 @@ extension TextEffectExt on Text {
   /// If not null, the width of each tape will be the fixed width provided.
   /// Note that this will allow the text's characters to potentially overlap
   /// each other.
+  ///
+  /// The [widthDuration] parameter is used to determine the duration of the
+  /// width animation of each tape.
+  /// If null, the same duration is used as the one provided to the [animate]
+  /// function.
+  ///
+  /// The [widthCurve] parameter is used to determine the curve of the
+  /// width animation of each tape.
+  /// If null, the same curve is used as the one provided to the [animate]
+  /// function.
   Widget roll(
     String newText, {
     SymbolTapeStrategy tapeStrategy = const ConsistentSymbolTapeStrategy(0),
+    Duration? tapeDuration,
     Curve? tapeCurve,
     bool staggerTapes = false,
     int staggerSoftness = 10,
     Clip clipBehavior = Clip.hardEdge,
     double symbolDistanceMultiplier = 1,
     double? fixedTapeWidth,
-    bool enableTextInteractivity = false,
+    Duration? widthDuration,
+    Curve? widthCurve,
   }) {
     assert(
       symbolDistanceMultiplier > 0,
@@ -90,6 +102,9 @@ extension TextEffectExt on Text {
           staggerSoftness: staggerSoftness,
           clipBehavior: clipBehavior,
           style: effectiveStyle,
+          fixedTapeWidth: fixedTapeWidth,
+          widthDuration: widthDuration,
+          widthCurve: widthCurve,
           strutStyle: StrutStyle(
             fontSize: effectiveStyle.fontSize,
             height: 1,

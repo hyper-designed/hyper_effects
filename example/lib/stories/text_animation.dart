@@ -113,6 +113,7 @@ class _TextAnimationState extends State<TextAnimation> {
                           '21',
                           symbolDistanceMultiplier: 2,
                           clipBehavior: Clip.none,
+                          widthDuration: const Duration(milliseconds: 350),
                         )
                         .animate(
                           toggle: selected,
