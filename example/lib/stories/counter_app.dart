@@ -1,5 +1,6 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hyper_effects/hyper_effects.dart';
 
 class CounterApp extends StatefulWidget {
@@ -32,19 +33,23 @@ class _CounterAppState extends State<CounterApp> {
             const Text(
               'You have pushed the button this many times:',
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            Text(
-              '${_counter - 1}',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ).roll(
-              '$_counter',
-              tapeStrategy: const AllSymbolsTapeStrategy(),
-            ).animate(
-              toggle: _counter,
-              duration: const Duration(milliseconds: 1000),
+            Container(
+              width: double.infinity,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(),
+              clipBehavior: Clip.hardEdge,
+              child: Text(
+                '${max(0, _counter - 1)}',
+                style: Theme.of(context).textTheme.headlineMedium,
+              )
+                  .roll(
+                    '$_counter',
+                    clipBehavior: Clip.none,
+                  )
+                  .animate(
+                    toggle: _counter,
+                    duration: const Duration(milliseconds: 1000),
+                  ),
             ),
           ],
         ),
