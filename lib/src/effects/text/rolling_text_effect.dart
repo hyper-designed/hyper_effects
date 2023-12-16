@@ -8,57 +8,8 @@ import '../../rolling_text_controller.dart';
 
 export 'symbol_tape_strategy.dart';
 
-/// Provides a extension method to apply a [TextEffect] to a [Widget].
-extension TextEffectExt on Text {
-  /// Rolls each character individually to form the [newText].
-  ///
-  /// The [tapeStrategy] parameter is used to determine the string of characters
-  /// to create and roll through for each character index between the old and
-  /// new text.
-  ///
-  /// The [tapeCurve] parameter is used to determine the curve each roll of
-  /// symbol tape uses to slide up and down through its characters.
-  /// If null, the same curve is used as the one provided to the [animate]
-  /// function.
-  ///
-  /// The [staggerTapes] parameter is used to determine whether the tapes should
-  /// be staggered or not. If set to true, the starting tapes will move and end
-  /// their sliding faster than the ending tapes.
-  Widget roll(
-    String newText, {
-    SymbolTapeStrategy tapeStrategy = const ConsistentSymbolTapeStrategy(0),
-    Curve? tapeCurve,
-    bool staggerTapes = false,
-  }) {
-    return AnimatableEffect(
-      end: TextEffect(
-        oldText: data ?? '',
-        newText: newText,
-        tapeStrategy: tapeStrategy,
-        tapeCurve: tapeCurve,
-        staggerTapes: staggerTapes,
-        roll: true,
-        style: style,
-        strutStyle: strutStyle,
-        textAlign: textAlign,
-        textDirection: textDirection,
-        locale: locale,
-        softWrap: softWrap,
-        overflow: overflow,
-        textScaler: textScaler,
-        maxLines: maxLines,
-        semanticsLabel: semanticsLabel,
-        textWidthBasis: textWidthBasis,
-        textHeightBehavior: textHeightBehavior,
-        selectionColor: selectionColor,
-      ),
-      child: this,
-    );
-  }
-}
-
 /// An [Effect] that applies a Text to a [Widget].
-class TextEffect extends Effect {
+class RollingTextEffect extends Effect {
   /// The text to display interpolating away from.
   final String oldText;
 
@@ -72,9 +23,7 @@ class TextEffect extends Effect {
 
   final bool staggerTapes;
 
-  /// Setting this to true will lerp the text from the current text to the new
-  /// text by rolling each character individually though the alphabet.
-  final bool roll;
+  final Clip clipBehavior;
 
   /// The text to display as a [InlineSpan].
   ///
@@ -186,14 +135,14 @@ class TextEffect extends Effect {
   /// (semi-transparent grey).
   final Color? selectionColor;
 
-  /// Creates a [TextEffect].
-  const TextEffect({
+  /// Creates a [RollingTextEffect].
+  const RollingTextEffect({
     required this.oldText,
     required this.newText,
     required this.tapeCurve,
     required this.staggerTapes,
     required this.tapeStrategy,
-    this.roll = false,
+    this.clipBehavior = Clip.hardEdge,
     this.style,
     this.strutStyle,
     this.textAlign,
@@ -210,7 +159,7 @@ class TextEffect extends Effect {
   }) : textSpan = null;
 
   @override
-  TextEffect lerp(covariant TextEffect other, double value) {
+  RollingTextEffect lerp(covariant RollingTextEffect other, double value) {
     return other;
   }
 
@@ -242,9 +191,10 @@ class TextEffect extends Effect {
   List<Object?> get props => [
         oldText,
         newText,
-        roll,
         tapeCurve,
         staggerTapes,
+        tapeStrategy,
+        clipBehavior,
         style,
         textSpan,
         textAlign,
@@ -269,6 +219,8 @@ class RollingText extends StatefulWidget {
   final Curve? tapeCurve;
 
   final bool staggerTapes;
+
+  final Clip clipBehavior;
 
   /// If non-null, the style to use for this text.
   ///
@@ -373,6 +325,7 @@ class RollingText extends StatefulWidget {
     required this.rollStrategy,
     required this.tapeCurve,
     required this.staggerTapes,
+    this.clipBehavior = Clip.hardEdge,
     this.style,
     this.strutStyle,
     this.textAlign,
@@ -419,6 +372,10 @@ class _RollingTextState extends State<RollingText> {
     // Account for all parameters except for value.
     if (oldWidget.oldText == widget.oldText &&
         oldWidget.newText == widget.newText &&
+        oldWidget.rollStrategy == widget.rollStrategy &&
+        oldWidget.staggerTapes == widget.staggerTapes &&
+        oldWidget.tapeCurve == widget.tapeCurve &&
+        oldWidget.clipBehavior == widget.clipBehavior &&
         oldWidget.style == widget.style &&
         oldWidget.strutStyle == widget.strutStyle &&
         oldWidget.textAlign == widget.textAlign &&
@@ -450,9 +407,7 @@ class _RollingTextState extends State<RollingText> {
       maxLines: widget.maxLines,
       semanticsLabel: widget.semanticsLabel,
       selectionColor: widget.selectionColor,
-    );
-
-    rollingTextPainter.layout();
+    )..layout();
   }
 
   @override
@@ -475,8 +430,8 @@ class _RollingTextState extends State<RollingText> {
     final Curve curve =
         widget.tapeCurve ?? effectAnimationValue?.curve ?? Curves.linear;
 
-    return ClipRect(
-      // clipBehavior: Clip.none,
+    Widget result = ClipRect(
+      clipBehavior: widget.clipBehavior,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -503,5 +458,18 @@ class _RollingTextState extends State<RollingText> {
         ],
       ),
     );
+
+    // Retain semantics label if present.
+    if (widget.semanticsLabel != null) {
+      result = Semantics(
+        textDirection: widget.textDirection,
+        label: widget.semanticsLabel,
+        child: ExcludeSemantics(
+          child: result,
+        ),
+      );
+    }
+
+    return result;
   }
 }

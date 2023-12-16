@@ -10,9 +10,7 @@ const String _kUpperAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const String _kNumbers = '0123456789';
 const String _kSymbols = '`~!@#\$%^&*()-_=+[{]}\\|;:\'",<.>/?';
 const String _kSpace = ' ';
-const String _kAlphabet = _kLowerAlphabet + _kUpperAlphabet;
-const String _kAlphanumeric = _kAlphabet + _kNumbers;
-const String _kAll = _kAlphanumeric + _kSymbols;
+const String _kZeroWidth = '​';
 
 extension _StringHelper on String {
   bool isSymbol() => _kSymbols.contains(this);
@@ -20,6 +18,8 @@ extension _StringHelper on String {
   bool isNumber() => _kNumbers.contains(this);
 
   bool isSpace() => _kSpace.contains(this);
+
+  bool isZeroWidth() => _kZeroWidth.contains(this);
 
   bool isLowerAlphabet() => _kLowerAlphabet.contains(this);
 
@@ -237,7 +237,8 @@ class RollingTextController with ChangeNotifier {
         .getBoxesForSelection(selection, boxHeightStyle: ui.BoxHeightStyle.max)
         .map((b) => b.toRect())
         .reduce((a, b) => a.expandToInclude(b));
-    return CustomPaint(
+
+    Widget result = CustomPaint(
       painter: RollingTextPainter(charKitPainters[charIndex]),
       child: AnimatedContainer(
         duration: duration,
@@ -246,6 +247,8 @@ class RollingTextController with ChangeNotifier {
         height: box.height,
       ),
     );
+
+    return result;
   }
 
   @override
@@ -256,8 +259,8 @@ class RollingTextController with ChangeNotifier {
 
   List<String> buildCharKits() => [
         for (int i = 0; i < max(oldText.length, newText.length); i++)
-          selectCharKit(oldText.length <= i ? '​' : oldText[i],
-              newText.length <= i ? '​' : newText[i]),
+          selectCharKit(oldText.length <= i ? _kZeroWidth : oldText[i],
+              newText.length <= i ? _kZeroWidth : newText[i]),
       ];
 
   List<TextPainter> buildPainters(List<String> charKits) {
@@ -345,10 +348,10 @@ class RollingTextController with ChangeNotifier {
 
     if (a == b) {
       return a;
-    } else if (a == '​' || b == '​') {
-      charKitBuffer.write('​${a == '​' ? b : a}');
+    } else if (a.isZeroWidth() || b.isZeroWidth()) {
+      charKitBuffer.write('$_kZeroWidth${a == _kZeroWidth ? b : a}');
     } else if (a.isSpace() || b.isSpace()) {
-      charKitBuffer.write(' ${a == ' ' ? b : a}}');
+      charKitBuffer.write(' ${a == _kSpace ? b : a}');
     } else {
       if (a.isSymbol() || b.isSymbol()) {
         charKitBuffer.write(_kSymbols);
@@ -380,10 +383,10 @@ class RollingTextController with ChangeNotifier {
 
     if (a == b) {
       charKitBuffer.write('');
-    } else if (a == '​' || b == '​') {
-      charKitBuffer.write('​${a == '​' ? b : a}');
+    } else if (a.isZeroWidth() || b.isZeroWidth()) {
+      charKitBuffer.write('$_kZeroWidth${a == _kZeroWidth ? b : a}');
     } else if (a.isSpace() || b.isSpace()) {
-      charKitBuffer.write(' ${a == ' ' ? b : a}}');
+      charKitBuffer.write(' ${a == _kSpace ? b : a}');
     } else {
       if (a.isSymbol() || b.isSymbol()) {
         charKitBuffer.write(_kSymbols);
@@ -488,5 +491,5 @@ class RollingTextPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
