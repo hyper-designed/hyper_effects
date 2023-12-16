@@ -125,23 +125,17 @@ class RollingTextController with ChangeNotifier {
     this.textHeightBehavior,
   });
 
-  List<String>? _tapes;
-
   /// A list containing strings that represent a tape of characters
   /// to roll through for each character index between the old and
   /// new text.
-  List<String> get tapes => _tapes!;
-
-  List<TextPainter>? _tapePainters;
+  late final List<String> tapes = [];
 
   /// A list containing painters that represent each tape of characters
   /// from [tapes].
-  List<TextPainter> get tapePainters => _tapePainters!;
-
-  Map<int, double>? _tapeHeights;
+  late final List<TextPainter> tapePainters = [];
 
   /// A cached map of tape heights for each tape painter.
-  Map<int, double> get tapeHeights => _tapeHeights!;
+  late final Map<int, double> tapeHeights;
 
   /// Multiplies the index by 2 to account for new-line \n characters.
   int _mapCharKitIndexToSelection(String charKit, int index) => index * 2;
@@ -169,19 +163,25 @@ class RollingTextController with ChangeNotifier {
   void layout() {
     disposePainters();
 
-    _tapes = buildTapes();
-    _tapePainters = buildTapePainters(tapes);
+    tapes
+      ..clear()
+      ..addAll(buildTapes());
+    tapePainters
+      ..clear()
+      ..addAll(buildTapePainters(tapes));
 
     for (final TextPainter painter in tapePainters) {
       painter.layout();
     }
 
-    _tapeHeights = calculateTapeHeights();
+    tapeHeights
+      ..clear()
+      ..addAll(calculateTapeHeights());
   }
 
   /// Disposes of the text painters.
   void disposePainters() {
-    for (final TextPainter painter in (_tapePainters ?? [])) {
+    for (final TextPainter painter in tapePainters) {
       painter.dispose();
     }
   }

@@ -75,6 +75,7 @@ class _TextAnimationState extends State<TextAnimation> {
                           symbolDistanceMultiplier: 2,
                           staggerSoftness: 10,
                           tapeStrategy: const ConsistentSymbolTapeStrategy(0, true),
+                          fixedTapeWidth: 18,
                           // clipBehavior: Clip.none,
                         )
                         .animate(
