@@ -135,7 +135,7 @@ class RollingTextController with ChangeNotifier {
   late final List<TextPainter> tapePainters = [];
 
   /// A cached map of tape heights for each tape painter.
-  late final Map<int, double> tapeHeights;
+  late final Map<int, double> tapeHeights = {};
 
   /// Multiplies the index by 2 to account for new-line \n characters.
   int _mapCharKitIndexToSelection(String charKit, int index) => index * 2;
