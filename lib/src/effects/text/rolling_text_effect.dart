@@ -50,6 +50,18 @@ class RollingTextEffect extends Effect {
   /// overlap each other.
   final double? fixedTapeWidth;
 
+  /// The [widthDuration] parameter is used to determine the duration of the
+  /// width animation of each tape.
+  /// If null, the same duration is used as the one provided to the [animate]
+  /// function.
+  final Duration? widthDuration;
+
+  /// The [widthCurve] parameter is used to determine the curve of the
+  /// width animation of each tape.
+  /// If null, the same curve is used as the one provided to the [animate]
+  /// function.
+  final Curve? widthCurve;
+
   /// The text to display as a [InlineSpan].
   ///
   /// This will be null if [data] is provided instead.
@@ -170,6 +182,8 @@ class RollingTextEffect extends Effect {
     this.staggerTapes = true,
     this.staggerSoftness = 1,
     this.fixedTapeWidth,
+    this.widthDuration,
+    this.widthCurve,
     this.style,
     this.strutStyle,
     this.textAlign,
@@ -199,6 +213,8 @@ class RollingTextEffect extends Effect {
       staggerTapes: staggerTapes,
       staggerSoftness: staggerSoftness,
       fixedTapeWidth: fixedTapeWidth,
+      widthDuration: widthDuration,
+      widthCurve: widthCurve,
       clipBehavior: clipBehavior,
       style: style,
       strutStyle: strutStyle,
@@ -225,6 +241,8 @@ class RollingTextEffect extends Effect {
         staggerSoftness,
         tapeStrategy,
         fixedTapeWidth,
+        widthDuration,
+        widthCurve,
         clipBehavior,
         style,
         strutStyle,
@@ -291,6 +309,18 @@ class RollingText extends StatefulWidget {
   /// Note that this will allow the text's characters to potentially
   /// overlap each other.
   final double? fixedTapeWidth;
+
+  /// The [widthDuration] parameter is used to determine the duration of the
+  /// width animation of each tape.
+  /// If null, the same duration is used as the one provided to the [animate]
+  /// function.
+  final Duration? widthDuration;
+
+  /// The [widthCurve] parameter is used to determine the curve of the
+  /// width animation of each tape.
+  /// If null, the same curve is used as the one provided to the [animate]
+  /// function.
+  final Curve? widthCurve;
 
   /// If non-null, the style to use for this text.
   ///
@@ -399,6 +429,8 @@ class RollingText extends StatefulWidget {
     this.staggerTapes = true,
     this.staggerSoftness = 1,
     this.fixedTapeWidth,
+    this.widthDuration,
+    this.widthCurve,
     this.style,
     this.strutStyle,
     this.textAlign,
@@ -433,6 +465,8 @@ class _RollingTextState extends State<RollingText> {
         oldWidget.tapeCurve == widget.tapeCurve &&
         oldWidget.staggerSoftness == widget.staggerSoftness &&
         oldWidget.fixedTapeWidth == widget.fixedTapeWidth &&
+        oldWidget.widthCurve == widget.widthCurve &&
+        oldWidget.widthDuration == widget.widthDuration &&
         oldWidget.clipBehavior == widget.clipBehavior &&
         oldWidget.style == widget.style &&
         oldWidget.strutStyle == widget.strutStyle &&
@@ -478,14 +512,13 @@ class _RollingTextState extends State<RollingText> {
 
   @override
   Widget build(BuildContext context) {
-    final longest = max(widget.oldText.length, widget.newText.length);
+    final int longest = max(widget.oldText.length, widget.newText.length);
 
-    final EffectAnimationValue? effectAnimationValue =
-        EffectAnimationValue.maybeOf(context);
-    final double timeValue = effectAnimationValue?.linearValue ?? 1;
-    final Curve curve =
+    final effectAnimationValue = EffectAnimationValue.maybeOf(context);
+    final timeValue = effectAnimationValue?.linearValue ?? 1;
+    final curve =
         widget.tapeCurve ?? effectAnimationValue?.curve ?? Curves.linear;
-    final Duration duration = effectAnimationValue?.duration ?? Duration.zero;
+    final duration = effectAnimationValue?.duration ?? Duration.zero;
 
     Widget result = ClipRect(
       clipBehavior: widget.clipBehavior,
@@ -511,8 +544,8 @@ class _RollingTextState extends State<RollingText> {
                   charIndex,
                   effectiveVal,
                   fixedWidth: widget.fixedTapeWidth,
-                  duration: duration,
-                  curve: curve,
+                  duration: widget.widthDuration ?? duration,
+                  curve: widget.widthCurve ?? curve,
                 ),
               );
             }),
