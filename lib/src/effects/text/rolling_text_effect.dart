@@ -8,7 +8,8 @@ import '../../rolling_text_controller.dart';
 
 export 'symbol_tape_strategy.dart';
 
-/// An [Effect] that applies a Text to a [Widget].
+/// Rolls each character with a tape of characters individually
+/// to form the [newText] from the [oldText].
 class RollingTextEffect extends Effect {
   /// The text to display interpolating away from.
   final String oldText;
@@ -16,14 +17,38 @@ class RollingTextEffect extends Effect {
   /// The text to display interpolating to.
   final String newText;
 
-  /// The strategy to use to create the tape of characters to interpolate to.
+  /// Used to determine the string of characters to create and
+  /// roll through for each character index between the old and
+  /// new text.
   final SymbolTapeStrategy tapeStrategy;
 
+  /// Used to determine the curve each roll of symbol tape uses to slide up
+  /// and down through its characters. If null, the same curve is used as
+  /// the one provided to the [animate] function.
   final Curve? tapeCurve;
 
+  /// Determines whether the tapes should be staggered or not.
+  /// If set to true, the starting tapes will move and end their sliding
+  /// faster than the ending tapes.
   final bool staggerTapes;
 
+  /// Determines how the text should be clipped. The rendered text is
+  /// going to be a fixed-height box based on the font size.
   final Clip clipBehavior;
+
+  /// Determines how harsh the stagger effect is. The higher the number,
+  /// the more the stagger effect is softened,
+  /// and the interpolation between each tape will more similar to each
+  /// other.
+  final int staggerSoftness;
+
+  /// Can be optionally used to set a fixed width for each tape.
+  /// If null, the width of each tape will be the width of the active
+  /// character in the tape.
+  /// If not null, the width of each tape will be the fixed width provided.
+  /// Note that this will allow the text's characters to potentially
+  /// overlap each other.
+  final double? fixedTapeWidth;
 
   /// The text to display as a [InlineSpan].
   ///
@@ -139,10 +164,12 @@ class RollingTextEffect extends Effect {
   const RollingTextEffect({
     required this.oldText,
     required this.newText,
-    required this.tapeCurve,
-    required this.staggerTapes,
-    required this.tapeStrategy,
+    this.tapeStrategy = const ConsistentSymbolTapeStrategy(0),
     this.clipBehavior = Clip.hardEdge,
+    this.tapeCurve,
+    this.staggerTapes = true,
+    this.staggerSoftness = 1,
+    this.fixedTapeWidth,
     this.style,
     this.strutStyle,
     this.textAlign,
@@ -159,18 +186,20 @@ class RollingTextEffect extends Effect {
   }) : textSpan = null;
 
   @override
-  RollingTextEffect lerp(covariant RollingTextEffect other, double value) {
-    return other;
-  }
+  RollingTextEffect lerp(covariant RollingTextEffect other, double value) =>
+      other;
 
   @override
   Widget apply(BuildContext context, Widget child) {
     return RollingText(
       newText: newText,
       oldText: oldText,
-      rollStrategy: tapeStrategy,
+      tapeStrategy: tapeStrategy,
       tapeCurve: tapeCurve,
       staggerTapes: staggerTapes,
+      staggerSoftness: staggerSoftness,
+      fixedTapeWidth: fixedTapeWidth,
+      clipBehavior: clipBehavior,
       style: style,
       strutStyle: strutStyle,
       textAlign: textAlign,
@@ -193,9 +222,12 @@ class RollingTextEffect extends Effect {
         newText,
         tapeCurve,
         staggerTapes,
+        staggerSoftness,
         tapeStrategy,
+        fixedTapeWidth,
         clipBehavior,
         style,
+        strutStyle,
         textSpan,
         textAlign,
         textDirection,
@@ -211,16 +243,54 @@ class RollingTextEffect extends Effect {
       ];
 }
 
+/// A StatefulWidget that provides a rolling text effect.
+///
+/// This widget takes in an old text and a new text, and creates a rolling
+/// animation from the old text to the new text. The rolling effect can be
+/// customized with various parameters such as the curve of the roll, whether
+/// the tapes should be staggered, the softness of the stagger, and more.
+///
+/// The text style, alignment, directionality, and other text properties can
+/// also be customized.
 class RollingText extends StatefulWidget {
+  /// The text to display interpolating away from.
   final String oldText;
-  final String newText;
-  final SymbolTapeStrategy rollStrategy;
 
+  /// The text to display interpolating to.
+  final String newText;
+
+  /// Used to determine the string of characters to create and
+  /// roll through for each character index between the old and
+  /// new text.
+  final SymbolTapeStrategy tapeStrategy;
+
+  /// Used to determine the curve each roll of symbol tape uses to slide up
+  /// and down through its characters. If null, the same curve is used as
+  /// the one provided to the [animate] function.
   final Curve? tapeCurve;
 
+  /// Determines whether the tapes should be staggered or not.
+  /// If set to true, the starting tapes will move and end their sliding
+  /// faster than the ending tapes.
   final bool staggerTapes;
 
+  /// Determines how the text should be clipped. The rendered text is
+  /// going to be a fixed-height box based on the font size.
   final Clip clipBehavior;
+
+  /// Determines how harsh the stagger effect is. The higher the number,
+  /// the more the stagger effect is softened,
+  /// and the interpolation between each tape will more similar to each
+  /// other.
+  final int staggerSoftness;
+
+  /// Can be optionally used to set a fixed width for each tape.
+  /// If null, the width of each tape will be the width of the active
+  /// character in the tape.
+  /// If not null, the width of each tape will be the fixed width provided.
+  /// Note that this will allow the text's characters to potentially
+  /// overlap each other.
+  final double? fixedTapeWidth;
 
   /// If non-null, the style to use for this text.
   ///
@@ -318,14 +388,17 @@ class RollingText extends StatefulWidget {
   /// (semi-transparent grey).
   final Color? selectionColor;
 
+  /// Creates a new [RollingText] with the given parameters.
   const RollingText({
     super.key,
     required this.oldText,
     required this.newText,
-    required this.rollStrategy,
+    required this.tapeStrategy,
     required this.tapeCurve,
-    required this.staggerTapes,
     this.clipBehavior = Clip.hardEdge,
+    this.staggerTapes = true,
+    this.staggerSoftness = 1,
+    this.fixedTapeWidth,
     this.style,
     this.strutStyle,
     this.textAlign,
@@ -346,24 +419,7 @@ class RollingText extends StatefulWidget {
 }
 
 class _RollingTextState extends State<RollingText> {
-  late RollingTextController rollingTextPainter = RollingTextController(
-    oldText: widget.oldText,
-    newText: widget.newText,
-    rollStrategy: widget.rollStrategy,
-    style: widget.style,
-    strutStyle: widget.strutStyle,
-    textAlign: widget.textAlign,
-    textDirection: widget.textDirection,
-    locale: widget.locale,
-    softWrap: widget.softWrap,
-    overflow: widget.overflow,
-    textScaler: widget.textScaler,
-    textWidthBasis: widget.textWidthBasis,
-    textHeightBehavior: widget.textHeightBehavior,
-    maxLines: widget.maxLines,
-    semanticsLabel: widget.semanticsLabel,
-    selectionColor: widget.selectionColor,
-  )..layout();
+  late RollingTextController rollingTextPainter = createRollingTextPainter();
 
   @override
   void didUpdateWidget(covariant RollingText oldWidget) {
@@ -372,9 +428,11 @@ class _RollingTextState extends State<RollingText> {
     // Account for all parameters except for value.
     if (oldWidget.oldText == widget.oldText &&
         oldWidget.newText == widget.newText &&
-        oldWidget.rollStrategy == widget.rollStrategy &&
+        oldWidget.tapeStrategy == widget.tapeStrategy &&
         oldWidget.staggerTapes == widget.staggerTapes &&
         oldWidget.tapeCurve == widget.tapeCurve &&
+        oldWidget.staggerSoftness == widget.staggerSoftness &&
+        oldWidget.fixedTapeWidth == widget.fixedTapeWidth &&
         oldWidget.clipBehavior == widget.clipBehavior &&
         oldWidget.style == widget.style &&
         oldWidget.strutStyle == widget.strutStyle &&
@@ -390,25 +448,27 @@ class _RollingTextState extends State<RollingText> {
         oldWidget.semanticsLabel == widget.semanticsLabel &&
         oldWidget.selectionColor == widget.selectionColor) return;
 
-    rollingTextPainter = RollingTextController(
-      oldText: widget.oldText,
-      newText: widget.newText,
-      rollStrategy: widget.rollStrategy,
-      style: widget.style,
-      strutStyle: widget.strutStyle,
-      textAlign: widget.textAlign,
-      textDirection: widget.textDirection,
-      locale: widget.locale,
-      softWrap: widget.softWrap,
-      overflow: widget.overflow,
-      textScaler: widget.textScaler,
-      textWidthBasis: widget.textWidthBasis,
-      textHeightBehavior: widget.textHeightBehavior,
-      maxLines: widget.maxLines,
-      semanticsLabel: widget.semanticsLabel,
-      selectionColor: widget.selectionColor,
-    )..layout();
+    rollingTextPainter.dispose();
+    rollingTextPainter = createRollingTextPainter();
   }
+
+  RollingTextController createRollingTextPainter() => RollingTextController(
+        oldText: widget.oldText,
+        newText: widget.newText,
+        tapeStrategy: widget.tapeStrategy,
+        style: widget.style,
+        strutStyle: widget.strutStyle,
+        textAlign: widget.textAlign,
+        textDirection: widget.textDirection,
+        locale: widget.locale,
+        softWrap: widget.softWrap,
+        overflow: widget.overflow,
+        textScaler: widget.textScaler,
+        textWidthBasis: widget.textWidthBasis,
+        textHeightBehavior: widget.textHeightBehavior,
+        maxLines: widget.maxLines,
+        semanticsLabel: widget.semanticsLabel,
+      )..layout();
 
   @override
   void dispose() {
@@ -418,17 +478,14 @@ class _RollingTextState extends State<RollingText> {
 
   @override
   Widget build(BuildContext context) {
-    final before = widget.oldText;
-    final after = widget.newText;
-    final beforeL = before.length;
-    final afterL = after.length;
-    final longest = max(beforeL, afterL);
+    final longest = max(widget.oldText.length, widget.newText.length);
 
     final EffectAnimationValue? effectAnimationValue =
         EffectAnimationValue.maybeOf(context);
     final double timeValue = effectAnimationValue?.linearValue ?? 1;
     final Curve curve =
         widget.tapeCurve ?? effectAnimationValue?.curve ?? Curves.linear;
+    final Duration duration = effectAnimationValue?.duration ?? Duration.zero;
 
     Widget result = ClipRect(
       clipBehavior: widget.clipBehavior,
@@ -438,20 +495,24 @@ class _RollingTextState extends State<RollingText> {
         children: [
           for (int charIndex = 0; charIndex < longest; charIndex++)
             Builder(builder: (context) {
-              final double charPercent = (charIndex + 1) / (longest + 1);
+              final int softness = widget.staggerSoftness;
+              final double charPercent =
+                  (charIndex + softness) / (longest + softness);
               final double scaledVal = timeValue / charPercent;
               final double effectiveVal =
                   curve.transform(scaledVal.clamp(0, 1));
 
-              final dist = rollingTextPainter.charKitHeight(charIndex);
-              final transformedValue = effectiveVal * -1 * dist;
+              final tapeHeight = rollingTextPainter.getTapeHeight(charIndex);
+              final transformedValue = effectiveVal * -1 * tapeHeight;
 
               return Transform.translate(
                 offset: Offset(0, transformedValue),
-                child: rollingTextPainter.paintIndex(
+                child: rollingTextPainter.paintTape(
                   charIndex,
                   effectiveVal,
-                  // fixedWidth: 25,
+                  fixedWidth: widget.fixedTapeWidth,
+                  duration: duration,
+                  curve: curve,
                 ),
               );
             }),
