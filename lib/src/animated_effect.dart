@@ -249,14 +249,14 @@ class _AnimatedEffectState extends State<AnimatedEffect>
 
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    value: 1,
+    value: 0,
     duration: widget.duration,
   );
 
-  late Animation<double> _animation = CurvedAnimation(
-    parent: _controller,
-    curve: widget.curve,
-  );
+  // late Animation<double> _animation = CurvedAnimation(
+  //   parent: _controller,
+  //   curve: widget.curve,
+  // );
 
   @override
   void initState() {
@@ -280,10 +280,10 @@ class _AnimatedEffectState extends State<AnimatedEffect>
 
     // Update curve.
     if (widget.curve != oldWidget.curve) {
-      _animation = CurvedAnimation(
-        parent: _controller,
-        curve: widget.curve,
-      );
+      // _animation = CurvedAnimation(
+      //   parent: _controller,
+      //   curve: widget.curve,
+      // );
     }
 
     if (widget.toggle != oldWidget.toggle) {
@@ -331,10 +331,13 @@ class _AnimatedEffectState extends State<AnimatedEffect>
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _animation,
+      animation: _controller,
       builder: (context, child) => EffectAnimationValue(
-        value: _animation.value,
+        linearValue: _controller.value,
+        curvedValue: widget.curve.transform(_controller.value),
         isTransition: false,
+        duration: widget.duration,
+        curve: widget.curve,
         child: child!,
       ),
       child: widget.child,

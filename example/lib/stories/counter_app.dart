@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hyper_effects/hyper_effects.dart';
 
 class CounterApp extends StatefulWidget {
@@ -32,11 +33,15 @@ class _CounterAppState extends State<CounterApp> {
               'You have pushed the button this many times:',
             ),
             Text(
-              '0',
+              '$_counter',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            Text(
+              '${_counter - 1}',
               style: Theme.of(context).textTheme.headlineMedium,
             ).roll(
               '$_counter',
-              rollStrategy: const AllSymbolsRollStrategy(),
+              tapeStrategy: const AllSymbolsTapeStrategy(),
             ).animate(
               toggle: _counter,
               duration: const Duration(milliseconds: 1000),

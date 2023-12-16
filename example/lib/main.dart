@@ -286,7 +286,7 @@ class _ContentViewState extends State<ContentView> with WidgetsBindingObserver {
       controller.setClampingRect(getArea(), notify: false);
       controller.setRect(Rect.fromCenter(
         center: controller.clampingRect.center,
-        width: min(500, controller.clampingRect.width),
+        width: min(1000, controller.clampingRect.width),
         height: controller.clampingRect.height,
       ));
       if (mounted) setState(() {});

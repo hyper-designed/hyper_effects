@@ -79,9 +79,9 @@ class PointerTransition extends StatefulWidget {
 
   /// Defines where the origin of the pointer should be.
   /// If the origin is set to [Alignment.center], as the pointer moves away
-  /// from the center of the screen, the [value] value will increase.
+  /// from the center of the screen, the [curvedValue] value will increase.
   /// If the origin is set to [Alignment.topLeft], as the pointer moves away
-  /// from the top left corner of the screen, the [value] value will
+  /// from the top left corner of the screen, the [curvedValue] value will
   /// increase.
   final Alignment origin;
 
@@ -359,7 +359,8 @@ class _PointerTransitionState extends State<PointerTransition>
       child: AnimatedBuilder(
         animation: _animation,
         builder: (context, child) => EffectAnimationValue(
-          value: currentValue,
+          curvedValue: currentValue,
+          linearValue: currentValue,
           isTransition: true,
           lerpValues: false,
           child: KeyedSubtree(
