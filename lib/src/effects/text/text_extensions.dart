@@ -21,27 +21,81 @@ extension TextEffectExt on Text {
   /// be staggered or not. If set to true, the starting tapes will move and end
   /// their sliding faster than the ending tapes.
   ///
+  /// The [staggerSoftness] parameter is used to determine how harsh the stagger
+  /// effect is. The higher the number, the more the stagger effect is softened,
+  /// and the interpolation between each tape will more similar to each other.
+  ///
+  /// A value of 1 will result in the animation timeline being evenly split
+  /// from the starting tape to the end tape, so the first tape will have the
+  /// shortest duration of sliding time, and the last tape will have the longest
+  /// duration of sliding time.
+  ///
+  /// A value of 10 will result in the animation timeline being split into
+  /// (text's length + 10) equal parts, so the first tape will have a duration
+  /// of sliding time that is very similar to the last tape.
+  ///
   /// The [clipBehavior] parameter is used to determine how the text should be
   /// clipped. The rendered text is going to be a fixed-height box based on the
   /// font size. If you want to clip the text on your own terms, set this
   /// parameter to [Clip.none].
+  ///
+  /// The [symbolDistanceMultiplier] parameter is used to determine the height of
+  /// each symbol in each tape relative to the font size. If the font size is 32,
+  /// the final height of the entire widget is fontSize * lineHeightMultiplier.
+  /// The default multiplier is 1.
+  ///
+  /// The [fixedTapeWidth] parameter can be optionally used to set a fixed width
+  /// for each tape.
+  /// If null, the width of each tape will be the width of the active character
+  /// in the tape.
+  /// If not null, the width of each tape will be the fixed width provided.
+  /// Note that this will allow the text's characters to potentially overlap
+  /// each other.
   Widget roll(
     String newText, {
     SymbolTapeStrategy tapeStrategy = const ConsistentSymbolTapeStrategy(0),
     Curve? tapeCurve,
     bool staggerTapes = false,
+    int staggerSoftness = 10,
     Clip clipBehavior = Clip.hardEdge,
-  }) =>
-      AnimatableEffect(
+    double symbolDistanceMultiplier = 1,
+    double? fixedTapeWidth,
+    bool enableTextInteractivity = false,
+  }) {
+    assert(
+      symbolDistanceMultiplier > 0,
+      'lineHeightMultiplier must be greater than 0.',
+    );
+    assert(
+      staggerSoftness > 0,
+      'staggerSoftness must be greater than 0.',
+    );
+    assert(
+      !(data ?? '').contains('\n') && !newText.contains('\n'),
+      'Rolling text effect does not support multiline text.',
+    );
+
+    return Builder(builder: (context) {
+      final TextStyle defaultStyle =
+          DefaultTextStyle.of(context).style.copyWith(inherit: true);
+      final TextStyle effectiveStyle = style != null ? style! : defaultStyle;
+
+      return AnimatableEffect(
         end: RollingTextEffect(
           oldText: data ?? '',
           newText: newText,
           tapeStrategy: tapeStrategy,
           tapeCurve: tapeCurve,
           staggerTapes: staggerTapes,
+          staggerSoftness: staggerSoftness,
           clipBehavior: clipBehavior,
-          style: style,
-          strutStyle: strutStyle,
+          style: effectiveStyle,
+          strutStyle: StrutStyle(
+            fontSize: effectiveStyle.fontSize,
+            height: 1,
+            forceStrutHeight: true,
+            leading: symbolDistanceMultiplier - 1,
+          ),
           textAlign: textAlign,
           textDirection: textDirection,
           locale: locale,
@@ -56,4 +110,6 @@ extension TextEffectExt on Text {
         ),
         child: this,
       );
+    });
+  }
 }

@@ -62,23 +62,26 @@ class _TextAnimationState extends State<TextAnimation> {
                       style: GoogleFonts.inter().copyWith(
                         color: Colors.white,
                         fontSize: 32,
-                        fontFeatures: [const FontFeature.tabularFigures()],
                       ),
                       strutStyle: const StrutStyle(
                         fontSize: 32,
                         height: 1,
+                        // leading: 2,
                         forceStrutHeight: true,
                       ),
                     )
                         .roll(
                           'Birju Vachhani',
+                          symbolDistanceMultiplier: 2,
+                          staggerSoftness: 10,
                           tapeStrategy: const ConsistentSymbolTapeStrategy(0, true),
+                          // clipBehavior: Clip.none,
                         )
                         .animate(
                           toggle: selected,
                           reverse: true,
-                          duration: const Duration(milliseconds: 1000),
-                          curve: Curves.easeInOutQuart,
+                          duration: const Duration(milliseconds: 500),
+                          // curve: Curves.easeInOutQuart,
                         ),
                   ],
                 ),
@@ -92,21 +95,26 @@ class _TextAnimationState extends State<TextAnimation> {
                   borderRadius: BorderRadius.circular(32),
                   color: Theme.of(context).colorScheme.primaryContainer,
                 ),
-                // clipBehavior: Clip.hardEdge,
+                clipBehavior: Clip.hardEdge,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Icon(Icons.thumb_up_sharp, size: 18),
+                    const Icon(Icons.thumb_up_sharp, size: 18),
                     const SizedBox(width: 8),
                     Text(
                       '10.3',
                       style: GoogleFonts.robotoTextTheme()
                           .bodyMedium!
                           .copyWith(color: Colors.white, fontSize: 16),
-                      strutStyle: StrutStyle(height: 1, leading: 2),
-                    ).roll('21').animate(
+                    )
+                        .roll(
+                          '21',
+                          symbolDistanceMultiplier: 2,
+                          clipBehavior: Clip.none,
+                        )
+                        .animate(
                           toggle: selected,
                           reverse: true,
                           duration: const Duration(milliseconds: 1000),
@@ -116,7 +124,12 @@ class _TextAnimationState extends State<TextAnimation> {
                       style: GoogleFonts.robotoTextTheme()
                           .bodyMedium!
                           .copyWith(color: Colors.white, fontSize: 16),
-                      strutStyle: StrutStyle(height: 1, leading: 2),
+                      strutStyle: const StrutStyle(
+                        fontSize: 16,
+                        height: 1,
+                        forceStrutHeight: true,
+                        leading: 1,
+                      ),
                     ),
                     VerticalDivider(
                       color: Theme.of(context)
@@ -126,7 +139,7 @@ class _TextAnimationState extends State<TextAnimation> {
                       indent: 4,
                       endIndent: 4,
                     ),
-                    Icon(Icons.thumb_down_sharp, size: 18),
+                    const Icon(Icons.thumb_down_sharp, size: 18),
                   ],
                 ),
               ),
