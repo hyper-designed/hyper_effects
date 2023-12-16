@@ -230,7 +230,8 @@ class _ScrollTransitionState extends State<ScrollTransition> {
       enabled: scrollable != null,
       onPostFrame: onPostFrame,
       child: EffectAnimationValue(
-        value: phaseOffsetFraction,
+        curvedValue: phaseOffsetFraction,
+        linearValue: phaseOffsetFraction,
         isTransition: true,
         child: child,
       ),

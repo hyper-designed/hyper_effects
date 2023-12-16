@@ -11,4 +11,4 @@ export 'scale_effect.dart';
 export 'skew_effect.dart';
 export 'transform_effect.dart';
 export 'translate_effect.dart';
-export 'text_effect.dart';
+export 'text/text_effect.dart';

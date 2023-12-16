@@ -4,62 +4,42 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:hyper_effects/hyper_effects.dart';
 
-const String _kLowerAlphabet = 'abcdefghijklmnopqrstuvwxyz ';
-const String _kUpperAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const String _kNumbers = '0123456789';
-const String _kSymbols = '`~!@#\$%^&*()-_=+[{]}\\|;:\'",<.>/?';
-const String _kSpace = ' ';
-const String _kAlphabet = _kLowerAlphabet + _kUpperAlphabet;
-const String _kAlphanumeric = _kAlphabet + _kNumbers;
-const String _kAll = _kAlphanumeric + _kSymbols;
+import '../../rolling_text_controller.dart';
 
-extension StringHelper on String {
-  bool isSymbol() => _kSymbols.contains(this);
-
-  bool isAlphabet() => _kAlphabet.contains(this);
-
-  bool isAlphanumeric() => _kAlphanumeric.contains(this);
-
-  bool isNumber() => _kNumbers.contains(this);
-
-  bool isSpace() => _kSpace.contains(this);
-
-  bool isLowerAlphabet() => _kLowerAlphabet.contains(this);
-
-  bool isUpperAlphabet() => _kUpperAlphabet.contains(this);
-}
-
-sealed class SymbolRollStrategy {
-  const SymbolRollStrategy();
-}
-
-class AllSymbolsRollStrategy extends SymbolRollStrategy {
-  const AllSymbolsRollStrategy();
-}
-
-class ConsistentDistanceRollStrategy extends SymbolRollStrategy {
-  final int distance;
-
-  const ConsistentDistanceRollStrategy(this.distance);
-}
+export 'symbol_tape_strategy.dart';
 
 /// Provides a extension method to apply a [TextEffect] to a [Widget].
 extension TextEffectExt on Text {
   /// Rolls each character individually to form the [newText].
+  ///
+  /// The [tapeStrategy] parameter is used to determine the string of characters
+  /// to create and roll through for each character index between the old and
+  /// new text.
+  ///
+  /// The [tapeCurve] parameter is used to determine the curve each roll of
+  /// symbol tape uses to slide up and down through its characters.
+  /// If null, the same curve is used as the one provided to the [animate]
+  /// function.
+  ///
+  /// The [staggerTapes] parameter is used to determine whether the tapes should
+  /// be staggered or not. If set to true, the starting tapes will move and end
+  /// their sliding faster than the ending tapes.
   Widget roll(
     String newText, {
-    SymbolRollStrategy rollStrategy = const AllSymbolsRollStrategy(),
+    SymbolTapeStrategy tapeStrategy = const ConsistentSymbolTapeStrategy(0),
+    Curve? tapeCurve,
+    bool staggerTapes = false,
   }) {
-    print('OLD TEXT: $data');
-    print('NEW TEXT: $newText');
     return AnimatableEffect(
       end: TextEffect(
         oldText: data ?? '',
         newText: newText,
-        rollStrategy: rollStrategy,
-        value: 1,
+        tapeStrategy: tapeStrategy,
+        tapeCurve: tapeCurve,
+        staggerTapes: staggerTapes,
         roll: true,
         style: style,
+        strutStyle: strutStyle,
         textAlign: textAlign,
         textDirection: textDirection,
         locale: locale,
@@ -79,10 +59,18 @@ extension TextEffectExt on Text {
 
 /// An [Effect] that applies a Text to a [Widget].
 class TextEffect extends Effect {
+  /// The text to display interpolating away from.
   final String oldText;
+
+  /// The text to display interpolating to.
   final String newText;
-  final double? value;
-  final SymbolRollStrategy rollStrategy;
+
+  /// The strategy to use to create the tape of characters to interpolate to.
+  final SymbolTapeStrategy tapeStrategy;
+
+  final Curve? tapeCurve;
+
+  final bool staggerTapes;
 
   /// Setting this to true will lerp the text from the current text to the new
   /// text by rolling each character individually though the alphabet.
@@ -99,6 +87,18 @@ class TextEffect extends Effect {
   /// the closest enclosing [DefaultTextStyle]. Otherwise, the style will
   /// replace the closest enclosing [DefaultTextStyle].
   final TextStyle? style;
+
+  /// The strut style to use. Strut style defines the strut, which sets minimum
+  /// vertical layout metrics.
+  ///
+  /// Omitting or providing null will disable strut.
+  ///
+  /// Omitting or providing null for any properties of [StrutStyle] will result in
+  /// default values being used. It is highly recommended to at least specify a
+  /// [StrutStyle.fontSize].
+  ///
+  /// See [StrutStyle] for details.
+  final StrutStyle? strutStyle;
 
   /// How the text should be aligned horizontally.
   final TextAlign? textAlign;
@@ -190,10 +190,12 @@ class TextEffect extends Effect {
   const TextEffect({
     required this.oldText,
     required this.newText,
-    required this.value,
-    required this.rollStrategy,
+    required this.tapeCurve,
+    required this.staggerTapes,
+    required this.tapeStrategy,
     this.roll = false,
     this.style,
+    this.strutStyle,
     this.textAlign,
     this.textDirection,
     this.locale,
@@ -209,26 +211,7 @@ class TextEffect extends Effect {
 
   @override
   TextEffect lerp(covariant TextEffect other, double value) {
-    print('old text: $oldText');
-    print('new text: $newText');
-    return TextEffect(
-      oldText: oldText,
-      newText: newText,
-      value: value,
-      rollStrategy: rollStrategy,
-      style: TextStyle.lerp(style, other.style, value),
-      textAlign: textAlign,
-      textDirection: textDirection,
-      locale: locale,
-      softWrap: softWrap,
-      overflow: overflow,
-      textScaler: textScaler,
-      maxLines: maxLines,
-      semanticsLabel: semanticsLabel,
-      textWidthBasis: textWidthBasis,
-      textHeightBehavior: textHeightBehavior,
-      selectionColor: selectionColor,
-    );
+    return other;
   }
 
   @override
@@ -236,9 +219,11 @@ class TextEffect extends Effect {
     return RollingText(
       newText: newText,
       oldText: oldText,
-      rollStrategy: rollStrategy,
-      value: value ?? 0,
+      rollStrategy: tapeStrategy,
+      tapeCurve: tapeCurve,
+      staggerTapes: staggerTapes,
       style: style,
+      strutStyle: strutStyle,
       textAlign: textAlign,
       textDirection: textDirection,
       locale: locale,
@@ -258,7 +243,8 @@ class TextEffect extends Effect {
         oldText,
         newText,
         roll,
-        value,
+        tapeCurve,
+        staggerTapes,
         style,
         textSpan,
         textAlign,
@@ -275,11 +261,14 @@ class TextEffect extends Effect {
       ];
 }
 
-class RollingText extends StatelessWidget {
+class RollingText extends StatefulWidget {
   final String oldText;
   final String newText;
-  final SymbolRollStrategy rollStrategy;
-  final double value;
+  final SymbolTapeStrategy rollStrategy;
+
+  final Curve? tapeCurve;
+
+  final bool staggerTapes;
 
   /// If non-null, the style to use for this text.
   ///
@@ -382,7 +371,8 @@ class RollingText extends StatelessWidget {
     required this.oldText,
     required this.newText,
     required this.rollStrategy,
-    required this.value,
+    required this.tapeCurve,
+    required this.staggerTapes,
     this.style,
     this.strutStyle,
     this.textAlign,
@@ -398,151 +388,118 @@ class RollingText extends StatelessWidget {
     this.selectionColor,
   });
 
-  String selectCharKit(String a, String b) => switch (rollStrategy) {
-        AllSymbolsRollStrategy() => smartCharKit(a, b),
-        ConsistentDistanceRollStrategy(distance: int distance) =>
-          trimmedCharKit(a, b, distance),
-      };
+  @override
+  State<RollingText> createState() => _RollingTextState();
+}
 
-  String trimmedCharKit(String a, String b, int maxDistance) {
-    final String kit = smartCharKit(a, b);
-    final int length = kit.length;
-    final effectiveMaxDist = maxDistance ~/ 2;
+class _RollingTextState extends State<RollingText> {
+  late RollingTextController rollingTextPainter = RollingTextController(
+    oldText: widget.oldText,
+    newText: widget.newText,
+    rollStrategy: widget.rollStrategy,
+    style: widget.style,
+    strutStyle: widget.strutStyle,
+    textAlign: widget.textAlign,
+    textDirection: widget.textDirection,
+    locale: widget.locale,
+    softWrap: widget.softWrap,
+    overflow: widget.overflow,
+    textScaler: widget.textScaler,
+    textWidthBasis: widget.textWidthBasis,
+    textHeightBehavior: widget.textHeightBehavior,
+    maxLines: widget.maxLines,
+    semanticsLabel: widget.semanticsLabel,
+    selectionColor: widget.selectionColor,
+  )..layout();
 
-    final StringBuffer startKit = StringBuffer();
-    final StringBuffer endKit = StringBuffer();
+  @override
+  void didUpdateWidget(covariant RollingText oldWidget) {
+    super.didUpdateWidget(oldWidget);
 
-    int distance = effectiveMaxDist;
-    while (distance > 0) {
-      final progress = effectiveMaxDist - distance;
-      final int start = min(progress, length - 1);
-      final int end = max(length - 1 - progress, 0);
-      startKit.write(kit[start]);
-      endKit.write(kit[end]);
-      distance--;
-    }
+    // Account for all parameters except for value.
+    if (oldWidget.oldText == widget.oldText &&
+        oldWidget.newText == widget.newText &&
+        oldWidget.style == widget.style &&
+        oldWidget.strutStyle == widget.strutStyle &&
+        oldWidget.textAlign == widget.textAlign &&
+        oldWidget.textDirection == widget.textDirection &&
+        oldWidget.locale == widget.locale &&
+        oldWidget.softWrap == widget.softWrap &&
+        oldWidget.overflow == widget.overflow &&
+        oldWidget.textScaler == widget.textScaler &&
+        oldWidget.textWidthBasis == widget.textWidthBasis &&
+        oldWidget.textHeightBehavior == widget.textHeightBehavior &&
+        oldWidget.maxLines == widget.maxLines &&
+        oldWidget.semanticsLabel == widget.semanticsLabel &&
+        oldWidget.selectionColor == widget.selectionColor) return;
 
-    return startKit.toString() + endKit.toString();
+    rollingTextPainter = RollingTextController(
+      oldText: widget.oldText,
+      newText: widget.newText,
+      rollStrategy: widget.rollStrategy,
+      style: widget.style,
+      strutStyle: widget.strutStyle,
+      textAlign: widget.textAlign,
+      textDirection: widget.textDirection,
+      locale: widget.locale,
+      softWrap: widget.softWrap,
+      overflow: widget.overflow,
+      textScaler: widget.textScaler,
+      textWidthBasis: widget.textWidthBasis,
+      textHeightBehavior: widget.textHeightBehavior,
+      maxLines: widget.maxLines,
+      semanticsLabel: widget.semanticsLabel,
+      selectionColor: widget.selectionColor,
+    );
+
+    rollingTextPainter.layout();
   }
 
-  String smartCharKit(String a, String b) {
-    final StringBuffer charKitBuffer = StringBuffer();
-
-    if (a.isSpace() && b.isSpace()) {
-      charKitBuffer.write(_kSpace);
-    } else if (a.isSpace() != b.isSpace()) {
-      charKitBuffer.write(_kSpace + (a.isSpace() ? b : a));
-    } else {
-      if (a.isSymbol() || b.isSymbol()) {
-        charKitBuffer.write(_kSymbols);
-      }
-      if (a.isUpperAlphabet() || b.isUpperAlphabet()) {
-        charKitBuffer.write(_kUpperAlphabet);
-      }
-      if (a.isLowerAlphabet() || b.isLowerAlphabet()) {
-        charKitBuffer.write(_kLowerAlphabet);
-      }
-      if (a.isNumber() || b.isNumber()) {
-        charKitBuffer.write(_kNumbers);
-      }
-    }
-
-    final String charKit = charKitBuffer.toString();
-    final int indexA = charKit.indexOf(a);
-    final int indexB = charKit.indexOf(b);
-
-    if (indexA == indexB) return charKit;
-
-    return charKit.substring(min(indexA, indexB), max(indexA, indexB) + 1);
+  @override
+  void dispose() {
+    rollingTextPainter.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final before = oldText;
-    final after = newText;
+    final before = widget.oldText;
+    final after = widget.newText;
     final beforeL = before.length;
     final afterL = after.length;
     final longest = max(beforeL, afterL);
 
-    final double height = style?.fontSize ?? 16;
-    final gap = height / 4;
+    final EffectAnimationValue? effectAnimationValue =
+        EffectAnimationValue.maybeOf(context);
+    final double timeValue = effectAnimationValue?.linearValue ?? 1;
+    final Curve curve =
+        widget.tapeCurve ?? effectAnimationValue?.curve ?? Curves.linear;
 
-    return SizedBox(
-      height: height + gap,
-      child: Stack(
-        clipBehavior: Clip.none,
+    return ClipRect(
+      // clipBehavior: Clip.none,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            height: height,
-            color: Colors.red,
-          ),
-          Positioned(
-            top: 0,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (int charIndex = 0; charIndex < longest; charIndex++)
-                  Builder(builder: (context) {
-                    final beforeChar =
-                        charIndex < beforeL ? before[charIndex] : ' ';
-                    final afterChar =
-                        charIndex < afterL ? after[charIndex] : ' ';
-                    final charKit = selectCharKit(beforeChar, afterChar);
+          for (int charIndex = 0; charIndex < longest; charIndex++)
+            Builder(builder: (context) {
+              final double charPercent = (charIndex + 1) / (longest + 1);
+              final double scaledVal = timeValue / charPercent;
+              final double effectiveVal =
+                  curve.transform(scaledVal.clamp(0, 1));
 
-                    // Transforms the global value such that it only affects 1 characters
-                    // before and after the current character.
-                    final beforeIndex = charKit.indexOf(beforeChar);
-                    final afterIndex = charKit.indexOf(afterChar);
-                    final distance = beforeIndex - afterIndex;
-                    final sign = distance.sign;
+              final dist = rollingTextPainter.charKitHeight(charIndex);
+              final transformedValue = effectiveVal * -1 * dist;
 
-                    // Lerp the value between the before and after indices.
-                    final transformedValue =
-                        (sign < 0 ? 1 - value : value * -1) *
-                            distance *
-                            (height + gap);
-
-                    final minIndex = min(beforeIndex, afterIndex);
-                    final maxIndex = max(beforeIndex, afterIndex);
-
-                    return Transform.translate(
-                      offset: Offset(0, transformedValue),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          for (int char = minIndex; char <= maxIndex; char++)
-                            Padding(
-                              padding: EdgeInsets.only(
-                                top: gap / 2,
-                                bottom: gap / 2,
-                              ),
-                              child: Text(
-                                charKit[char],
-                                style: style,
-                                strutStyle:
-                                    const StrutStyle(forceStrutHeight: true),
-                                textAlign: textAlign,
-                                textDirection: textDirection,
-                                locale: locale,
-                                softWrap: softWrap,
-                                overflow: overflow,
-                                textScaler: textScaler,
-                                textWidthBasis: textWidthBasis,
-                                textHeightBehavior: textHeightBehavior,
-                                maxLines: maxLines,
-                                semanticsLabel: semanticsLabel,
-                                selectionColor: selectionColor,
-                              ),
-                            ),
-                        ],
-                      ),
-                    );
-                  }),
-              ],
-            ),
-          ),
+              return Transform.translate(
+                offset: Offset(0, transformedValue),
+                child: rollingTextPainter.paintIndex(
+                  charIndex,
+                  effectiveVal,
+                  // fixedWidth: 25,
+                ),
+              );
+            }),
         ],
       ),
     );

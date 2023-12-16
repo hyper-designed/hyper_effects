@@ -15,9 +15,10 @@ import 'effects/effect.dart';
 /// interpolate between two [Effect]s. The resulting [Effect] is then applied
 /// to the [child] by calling [Effect.apply].
 class AnimatableEffect extends StatefulWidget {
-  /// The effect to apply to the [child].
+  /// The effect applied to the [child] to interpolate to.
   final Effect end;
 
+  /// The effect applied to the [child] to interpolate from.
   final Effect? start;
 
   /// The [Widget] to apply the [end] to.
@@ -48,11 +49,10 @@ class _AnimatableEffectState extends State<AnimatableEffect> {
   late double previousAnimationValue = 0;
 
   /// Pulls the parent [EffectAnimationValue] inherited widget.
-  EffectAnimationValue? get effectAnimationValue =>
-      context.dependOnInheritedWidgetOfExactType<EffectAnimationValue>();
+  EffectAnimationValue? get effectAnimationValue => EffectAnimationValue.maybeOf(context);
 
   /// Pulls the animation value from the parent [EffectAnimationValue] widget.
-  double get animationValue => effectAnimationValue?.value ?? 1;
+  double get animationValue => effectAnimationValue?.curvedValue ?? 0;
 
   @override
   void didChangeDependencies() {
