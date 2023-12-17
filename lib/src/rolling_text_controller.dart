@@ -190,12 +190,16 @@ class RollingTextController with ChangeNotifier {
   Widget paintTape(
     int tapeIndex,
     double value, {
-    Curve curve = appleEaseInOut,
-    Duration duration = const Duration(milliseconds: 350),
+    bool interpolateWidthPerSymbol = false,
+    Curve widthCurve = appleEaseInOut,
+    Duration widthDuration = const Duration(milliseconds: 350),
     double? fixedWidth,
   }) {
     final painter = tapePainters[tapeIndex];
-    final selection = textSelectionAtCharKitIndexNearValue(tapeIndex, value);
+    final selection = textSelectionAtCharKitIndexNearValue(
+      tapeIndex,
+      interpolateWidthPerSymbol ? value : value < 0.5 ? 0 : 1,
+    );
     final box = painter
         .getBoxesForSelection(selection, boxHeightStyle: ui.BoxHeightStyle.max)
         .map((b) => b.toRect())
@@ -204,8 +208,8 @@ class RollingTextController with ChangeNotifier {
     return CustomPaint(
       painter: RollingTextPainter(painter),
       child: AnimatedContainer(
-        duration: duration,
-        curve: curve,
+        duration: widthDuration,
+        curve: widthCurve,
         width: fixedWidth ?? box.width,
         height: box.height,
       ),

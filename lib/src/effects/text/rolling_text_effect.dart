@@ -17,6 +17,10 @@ class RollingTextEffect extends Effect {
   /// The text to display interpolating to.
   final String newText;
 
+  /// Internal padding to apply between the row of symbol tapes and
+  /// the clipping mask.
+  final EdgeInsets padding;
+
   /// Used to determine the string of characters to create and
   /// roll through for each character index between the old and
   /// new text.
@@ -41,6 +45,12 @@ class RollingTextEffect extends Effect {
   /// and the interpolation between each tape will more similar to each
   /// other.
   final int staggerSoftness;
+
+  /// Determines whether the width of each tape should be interpolated
+  /// between the width of the old and new text as the symbols roll
+  /// or if the width should interpolate directly between the starting
+  /// and ending texts.
+  final bool interpolateWidthPerSymbol;
 
   /// Can be optionally used to set a fixed width for each tape.
   /// If null, the width of each tape will be the width of the active
@@ -176,11 +186,13 @@ class RollingTextEffect extends Effect {
   const RollingTextEffect({
     required this.oldText,
     required this.newText,
+    this.padding = EdgeInsets.zero,
     this.tapeStrategy = const ConsistentSymbolTapeStrategy(0),
     this.clipBehavior = Clip.hardEdge,
     this.tapeCurve,
     this.staggerTapes = true,
     this.staggerSoftness = 1,
+    this.interpolateWidthPerSymbol = false,
     this.fixedTapeWidth,
     this.widthDuration,
     this.widthCurve,
@@ -208,10 +220,12 @@ class RollingTextEffect extends Effect {
     return RollingText(
       newText: newText,
       oldText: oldText,
+      padding: padding,
       tapeStrategy: tapeStrategy,
       tapeCurve: tapeCurve,
       staggerTapes: staggerTapes,
       staggerSoftness: staggerSoftness,
+      interpolateWidthPerSymbol: interpolateWidthPerSymbol,
       fixedTapeWidth: fixedTapeWidth,
       widthDuration: widthDuration,
       widthCurve: widthCurve,
@@ -236,10 +250,12 @@ class RollingTextEffect extends Effect {
   List<Object?> get props => [
         oldText,
         newText,
+        padding,
         tapeCurve,
         staggerTapes,
         staggerSoftness,
         tapeStrategy,
+        interpolateWidthPerSymbol,
         fixedTapeWidth,
         widthDuration,
         widthCurve,
@@ -277,6 +293,10 @@ class RollingText extends StatefulWidget {
   /// The text to display interpolating to.
   final String newText;
 
+  /// Internal padding to apply between the row of symbol tapes and
+  /// the clipping mask.
+  final EdgeInsets padding;
+
   /// Used to determine the string of characters to create and
   /// roll through for each character index between the old and
   /// new text.
@@ -301,6 +321,12 @@ class RollingText extends StatefulWidget {
   /// and the interpolation between each tape will more similar to each
   /// other.
   final int staggerSoftness;
+
+  /// Determines whether the width of each tape should be interpolated
+  /// between the width of the old and new text as the symbols roll
+  /// or if the width should interpolate directly between the starting
+  /// and ending texts.
+  final bool interpolateWidthPerSymbol;
 
   /// Can be optionally used to set a fixed width for each tape.
   /// If null, the width of each tape will be the width of the active
@@ -423,11 +449,13 @@ class RollingText extends StatefulWidget {
     super.key,
     required this.oldText,
     required this.newText,
-    required this.tapeStrategy,
-    required this.tapeCurve,
+    this.padding = EdgeInsets.zero,
+    this.tapeStrategy = const ConsistentSymbolTapeStrategy(0),
+    this.tapeCurve,
     this.clipBehavior = Clip.hardEdge,
     this.staggerTapes = true,
     this.staggerSoftness = 1,
+    this.interpolateWidthPerSymbol = false,
     this.fixedTapeWidth,
     this.widthDuration,
     this.widthCurve,
@@ -460,10 +488,13 @@ class _RollingTextState extends State<RollingText> {
     // Account for all parameters except for value.
     if (oldWidget.oldText == widget.oldText &&
         oldWidget.newText == widget.newText &&
+        oldWidget.padding == widget.padding &&
         oldWidget.tapeStrategy == widget.tapeStrategy &&
         oldWidget.staggerTapes == widget.staggerTapes &&
         oldWidget.tapeCurve == widget.tapeCurve &&
         oldWidget.staggerSoftness == widget.staggerSoftness &&
+        oldWidget.interpolateWidthPerSymbol ==
+            widget.interpolateWidthPerSymbol &&
         oldWidget.fixedTapeWidth == widget.fixedTapeWidth &&
         oldWidget.widthCurve == widget.widthCurve &&
         oldWidget.widthDuration == widget.widthDuration &&
@@ -518,39 +549,68 @@ class _RollingTextState extends State<RollingText> {
     final timeValue = effectAnimationValue?.linearValue ?? 1;
     final curve =
         widget.tapeCurve ?? effectAnimationValue?.curve ?? Curves.linear;
-    final duration = effectAnimationValue?.duration ?? Duration.zero;
+    final widthCurve = widget.widthCurve ?? curve;
+    final duration =
+        widget.widthDuration ?? effectAnimationValue?.duration ?? Duration.zero;
 
-    Widget result = ClipRect(
-      clipBehavior: widget.clipBehavior,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (int charIndex = 0; charIndex < longest; charIndex++)
-            Builder(builder: (context) {
+    // Width curve cannot ease outside like ease Back, so we need to
+    // account for that.
+    assert(
+      widthCurve != Curves.easeOutBack &&
+          widthCurve != Curves.easeInBack &&
+          widthCurve != Curves.easeInOutBack &&
+          widthCurve != Curves.elasticIn &&
+          widthCurve != Curves.elasticOut &&
+          widthCurve != Curves.elasticInOut,
+      'Width curve cannot be an ease out back, ease in back, ease in out back, elastic in, elastic out, or elastic in out curve.'
+      'If you need those curves, specify the width curve explicitly using the widthCurve parameter.',
+    );
+
+    Widget result = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (int charIndex = 0; charIndex < longest; charIndex++)
+          Builder(builder: (context) {
+            final double scaledVal;
+            if (widget.staggerTapes) {
               final int softness = widget.staggerSoftness;
               final double charPercent =
                   (charIndex + softness) / (longest + softness);
-              final double scaledVal = timeValue / charPercent;
-              final double effectiveVal =
-                  curve.transform(scaledVal.clamp(0, 1));
+              scaledVal = timeValue / charPercent;
+            } else {
+              scaledVal = timeValue;
+            }
+            final double effectiveVal = curve.transform(scaledVal.clamp(0, 1));
 
-              final tapeHeight = rollingTextPainter.getTapeHeight(charIndex);
-              final transformedValue = effectiveVal * -1 * tapeHeight;
+            final tapeHeight = rollingTextPainter.getTapeHeight(charIndex);
+            final transformedValue = effectiveVal * -1 * tapeHeight;
 
-              return Transform.translate(
-                offset: Offset(0, transformedValue),
-                child: rollingTextPainter.paintTape(
-                  charIndex,
-                  effectiveVal,
-                  fixedWidth: widget.fixedTapeWidth,
-                  duration: widget.widthDuration ?? duration,
-                  curve: widget.widthCurve ?? curve,
-                ),
-              );
-            }),
-        ],
-      ),
+            return Transform.translate(
+              offset: Offset(0, transformedValue),
+              child: rollingTextPainter.paintTape(
+                charIndex,
+                effectiveVal,
+                fixedWidth: widget.fixedTapeWidth,
+                interpolateWidthPerSymbol: widget.interpolateWidthPerSymbol,
+                widthDuration: widget.widthDuration ?? duration,
+                widthCurve: widthCurve,
+              ),
+            );
+          }),
+      ],
+    );
+
+    if (widget.padding != EdgeInsets.zero) {
+      result = Padding(
+        padding: widget.padding,
+        child: result,
+      );
+    }
+
+    result = ClipRect(
+      clipBehavior: widget.clipBehavior,
+      child: result,
     );
 
     // Retain semantics label if present.
