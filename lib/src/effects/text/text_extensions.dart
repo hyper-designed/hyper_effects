@@ -8,6 +8,9 @@ export 'rolling_text_effect.dart';
 extension TextEffectExt on Text {
   /// Rolls each character individually to form the [newText].
   ///
+  /// The [padding] is the internal padding to apply between the row of symbol
+  /// tapes and the clipping mask.
+  ///
   /// The [tapeStrategy] parameter is used to determine the string of characters
   /// to create and roll through for each character index between the old and
   /// new text.
@@ -44,6 +47,11 @@ extension TextEffectExt on Text {
   /// the final height of the entire widget is fontSize * lineHeightMultiplier.
   /// The default multiplier is 1.
   ///
+  /// The [interpolateWidthPerSymbol] parameter is used to determine whether
+  /// the width of each tape should be interpolated between the width of the
+  /// old and new text as the symbols roll or if the width should interpolate
+  /// directly between the starting and ending texts.
+  ///
   /// The [fixedTapeWidth] parameter can be optionally used to set a fixed width
   /// for each tape.
   /// If null, the width of each tape will be the width of the active character
@@ -63,14 +71,15 @@ extension TextEffectExt on Text {
   /// function.
   Widget roll(
     String newText, {
+    EdgeInsets padding = EdgeInsets.zero,
     SymbolTapeStrategy tapeStrategy = const ConsistentSymbolTapeStrategy(0),
-    Duration? tapeDuration,
     Curve? tapeCurve,
-    bool staggerTapes = false,
+    bool staggerTapes = true,
     int staggerSoftness = 10,
     Clip clipBehavior = Clip.hardEdge,
     double symbolDistanceMultiplier = 1,
     double? fixedTapeWidth,
+    bool interpolateWidthPerSymbol = false,
     Duration? widthDuration,
     Curve? widthCurve,
   }) {
@@ -90,18 +99,21 @@ extension TextEffectExt on Text {
     return Builder(builder: (context) {
       final TextStyle defaultStyle =
           DefaultTextStyle.of(context).style.copyWith(inherit: true);
-      final TextStyle effectiveStyle = style != null ? style! : defaultStyle;
+      final TextStyle effectiveStyle =
+          style != null ? defaultStyle.merge(style) : defaultStyle;
 
       return AnimatableEffect(
         end: RollingTextEffect(
           oldText: data ?? '',
           newText: newText,
+          padding: padding,
           tapeStrategy: tapeStrategy,
           tapeCurve: tapeCurve,
           staggerTapes: staggerTapes,
           staggerSoftness: staggerSoftness,
           clipBehavior: clipBehavior,
           style: effectiveStyle,
+          interpolateWidthPerSymbol: interpolateWidthPerSymbol,
           fixedTapeWidth: fixedTapeWidth,
           widthDuration: widthDuration,
           widthCurve: widthCurve,
