@@ -188,7 +188,10 @@ class ConsistentSymbolTapeStrategy extends SymbolTapeStrategy {
         return a;
       }
     }
-    if (length <= 2) return tape;
+    if (length <= 2) {
+     final int halfDist = maxDistance ~/ 2;
+      return a * (halfDist + 1) + b * (halfDist + 1);
+    }
 
     final StringBuffer newKit = StringBuffer();
 
@@ -198,7 +201,7 @@ class ConsistentSymbolTapeStrategy extends SymbolTapeStrategy {
       final progress = maxDistance - distance;
       if (fromStart) {
         final int start = min(progress, maxIndex - 1);
-        newKit.write(tape.characters.elementAt(1 + start));
+        newKit.write(tape.characters.elementAt(start + 1));
         // if (newKit.length >= maxDistance + 2) break;
       } else {
         final int end = max(maxIndex - progress, 1);
