@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:hyper_effects/hyper_effects.dart';
 
-import '../../rolling_text_controller.dart';
+import 'rolling_text_controller.dart';
 
 export 'symbol_tape_strategy.dart';
 
@@ -45,12 +45,6 @@ class RollingTextEffect extends Effect {
   /// and the interpolation between each tape will more similar to each
   /// other.
   final int staggerSoftness;
-
-  /// Determines whether the width of each tape should be interpolated
-  /// between the width of the old and new text as the symbols roll
-  /// or if the width should interpolate directly between the starting
-  /// and ending texts.
-  final bool interpolateWidthPerSymbol;
 
   /// Can be optionally used to set a fixed width for each tape.
   /// If null, the width of each tape will be the width of the active
@@ -192,7 +186,6 @@ class RollingTextEffect extends Effect {
     this.tapeCurve,
     this.staggerTapes = true,
     this.staggerSoftness = 1,
-    this.interpolateWidthPerSymbol = false,
     this.fixedTapeWidth,
     this.widthDuration,
     this.widthCurve,
@@ -225,7 +218,6 @@ class RollingTextEffect extends Effect {
       tapeCurve: tapeCurve,
       staggerTapes: staggerTapes,
       staggerSoftness: staggerSoftness,
-      interpolateWidthPerSymbol: interpolateWidthPerSymbol,
       fixedTapeWidth: fixedTapeWidth,
       widthDuration: widthDuration,
       widthCurve: widthCurve,
@@ -255,7 +247,6 @@ class RollingTextEffect extends Effect {
         staggerTapes,
         staggerSoftness,
         tapeStrategy,
-        interpolateWidthPerSymbol,
         fixedTapeWidth,
         widthDuration,
         widthCurve,
@@ -321,12 +312,6 @@ class RollingText extends StatefulWidget {
   /// and the interpolation between each tape will more similar to each
   /// other.
   final int staggerSoftness;
-
-  /// Determines whether the width of each tape should be interpolated
-  /// between the width of the old and new text as the symbols roll
-  /// or if the width should interpolate directly between the starting
-  /// and ending texts.
-  final bool interpolateWidthPerSymbol;
 
   /// Can be optionally used to set a fixed width for each tape.
   /// If null, the width of each tape will be the width of the active
@@ -455,7 +440,6 @@ class RollingText extends StatefulWidget {
     this.clipBehavior = Clip.hardEdge,
     this.staggerTapes = true,
     this.staggerSoftness = 1,
-    this.interpolateWidthPerSymbol = false,
     this.fixedTapeWidth,
     this.widthDuration,
     this.widthCurve,
@@ -493,8 +477,6 @@ class _RollingTextState extends State<RollingText> {
         oldWidget.staggerTapes == widget.staggerTapes &&
         oldWidget.tapeCurve == widget.tapeCurve &&
         oldWidget.staggerSoftness == widget.staggerSoftness &&
-        oldWidget.interpolateWidthPerSymbol ==
-            widget.interpolateWidthPerSymbol &&
         oldWidget.fixedTapeWidth == widget.fixedTapeWidth &&
         oldWidget.widthCurve == widget.widthCurve &&
         oldWidget.widthDuration == widget.widthDuration &&
@@ -532,7 +514,6 @@ class _RollingTextState extends State<RollingText> {
         textWidthBasis: widget.textWidthBasis,
         textHeightBehavior: widget.textHeightBehavior,
         maxLines: widget.maxLines,
-        semanticsLabel: widget.semanticsLabel,
       )..layout();
 
   @override
@@ -543,7 +524,7 @@ class _RollingTextState extends State<RollingText> {
 
   @override
   Widget build(BuildContext context) {
-    final int longest = max(widget.oldText.length, widget.newText.length);
+    final int longest = max(widget.oldText.characters.length, widget.newText.characters.length);
 
     final effectAnimationValue = EffectAnimationValue.maybeOf(context);
     final timeValue = effectAnimationValue?.linearValue ?? 1;
@@ -586,15 +567,16 @@ class _RollingTextState extends State<RollingText> {
             final tapeHeight = rollingTextPainter.getTapeHeight(charIndex);
             final transformedValue = effectiveVal * -1 * tapeHeight;
 
-            return Transform.translate(
-              offset: Offset(0, transformedValue),
-              child: rollingTextPainter.paintTape(
-                charIndex,
-                effectiveVal,
-                fixedWidth: widget.fixedTapeWidth,
-                interpolateWidthPerSymbol: widget.interpolateWidthPerSymbol,
-                widthDuration: widget.widthDuration ?? duration,
-                widthCurve: widthCurve,
+            return RepaintBoundary(
+              child: Transform.translate(
+                offset: Offset(0, transformedValue),
+                child: rollingTextPainter.paintTape(
+                  charIndex,
+                  effectiveVal,
+                  fixedWidth: widget.fixedTapeWidth,
+                  widthDuration: widget.widthDuration ?? duration,
+                  widthCurve: widthCurve,
+                ),
               ),
             );
           }),

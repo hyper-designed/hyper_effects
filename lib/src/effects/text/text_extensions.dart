@@ -79,7 +79,6 @@ extension TextEffectExt on Text {
     Clip clipBehavior = Clip.hardEdge,
     double symbolDistanceMultiplier = 1,
     double? fixedTapeWidth,
-    bool interpolateWidthPerSymbol = false,
     Duration? widthDuration,
     Curve? widthCurve,
   }) {
@@ -113,7 +112,6 @@ extension TextEffectExt on Text {
           staggerSoftness: staggerSoftness,
           clipBehavior: clipBehavior,
           style: effectiveStyle,
-          interpolateWidthPerSymbol: interpolateWidthPerSymbol,
           fixedTapeWidth: fixedTapeWidth,
           widthDuration: widthDuration,
           widthCurve: widthCurve,

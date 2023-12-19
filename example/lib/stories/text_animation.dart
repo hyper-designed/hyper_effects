@@ -14,8 +14,6 @@ class TextAnimation extends StatefulWidget {
 }
 
 class _TextAnimationState extends State<TextAnimation> {
-  bool selected = false;
-
   List<String> translations = [
     'Hello',
     'Bonjour',
@@ -35,12 +33,13 @@ class _TextAnimationState extends State<TextAnimation> {
   int lastTranslation = 0;
   int translation = 0;
 
+  late Timer timer;
   @override
   void initState() {
     super.initState();
 
-    Timer.periodic(Duration(milliseconds: (2000 * timeDilation).toInt()),
-        (timer) {
+    timer = Timer.periodic(
+        Duration(milliseconds: (2000 * timeDilation).toInt()), (timer) {
       setState(() {
         lastTranslation = translation;
         translation = (translation + 1) % translations.length;
@@ -49,106 +48,152 @@ class _TextAnimationState extends State<TextAnimation> {
   }
 
   @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Positioned(
-          bottom: -650,
-          width: 500,
-          height: 1040,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(100),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.onPrimary,
-                width: 2,
-              ),
-            ),
-            clipBehavior: Clip.hardEdge,
-            child: const ColorPalettePage(),
-          ),
-        ),
-        Positioned(
-          bottom: -650,
-          child: IgnorePointer(
-            child: Image.asset(
-              'assets/iphone15pro_1024x.png',
-              width: 512,
-            ),
-          ),
-        ),
-        Positioned(
-          top: 100,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ShaderMask(
+        const SizedBox(height: 32),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ShaderMask(
+              shaderCallback: (rect) => LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.white.withOpacity(0),
+                  Colors.white,
+                  Colors.white,
+                  Colors.white,
+                  Colors.white,
+                  Colors.white.withOpacity(0),
+                  // Colors.white,
+                ],
+              ).createShader(rect),
+              child: ShaderMask(
                 shaderCallback: (rect) => LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
                   colors: [
-                    Colors.white.withOpacity(0),
                     Colors.white,
-                    Colors.white,
-                    Colors.white,
-                    Colors.white,
-                    Colors.white.withOpacity(0),
+                    Colors.blueAccent.withOpacity(0.5),
                     // Colors.white,
                   ],
                 ).createShader(rect),
-                child: ShaderMask(
-                  shaderCallback: (rect) => LinearGradient(
-                    colors: [
-                      Colors.white,
-                      Colors.blueAccent.withOpacity(0.5),
-                      // Colors.white,
-                    ],
-                  ).createShader(rect),
-                  child: Text(
-                    translations[lastTranslation],
-                    style: GoogleFonts.sacramento().copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 56,
+                child: Text(
+                  translations[lastTranslation],
+                  style: GoogleFonts.sacramento().copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 56,
+                  ),
+                )
+                    .roll(
+                      translations[translation],
+                      symbolDistanceMultiplier: 2,
+                      tapeCurve: Curves.easeInOutBack,
+                      widthCurve: Curves.easeInOutQuart,
+                      padding: const EdgeInsets.only(right: 3),
+                    )
+                    .animate(
+                      toggle: translation,
+                      duration: const Duration(milliseconds: 1000),
                     ),
-                  )
-                      .roll(
-                        translations[translation],
-                        symbolDistanceMultiplier: 2,
-                        tapeCurve: Curves.easeInOutBack,
-                        widthCurve: Curves.easeInOutQuart,
-                        padding: const EdgeInsets.only(right: 3),
-                      )
-                      .animate(
-                        toggle: translation,
-                        duration: const Duration(milliseconds: 1000),
-                      ),
+              ),
+            ),
+            Text(
+              ', Stranger',
+              style: GoogleFonts.sacramento().copyWith(
+                color: Colors.white,
+                fontSize: 56,
+              ),
+              strutStyle: const StrutStyle(
+                fontSize: 56,
+                height: 1,
+                forceStrutHeight: true,
+                leading: 1,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 56),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF272727),
+            borderRadius: BorderRadius.circular(32),
+          ),
+          child: const Text('Hello😀😃😄😁😆😅😂🤣🥲🥹☺️😊😇🙂🙃😉😌Sexy')
+              .roll(
+                'World🧳🌂☂️🧵🪡🪢🪭🧶👓🕶🥽🥼🦺👔👕👖🧣Effect',
+                tapeStrategy: const ConsistentSymbolTapeStrategy(4),
+                tapeCurve: Curves.easeInOutQuart,
+                widthCurve: Curves.easeOutQuart,
+                symbolDistanceMultiplier: 2,
+                clipBehavior: Clip.none,
+              )
+              .animate(
+                toggle: translation,
+                reverse: true,
+                duration: const Duration(milliseconds: 1000),
+              ),
+        ),
+        const SizedBox(height: 56),
+        const LikeButton(),
+        Expanded(
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned(
+                bottom: -650,
+                width: 500,
+                height: 1040,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(100),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                      width: 2,
+                    ),
+                  ),
+                  clipBehavior: Clip.hardEdge,
+                  child: const ColorPalettePage(),
                 ),
               ),
-              Text(
-                ', Stranger',
-                style: GoogleFonts.sacramento().copyWith(
-                  color: Colors.white,
-                  fontSize: 56,
-                ),
-                strutStyle: const StrutStyle(
-                  fontSize: 56,
-                  height: 1,
-                  forceStrutHeight: true,
-                  leading: 1,
+              Positioned(
+                bottom: -650,
+                child: IgnorePointer(
+                  child: Image.asset(
+                    'assets/iphone15pro_1024x.png',
+                    width: 512,
+                  ),
                 ),
               ),
             ],
           ),
         ),
-        const Positioned(
-          bottom: 450,
-          child: LikeButton(),
-        ),
       ],
     );
+  }
+}
+
+class RisingStrong extends StatefulWidget {
+  const RisingStrong({super.key});
+
+  @override
+  State<RisingStrong> createState() => _RisingStrongState();
+}
+
+class _RisingStrongState extends State<RisingStrong> {
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
   }
 }
 
@@ -247,7 +292,7 @@ class _LikeButtonState extends State<LikeButton> {
                         .copyWith(color: Colors.white, fontSize: 16),
                   )
                       .roll(
-                        'Wow did you just share?',
+                        'Thanks for sharing!',
                         tapeStrategy:
                             const ConsistentSymbolTapeStrategy(0, true),
                         symbolDistanceMultiplier: 2,
@@ -255,7 +300,6 @@ class _LikeButtonState extends State<LikeButton> {
                         tapeCurve:
                             toggleShare ? Curves.bounceOut : Curves.bounceIn,
                         widthCurve: Curves.bounceOut,
-                        interpolateWidthPerSymbol: true,
                         staggerTapes: false,
                       )
                       .animate(
@@ -309,7 +353,6 @@ class _LikeButtonState extends State<LikeButton> {
                         clipBehavior: Clip.none,
                         tapeCurve: Curves.easeOutBack,
                         widthCurve: Curves.easeOutQuart,
-                        interpolateWidthPerSymbol: true,
                         staggerSoftness: 100,
                       )
                       .animate(
