@@ -128,14 +128,13 @@ class _TextAnimationState extends State<TextAnimation> {
             color: const Color(0xFF272727),
             borderRadius: BorderRadius.circular(32),
           ),
-          child: const Text('Hello😀😃😄😁😆😅😂🤣🥲🥹☺️😊😇🙂🙃😉😌Sexy')
+          child: const Text('Hello😀😃😄😁😆😅😂🤣🥲🥹️😊😇🙂🙃😉😌Sexy')
               .roll(
-                'World🧳🌂☂️🧵🪡🪢🪭🧶👓🕶🥽🥼🦺👔👕👖🧣Effect',
+                'World🧳🌂☂️🧵🪡🪢🪭🧶👓🕶🥽🥼🦺👔👖🧣Effect',
                 tapeStrategy: const ConsistentSymbolTapeStrategy(4),
                 tapeCurve: Curves.easeInOutQuart,
                 widthCurve: Curves.easeOutQuart,
                 symbolDistanceMultiplier: 2,
-                clipBehavior: Clip.none,
               )
               .animate(
                 toggle: translation,
