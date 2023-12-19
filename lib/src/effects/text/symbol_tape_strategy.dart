@@ -1,11 +1,16 @@
 import 'dart:math';
 
+import 'package:flutter/widgets.dart';
+import 'package:unicode_emojis/unicode_emojis.dart';
+
 const String _kLowerAlphabet = 'abcdefghijklmnopqrstuvwxyz ';
 const String _kUpperAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const String _kNumbers = '0123456789';
 const String _kSymbols = '`~!@#\$%^&*()-_=+[{]}\\|;:\'",<.>/?';
 const String _kSpace = ' ';
 const String _kZeroWidth = '​';
+final String _allEmojis =
+    UnicodeEmojis.allEmojis.map((emoji) => emoji.emoji).join('');
 
 extension _StringHelper on String {
   bool isSymbol() => _kSymbols.contains(this);
@@ -19,6 +24,8 @@ extension _StringHelper on String {
   bool isLowerAlphabet() => _kLowerAlphabet.contains(this);
 
   bool isUpperAlphabet() => _kUpperAlphabet.contains(this);
+
+  bool isEmoji() => _allEmojis.contains(this);
 }
 
 /// Defines the strategy to create the tape of character symbols
@@ -61,17 +68,21 @@ sealed class SymbolTapeStrategy {
       if (a.isNumber() || b.isNumber()) {
         charKitBuffer.write(_kNumbers);
       }
+      if (a.isEmoji() || b.isEmoji()) {
+        charKitBuffer.write(_allEmojis);
+      }
     }
 
     final String charKit = charKitBuffer.toString();
-    final int indexA = charKit.indexOf(a);
-    final int indexB = charKit.indexOf(b);
+    final List<String> charKitList = charKit.characters.toList();
+    final int indexA = charKitList.indexOf(a);
+    final int indexB = charKitList.indexOf(b);
     final int minIndex = min(indexA, indexB);
     final int maxIndex = max(indexA, indexB);
 
     if (maxIndex - minIndex <= 1) return a + b;
 
-    return a + charKit.substring(minIndex + 1, maxIndex) + b;
+    return a + charKitList.sublist(minIndex + 1, maxIndex).join('') + b;
   }
 
   String _repeatTape(String a, String b) {
@@ -96,17 +107,21 @@ sealed class SymbolTapeStrategy {
       if (a.isNumber() || b.isNumber()) {
         charKitBuffer.write(_kNumbers);
       }
+      if (a.isEmoji() || b.isEmoji()) {
+        charKitBuffer.write(_allEmojis);
+      }
     }
 
     final String charKit = charKitBuffer.toString();
-    final int indexA = charKit.indexOf(a);
-    final int indexB = charKit.indexOf(b);
+    final List<String> charKitList = charKit.characters.toList();
+    final int indexA = charKitList.indexOf(a);
+    final int indexB = charKitList.indexOf(b);
     final int minIndex = min(indexA, indexB);
     final int maxIndex = max(indexA, indexB);
 
     if (maxIndex - minIndex <= 1) return a + b;
 
-    return a + charKit.substring(minIndex + 1, maxIndex) + b;
+    return a + charKitList.sublist(minIndex + 1, maxIndex).join('') + b;
   }
 }
 
@@ -163,7 +178,7 @@ class ConsistentSymbolTapeStrategy extends SymbolTapeStrategy {
   String build(String a, String b) {
     final tape = super.build(a, b);
     final maxDistance = this.distance;
-    final int length = tape.length;
+    final int length = tape.characters.length;
     final int maxIndex = length - 1;
 
     if (a == b) {
@@ -183,11 +198,11 @@ class ConsistentSymbolTapeStrategy extends SymbolTapeStrategy {
       final progress = maxDistance - distance;
       if (fromStart) {
         final int start = min(progress, maxIndex - 1);
-        newKit.write(tape[1 + start]);
+        newKit.write(tape.characters.elementAt(1 + start));
         // if (newKit.length >= maxDistance + 2) break;
       } else {
         final int end = max(maxIndex - progress, 1);
-        newKit.write(tape[end - 1]);
+        newKit.write(tape.characters.elementAt(end - 1));
         // if (newKit.length >= maxDistance + 2) break;
       }
       distance--;

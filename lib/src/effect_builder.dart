@@ -49,7 +49,8 @@ class _AnimatableEffectState extends State<AnimatableEffect> {
   late double previousAnimationValue = 0;
 
   /// Pulls the parent [EffectAnimationValue] inherited widget.
-  EffectAnimationValue? get effectAnimationValue => EffectAnimationValue.maybeOf(context);
+  EffectAnimationValue? get effectAnimationValue =>
+      EffectAnimationValue.maybeOf(context);
 
   /// Pulls the animation value from the parent [EffectAnimationValue] widget.
   double get animationValue => effectAnimationValue?.curvedValue ?? 0;
@@ -65,8 +66,7 @@ class _AnimatableEffectState extends State<AnimatableEffect> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.end != widget.end &&
         oldWidget.end.runtimeType == widget.end.runtimeType) {
-      if (effectAnimationValue != null &&
-          !effectAnimationValue!.isTransition) {
+      if (effectAnimationValue != null && !effectAnimationValue!.isTransition) {
         begin = begin.lerp(end, previousAnimationValue);
       }
 

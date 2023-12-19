@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
-import '../hyper_effects.dart';
+import '../../../hyper_effects.dart';
 
 const String _kZeroWidth = '​';
 
@@ -84,22 +84,6 @@ class RollingTextController with ChangeNotifier {
   /// widget directly to entirely override the [DefaultTextStyle].
   final int? maxLines;
 
-  /// {@template flutter.widgets.Text.semanticsLabel}
-  /// An alternative semantics label for this text.
-  ///
-  /// If present, the semantics of this widget will contain this value instead
-  /// of the actual text. This will overwrite any of the semantics labels applied
-  /// directly to the [TextSpan]s.
-  ///
-  /// This is useful for replacing abbreviations or shorthands with the full
-  /// text value:
-  ///
-  /// ```dart
-  /// const Text(r'$$', semanticsLabel: 'Double dollars')
-  /// ```
-  /// {@endtemplate}
-  final String? semanticsLabel;
-
   /// {@macro flutter.painting.textPainter.textWidthBasis}
   final TextWidthBasis? textWidthBasis;
 
@@ -120,7 +104,6 @@ class RollingTextController with ChangeNotifier {
     this.overflow,
     this.textScaler,
     this.maxLines,
-    this.semanticsLabel,
     this.textWidthBasis,
     this.textHeightBehavior,
   });
@@ -137,26 +120,28 @@ class RollingTextController with ChangeNotifier {
   /// A cached map of tape heights for each tape painter.
   late final Map<int, double> tapeHeights = {};
 
-  /// Multiplies the index by 2 to account for new-line \n characters.
-  int _mapCharKitIndexToSelection(String charKit, int index) => index * 2;
-
   /// Returns the height of a tape at the given index.
   double getTapeHeight(int tapeIndex) => tapeHeights[tapeIndex] ?? 0;
 
   /// Returns the height of the character that is actively visible
   /// or in frame at the given tape-index.
-  TextSelection textSelectionAtCharKitIndexNearValue(
-      int charKitIndex, double value) {
-    final charKit = tapes[charKitIndex];
-    final length = charKit.length;
-    final maxIndex = length - 1;
-    final int effectiveIndex = (value * maxIndex).clamp(0, maxIndex).round();
-    final mutatedIndex = _mapCharKitIndexToSelection(charKit, effectiveIndex);
-    final TextSelection selection = TextSelection(
-      baseOffset: mutatedIndex,
-      extentOffset: mutatedIndex + 1,
-    );
-    return selection;
+  ///
+  /// [end] determines whether to return the height of the first or last
+  /// character in the tape.
+  TextSelection selectionAtTapeIndexNearValue(int tapeIndex, bool end) {
+    final tape = tapes[tapeIndex];
+    final mutatedTape = tape.characters.join('\n');
+
+    if (end) {
+      final lastCharacter = mutatedTape.characters.last.length;
+      return TextSelection(
+        baseOffset: mutatedTape.length - lastCharacter,
+        extentOffset: mutatedTape.length,
+      );
+    } else {
+      final firstCharacter = mutatedTape.characters.first.length;
+      return TextSelection(baseOffset: 0, extentOffset: firstCharacter);
+    }
   }
 
   /// Lays out the text painters and caches the tape heights.
@@ -190,20 +175,21 @@ class RollingTextController with ChangeNotifier {
   Widget paintTape(
     int tapeIndex,
     double value, {
-    bool interpolateWidthPerSymbol = false,
     Curve widthCurve = appleEaseInOut,
     Duration widthDuration = const Duration(milliseconds: 350),
     double? fixedWidth,
   }) {
     final painter = tapePainters[tapeIndex];
-    final selection = textSelectionAtCharKitIndexNearValue(
+    final selection = selectionAtTapeIndexNearValue(
       tapeIndex,
-      interpolateWidthPerSymbol ? value : value < 0.5 ? 0 : 1,
+      value > 0.5,
     );
-    final box = painter
+    final rects = painter
         .getBoxesForSelection(selection, boxHeightStyle: ui.BoxHeightStyle.max)
-        .map((b) => b.toRect())
-        .reduce((a, b) => a.expandToInclude(b));
+        .map((b) => b.toRect());
+    final box = rects.isEmpty
+        ? Rect.zero
+        : rects.reduce((a, b) => a.expandToInclude(b));
 
     return CustomPaint(
       painter: RollingTextPainter(painter),
@@ -225,19 +211,25 @@ class RollingTextController with ChangeNotifier {
   /// Builds a list of tapes that represent the characters to roll through
   /// for each character index between the old and new text.
   List<String> buildTapes() => [
-        for (int i = 0; i < max(oldText.length, newText.length); i++)
+        for (int i = 0;
+            i < max(oldText.characters.length, newText.characters.length);
+            i++)
           tapeStrategy.build(
-            oldText.length <= i ? _kZeroWidth : oldText[i],
-            newText.length <= i ? _kZeroWidth : newText[i],
+            oldText.characters.length <= i
+                ? _kZeroWidth
+                : oldText.characters.elementAt(i),
+            newText.characters.length <= i
+                ? _kZeroWidth
+                : newText.characters.elementAt(i),
           ),
       ];
 
   /// Builds a list of painters that represent each tape of characters
   /// from [tapes].
-  List<TextPainter> buildTapePainters(List<String> charKits) {
+  List<TextPainter> buildTapePainters(List<String> tapes) {
     return [
-      for (final String charKit in charKits)
-        buildTextPainter(charKit.split('').join('\n')),
+      for (final String tape in tapes)
+        buildTextPainter(tape.characters.join('\n')),
     ];
   }
 
@@ -248,29 +240,28 @@ class RollingTextController with ChangeNotifier {
 
   /// Calculates the height of a tape painter at the given index.
   double calculateTapeHeight(int index) {
-    final charKit = tapes[index];
+    final tape = tapes[index];
+    final mutatedTaped = tape.characters.join('\n');
     final painter = tapePainters[index];
 
-    final int mutatedIndex =
-        _mapCharKitIndexToSelection(charKit, charKit.length - 1);
     final TextSelection selection = TextSelection(
       baseOffset: 0,
-      extentOffset: mutatedIndex + 1,
+      extentOffset: mutatedTaped.length,
     );
     final boxes = painter.getBoxesForSelection(
       selection,
       boxHeightStyle: ui.BoxHeightStyle.max,
     );
 
-    final length = charKit.length;
-    double sum = 0;
-    for (int i = 0; i < length; i++) {
-      if (i >= length - 1) break;
-      final box = boxes[i];
-      sum += box.toRect().height;
-    }
+    // Don't include the last item.
+    final oneLess = boxes.sublist(0, boxes.length - 1);
 
-    return sum;
+    return oneLess.isEmpty
+        ? 0
+        : oneLess
+            .map((b) => b.toRect())
+            .reduce((a, b) => a.expandToInclude(b))
+            .height;
   }
 
   /// Builds a [TextPainter] with the given [text].
