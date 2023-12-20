@@ -25,7 +25,7 @@ extension TransformEffectExt on Widget {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
   }) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: TransformEffect(
         translateX: translateX,
         translateY: translateY,

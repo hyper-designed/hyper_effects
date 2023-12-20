@@ -18,7 +18,7 @@ extension RotationEffectExt on Widget {
     Offset origin = Offset.zero,
     AlignmentGeometry alignment = Alignment.center,
   }) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: RotationEffect(
         angle: angle,
         origin: origin,

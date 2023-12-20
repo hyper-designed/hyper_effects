@@ -14,7 +14,7 @@ import 'effects/effect.dart';
 /// If an animation value is found, the [Effect.lerp] method is called to
 /// interpolate between two [Effect]s. The resulting [Effect] is then applied
 /// to the [child] by calling [Effect.apply].
-class AnimatableEffect extends StatefulWidget {
+class EffectWidget extends StatefulWidget {
   /// The effect applied to the [child] to interpolate to.
   final Effect end;
 
@@ -24,8 +24,8 @@ class AnimatableEffect extends StatefulWidget {
   /// The [Widget] to apply the [end] to.
   final Widget child;
 
-  /// Creates an [AnimatableEffect].
-  const AnimatableEffect({
+  /// Creates an [EffectWidget].
+  const EffectWidget({
     super.key,
     this.start,
     required this.end,
@@ -33,10 +33,10 @@ class AnimatableEffect extends StatefulWidget {
   });
 
   @override
-  State<AnimatableEffect> createState() => _AnimatableEffectState();
+  State<EffectWidget> createState() => _EffectWidgetState();
 }
 
-class _AnimatableEffectState extends State<AnimatableEffect> {
+class _EffectWidgetState extends State<EffectWidget> {
   /// The [Effect] to interpolate to.
   late Effect end = widget.end;
 
@@ -62,7 +62,7 @@ class _AnimatableEffectState extends State<AnimatableEffect> {
   }
 
   @override
-  void didUpdateWidget(covariant AnimatableEffect oldWidget) {
+  void didUpdateWidget(covariant EffectWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.end != widget.end &&
         oldWidget.end.runtimeType == widget.end.runtimeType) {

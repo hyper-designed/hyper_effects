@@ -11,7 +11,7 @@ extension TranslateEffectExt on Widget {
   /// [fractional] determines whether the [offset] moves the [Widget] by using
   /// its own size as a percentage or by a fixed amount.
   Widget translate(Offset offset, {bool fractional = false}) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: TranslateEffect(
         offset: offset,
         fractional: fractional,
@@ -24,7 +24,7 @@ extension TranslateEffectExt on Widget {
   /// [fractional] determines whether the [offset] moves the [Widget] by using
   /// its own size as a percentage or by a fixed amount.
   Widget translateX(double x, {bool fractional = false}) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: TranslateEffect(
         offset: Offset(x, 0),
         fractional: fractional,
@@ -37,7 +37,7 @@ extension TranslateEffectExt on Widget {
   /// [fractional] determines whether the [offset] moves the [Widget] by using
   /// its own size as a percentage or by a fixed amount.
   Widget translateY(double y, {bool fractional = false}) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: TranslateEffect(
         offset: Offset(0, y),
         fractional: fractional,
@@ -55,7 +55,7 @@ extension TranslateEffectExt on Widget {
     double y, {
     bool fractional = false,
   }) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: TranslateEffect(
         offset: Offset(x, y),
         fractional: fractional,
@@ -67,7 +67,7 @@ extension TranslateEffectExt on Widget {
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
   /// to slide this widget in.
   Widget slideIn(Offset offset, {bool fractional = false}) {
-    return AnimatableEffect(
+    return EffectWidget(
       start: TranslateEffect(
         offset: offset,
         fractional: fractional,
@@ -83,7 +83,7 @@ extension TranslateEffectExt on Widget {
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
   /// to slide this widget out.
   Widget slideOut(Offset offset, {bool fractional = false}) {
-    return AnimatableEffect(
+    return EffectWidget(
       start: TranslateEffect(
         offset: Offset.zero,
         fractional: fractional,

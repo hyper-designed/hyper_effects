@@ -19,7 +19,7 @@ extension ScaleEffectExt on Widget {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
   }) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: ScaleEffect(
         scale: scale,
         alignment: alignment,
@@ -41,7 +41,7 @@ extension ScaleEffectExt on Widget {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
   }) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: ScaleEffect(
         scaleX: scaleX,
         alignment: alignment,
@@ -63,7 +63,7 @@ extension ScaleEffectExt on Widget {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
   }) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: ScaleEffect(
         scaleY: scaleY,
         alignment: alignment,
@@ -87,7 +87,7 @@ extension ScaleEffectExt on Widget {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
   }) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: ScaleEffect(
         scaleX: scaleX,
         scaleY: scaleY,
@@ -106,7 +106,7 @@ extension ScaleEffectExt on Widget {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
   }) {
-    return AnimatableEffect(
+    return EffectWidget(
       start:
           ScaleEffect(scale: start ?? 0, alignment: alignment, origin: origin),
       end: ScaleEffect(scale: end ?? 1, alignment: alignment, origin: origin),
@@ -122,7 +122,7 @@ extension ScaleEffectExt on Widget {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
   }) {
-    return AnimatableEffect(
+    return EffectWidget(
       start: ScaleEffect(scale: start ?? 1, alignment: alignment, origin: origin),
       end: ScaleEffect(scale: end ?? 0, alignment: alignment, origin: origin),
       child: this,

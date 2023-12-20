@@ -14,11 +14,22 @@ class _OneShotAnimationState extends State<OneShotAnimation> {
     return Center(
       child: Image.asset('assets/pin_ball_256x.png', width: 150, height: 150)
           .fadeIn()
-          .slideInFromBottom()
+          .slideInFromLeft()
           .blurIn()
-          .oneShot(
-            duration: const Duration(milliseconds: 1000),
-          ).then(context).slideOutToLeft().oneShot(),
+          .oneShot() // child
+
+          // Then 1
+          .slideOutToBottom()
+          .animateAfter()
+
+          // // Then 2
+          .slideOutToBottom()
+          .animateAfter()
+
+          // // Then 2
+          .slideOutToBottom()
+          .animateAfter()
+          .resetAll()
     );
   }
 }
