@@ -8,7 +8,7 @@ extension ClipEffectExtension on Widget {
     double radius = 16,
     Clip? clip,
   ]) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: ClipEffect(
         clip: clip ?? Clip.antiAlias,
         borderRadius: BorderRadius.circular(radius),
@@ -45,7 +45,7 @@ extension ClipEffectExtension on Widget {
       _ => BorderRadius.zero
     };
 
-    return AnimatableEffect(
+    return EffectWidget(
       end: ClipEffect(
         clip: clip ?? Clip.antiAlias,
         borderRadius: borderRadius,
@@ -60,7 +60,7 @@ extension ClipEffectExtension on Widget {
     BorderRadius borderRadius = const BorderRadius.all(Radius.circular(16)),
     Clip? clip,
   ]) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: ClipEffect(
         clip: clip ?? Clip.antiAlias,
         borderRadius: borderRadius,

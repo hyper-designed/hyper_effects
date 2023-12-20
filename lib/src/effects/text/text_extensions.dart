@@ -102,7 +102,7 @@ extension TextEffectExt on Text {
       final TextStyle effectiveStyle =
           style != null ? defaultStyle.merge(style) : defaultStyle;
 
-      return AnimatableEffect(
+      return EffectWidget(
         end: RollingTextEffect(
           oldText: data ?? '',
           newText: newText,

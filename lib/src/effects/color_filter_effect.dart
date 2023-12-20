@@ -11,7 +11,7 @@ extension ColorFilterEffectExtension on Widget {
     BlendMode mode = BlendMode.overlay,
     List<double>? matrix,
   }) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: ColorFilterEffect(
         color: color,
         mode: mode,
@@ -28,7 +28,7 @@ extension ColorFilterEffectExtension on Widget {
     BlendMode mode = BlendMode.overlay,
     List<double>? matrix,
   }) {
-    return AnimatableEffect(
+    return EffectWidget(
       start: ColorFilterEffect(
         color: color,
         mode: mode,
@@ -49,7 +49,7 @@ extension ColorFilterEffectExtension on Widget {
     BlendMode mode = BlendMode.overlay,
     List<double>? matrix,
   }) {
-    return AnimatableEffect(
+    return EffectWidget(
       start: ColorFilterEffect(
         matrix: ColorFilterMatrix.identity,
         mode: mode,

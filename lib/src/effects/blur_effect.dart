@@ -9,7 +9,7 @@ import 'effect.dart';
 extension BlurEffectExt on Widget {
   /// Applies a [BlurEffect] to this widget with given [blur] value.
   Widget blur(double? blur) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: BlurEffect(blur: blur),
       child: this,
     );
@@ -18,7 +18,7 @@ extension BlurEffectExt on Widget {
   /// Applies a [BlurEffect] to only the horizontal axis of this widget with
   /// given [blurX] value.
   Widget blurX(double? blurX) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: BlurEffect(blurX: blurX),
       child: this,
     );
@@ -27,7 +27,7 @@ extension BlurEffectExt on Widget {
   /// Applies a [BlurEffect] to only the vertical axis of this widget with
   /// given [blurY] value.
   Widget blurY(double? blurY) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: BlurEffect(blurY: blurY),
       child: this,
     );
@@ -36,7 +36,7 @@ extension BlurEffectExt on Widget {
   /// Applies a [BlurEffect] to this widget with given [blurX] and [blurY]
   /// values.
   Widget blurXY(double? blurX, double? blurY) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: BlurEffect(blurX: blurX, blurY: blurY),
       child: this,
     );
@@ -44,7 +44,7 @@ extension BlurEffectExt on Widget {
 
   /// Applies a [BlurEffect] to this widget with a default blur in animation.
   Widget blurIn({double blur = 10}) {
-    return AnimatableEffect(
+    return EffectWidget(
       start: BlurEffect(blur: blur),
       end: BlurEffect(blur: 0),
       child: this,
@@ -53,7 +53,7 @@ extension BlurEffectExt on Widget {
 
   /// Applies a [BlurEffect] to this widget with a default blur out animation.
   Widget blurOut({double blur = 10}) {
-    return AnimatableEffect(
+    return EffectWidget(
       start: BlurEffect(blur: 0),
       end: BlurEffect(blur: blur),
       child: this,

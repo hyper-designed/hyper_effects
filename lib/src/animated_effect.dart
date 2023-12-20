@@ -1,7 +1,7 @@
-import 'package:flutter/widgets.dart';
-import 'package:hyper_effects/src/apple_curves.dart';
+import 'dart:math';
 
-import 'effect_animation_value.dart';
+import 'package:flutter/widgets.dart';
+import 'package:hyper_effects/hyper_effects.dart';
 
 /// Provides extension methods for [Widget] to animate it's appearance.
 extension AnimatedEffectExt on Widget {
@@ -40,6 +40,30 @@ extension AnimatedEffectExt on Widget {
     );
   }
 
+  Widget animateAfter({
+    Duration duration = const Duration(milliseconds: 350),
+    Curve curve = appleEaseInOut,
+    int repeat = 0,
+    bool reverse = false,
+    Duration delay = Duration.zero,
+    VoidCallback? onEnd,
+  }) {
+    return AnimatedEffect(
+      shouldTriggerAfterLast: true,
+      startImmediately: false,
+      toggle: false,
+      duration: duration,
+      curve: curve,
+      repeat: repeat,
+      reverse: reverse,
+      delay: delay,
+      onEnd: onEnd,
+      child: this,
+    );
+  }
+
+  Widget resetAll() => ResetEffect(child: this);
+
   /// Animate the effects applied to this widget.
   ///
   /// Unlike [animate], this method triggers the animation immediately without
@@ -54,7 +78,7 @@ extension AnimatedEffectExt on Widget {
   ///
   /// The [repeat] parameter is used to determine how the animation should be
   /// repeated.
-  Widget oneShot({
+  AnimatedEffect oneShot({
     Duration duration = const Duration(milliseconds: 350),
     Curve curve = appleEaseInOut,
     int repeat = 0,
@@ -70,40 +94,6 @@ extension AnimatedEffectExt on Widget {
       reverse: reverse,
       startImmediately: true,
       delay: delay,
-      child: this,
-    );
-  }
-
-  /// Animates the next effects only after the previous effects have finished.
-  Widget then(
-    BuildContext context, {
-    Duration duration = const Duration(milliseconds: 350),
-    Curve curve = appleEaseInOut,
-    int times = 0,
-    bool reverse = false,
-    Duration delay = Duration.zero,
-  }) {
-    // if (this case AnimatedEffect widget) {
-    //
-    //   return AnimatedEffect(
-    //     toggle: null,
-    //     duration: duration,
-    //     curve: curve,
-    //     startImmediately: true,
-    //     repeat: times,
-    //     reverse: reverse,
-    //     startAfter: state?._controller,
-    //     child: this,
-    //   );
-    // }
-
-    return AnimatedEffect(
-      toggle: null,
-      duration: duration,
-      curve: curve,
-      startImmediately: true,
-      repeat: times,
-      reverse: reverse,
       child: this,
     );
   }
@@ -162,7 +152,7 @@ class AnimatedEffect extends StatefulWidget {
   /// A delay before the animation starts.
   final Duration delay;
 
-  final AnimationController? startAfter;
+  final bool shouldTriggerAfterLast;
 
   /// Creates [AnimatedEffect] widget.
   const AnimatedEffect({
@@ -176,7 +166,7 @@ class AnimatedEffect extends StatefulWidget {
     this.repeat = 0,
     this.reverse = false,
     this.delay = Duration.zero,
-    this.startAfter,
+    this.shouldTriggerAfterLast = false,
   });
 
   @override
@@ -206,13 +196,7 @@ class _AnimatedEffectState extends State<AnimatedEffect>
 
     _controller.addStatusListener(onAnimationStatusChanged);
 
-    if (widget.startImmediately && widget.startAfter == null) {
-      forward();
-    }
-
-    if (widget.startAfter != null) {
-      widget.startAfter!.addStatusListener(startAfterListener);
-    }
+    if (widget.startImmediately) forward();
   }
 
   @override
@@ -227,7 +211,6 @@ class _AnimatedEffectState extends State<AnimatedEffect>
 
   @override
   void dispose() {
-    widget.startAfter?.removeStatusListener(startAfterListener);
     _controller.removeStatusListener(onAnimationStatusChanged);
     _controller.dispose();
     super.dispose();
@@ -240,15 +223,29 @@ class _AnimatedEffectState extends State<AnimatedEffect>
   }
 
   void onAnimationStatusChanged(AnimationStatus status) {
+    print('onAnimationStatusChanged: $status | ${this.hashCode}');
     if (status == AnimationStatus.completed ||
         status == AnimationStatus.dismissed) {
       widget.onEnd?.call();
 
       if (_repeatTimes == -1 || _repeatTimes > 0) {
         if (_repeatTimes != -1 && (!widget.reverse || !shouldReverse)) {
-          _repeatTimes--;
+          _repeatTimes = max(0, _repeatTimes - 1);
         }
         forward();
+      } else if (_repeatTimes == 0) {
+        // chaining animations
+        final parentState =
+            context.findAncestorStateOfType<_AnimatedEffectState>();
+        if (parentState?.widget.shouldTriggerAfterLast == true) {
+          parentState?.forward();
+        }
+        if (parentState == null) {
+          print('resetting from state: ${this.hashCode}');
+          final resetState =
+              context.findAncestorStateOfType<_ResetEffectState>();
+          resetState?.reset();
+        }
       }
     }
   }
@@ -259,6 +256,7 @@ class _AnimatedEffectState extends State<AnimatedEffect>
       if (widget.reverse && shouldReverse) {
         _controller.reverse();
       } else {
+        _controller.reset();
         _controller.forward(from: 0);
       }
       shouldReverse = !shouldReverse;
@@ -287,5 +285,42 @@ class _AnimatedEffectState extends State<AnimatedEffect>
       ),
       child: widget.child,
     );
+  }
+}
+
+class ResetEffect extends StatefulWidget {
+  final Widget child;
+  const ResetEffect({super.key, required this.child});
+
+  @override
+  State<ResetEffect> createState() => _ResetEffectState();
+}
+
+class _ResetEffectState extends State<ResetEffect> {
+  @override
+  Widget build(BuildContext context) => widget.child;
+
+  void reset() {
+    print('reset');
+    final state = findLeafAnimatedEffectState(context);
+    print('found state: ${state.hashCode}');
+    state?.forward();
+  }
+
+  _AnimatedEffectState? findLeafAnimatedEffectState(BuildContext context) {
+    _AnimatedEffectState? result;
+
+    void visitor(Element element) {
+      final Widget widget = element.widget;
+      if (widget is AnimatedEffect) {
+        final StatefulElement editableTextElement = element as StatefulElement;
+
+        result = editableTextElement.state as _AnimatedEffectState;
+      }
+      element.visitChildren(visitor);
+    }
+
+    context.visitChildElements(visitor);
+    return result;
   }
 }

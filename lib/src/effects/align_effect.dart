@@ -7,7 +7,7 @@ import 'effect.dart';
 extension AlignEffectExt on Widget {
   /// Applies an [AlignEffect] to a [Widget] with the given [alignment].
   Widget align(AlignmentGeometry alignment) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: AlignEffect(alignment: alignment),
       child: this,
     );
@@ -15,7 +15,7 @@ extension AlignEffectExt on Widget {
 
   /// Applies an [AlignEffect] to a [Widget] only on the x-axis.
   Widget alignX(double x) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: AlignEffect(alignment: Alignment(x, 0)),
       child: this,
     );
@@ -23,7 +23,7 @@ extension AlignEffectExt on Widget {
 
   /// Applies an [AlignEffect] to a [Widget] only on the y-axis.
   Widget alignY(double y) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: AlignEffect(alignment: Alignment(0, y)),
       child: this,
     );
@@ -32,7 +32,7 @@ extension AlignEffectExt on Widget {
   /// Applies an [AlignEffect] to a [Widget] with the given [x] and [y]
   /// values.
   Widget alignXY(double x, double y) {
-    return AnimatableEffect(
+    return EffectWidget(
       end: AlignEffect(
         alignment: Alignment(x, y),
       ),
