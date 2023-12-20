@@ -33,24 +33,10 @@ class _CounterAppState extends State<CounterApp> {
             const Text(
               'You have pushed the button this many times:',
             ),
-            Container(
-              width: double.infinity,
-              alignment: Alignment.center,
-              decoration: const BoxDecoration(),
-              clipBehavior: Clip.hardEdge,
-              child: Text(
-                '${max(0, _counter - 1)}',
-                style: Theme.of(context).textTheme.headlineMedium,
-              )
-                  .roll(
-                    '$_counter',
-                    clipBehavior: Clip.none,
-                  )
-                  .animate(
-                    toggle: _counter,
-                    duration: const Duration(milliseconds: 1000),
-                  ),
-            ),
+            Text(
+              '${max(0, _counter - 1)}',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ).roll('$_counter').animate(toggle: _counter),
           ],
         ),
       ),
