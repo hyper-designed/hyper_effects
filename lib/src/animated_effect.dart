@@ -25,6 +25,7 @@ extension AnimatedEffectExt on Widget {
     Curve curve = appleEaseInOut,
     int repeat = 0,
     bool reverse = false,
+    Duration delay = Duration.zero,
     VoidCallback? onEnd,
   }) {
     return AnimatedEffect(
@@ -33,6 +34,7 @@ extension AnimatedEffectExt on Widget {
       curve: curve,
       repeat: repeat,
       reverse: reverse,
+      delay: delay,
       onEnd: onEnd,
       child: this,
     );
@@ -57,6 +59,7 @@ extension AnimatedEffectExt on Widget {
     Curve curve = appleEaseInOut,
     int repeat = 0,
     bool reverse = false,
+    Duration delay = const Duration(milliseconds: 350),
     VoidCallback? onEnd,
   }) {
     return AnimatedEffect(
@@ -66,6 +69,7 @@ extension AnimatedEffectExt on Widget {
       repeat: repeat,
       reverse: reverse,
       startImmediately: true,
+      delay: delay,
       child: this,
     );
   }
@@ -75,24 +79,23 @@ extension AnimatedEffectExt on Widget {
     BuildContext context, {
     Duration duration = const Duration(milliseconds: 350),
     Curve curve = appleEaseInOut,
-    int times = -1,
+    int times = 0,
     bool reverse = false,
     Duration delay = Duration.zero,
   }) {
-    if (this case AnimatedEffect widget) {
-      final state = context.findAncestorStateOfType<_AnimatedEffectState>();
-
-      return AnimatedEffect(
-        toggle: null,
-        duration: duration,
-        curve: curve,
-        startImmediately: true,
-        repeat: times,
-        reverse: reverse,
-        startAfter: state?._controller,
-        child: this,
-      );
-    }
+    // if (this case AnimatedEffect widget) {
+    //
+    //   return AnimatedEffect(
+    //     toggle: null,
+    //     duration: duration,
+    //     curve: curve,
+    //     startImmediately: true,
+    //     repeat: times,
+    //     reverse: reverse,
+    //     startAfter: state?._controller,
+    //     child: this,
+    //   );
+    // }
 
     return AnimatedEffect(
       toggle: null,
@@ -122,69 +125,9 @@ extension AnimatedEffectExt on Widget {
       startImmediately: true,
       repeat: times,
       reverse: reverse,
+      delay: delay,
       child: this,
     );
-  }
-}
-
-/// Provides extension methods for [Iterable<Widget>] to animate their
-/// appearance in bulk.
-extension AnimatedListEffectExt on Iterable<Widget> {
-  /// Animate the effects applied to this list of widgets.
-  ///
-  /// The [toggle] parameter is used to trigger the animation. As long as the
-  /// value of [toggle] is the same, the animation will not be triggered again.
-  ///
-  /// The [duration] parameter is used to set the duration of the animation.
-  ///
-  /// The [curve] parameter is used to set the curve of the animation.
-  ///
-  /// The [onEnd] parameter is used to set a callback that is called when the
-  /// animation ends.
-  ///
-  /// The [repeat] parameter is used to determine how the animation should be
-  /// repeated.
-  ///
-  /// The [stagger] parameter is used to set the delay between each animation.
-  ///
-  Iterable<Widget> animate({
-    required Object? toggle,
-    Duration duration = const Duration(milliseconds: 350),
-    Curve curve = appleEaseInOut,
-    Duration stagger = Duration.zero,
-    int repeat = 0,
-    bool reverse = false,
-    VoidCallback? onEnd,
-  }) {
-    return map((e) => e.animate(
-          toggle: toggle,
-          duration: duration,
-          curve: curve,
-          repeat: repeat,
-          reverse: reverse,
-          onEnd: onEnd,
-        ));
-  }
-
-  /// Animates the next effects only after the previous effects have finished.
-  // Iterable<Widget> then(BuildContext context,
-  //     [Duration delay = Duration.zero]) {
-  //   return map((e) => e.then(context, delay));
-  // }
-
-  /// Repeats the chain of preceding effects.
-  /// [delay] is the delay between each repetition.
-  /// [behavior] determines how the animation should be repeated.
-  Iterable<Widget> repeat({
-    Duration delay = Duration.zero,
-    int times = 0,
-    bool reverse = false,
-  }) {
-    return map((e) => e.repeat(
-          delay: delay,
-          times: times,
-          reverse: reverse,
-        ));
   }
 }
 
@@ -216,6 +159,9 @@ class AnimatedEffect extends StatefulWidget {
   /// Whether the animation should be reversed after each repetition.
   final bool reverse;
 
+  /// A delay before the animation starts.
+  final Duration delay;
+
   final AnimationController? startAfter;
 
   /// Creates [AnimatedEffect] widget.
@@ -229,6 +175,7 @@ class AnimatedEffect extends StatefulWidget {
     this.onEnd,
     this.repeat = 0,
     this.reverse = false,
+    this.delay = Duration.zero,
     this.startAfter,
   });
 
@@ -253,18 +200,13 @@ class _AnimatedEffectState extends State<AnimatedEffect>
     duration: widget.duration,
   );
 
-  // late Animation<double> _animation = CurvedAnimation(
-  //   parent: _controller,
-  //   curve: widget.curve,
-  // );
-
   @override
   void initState() {
     super.initState();
 
     _controller.addStatusListener(onAnimationStatusChanged);
 
-    if (widget.startImmediately) {
+    if (widget.startImmediately && widget.startAfter == null) {
       forward();
     }
 
@@ -277,14 +219,6 @@ class _AnimatedEffectState extends State<AnimatedEffect>
   void didUpdateWidget(covariant AnimatedEffect oldWidget) {
     super.didUpdateWidget(oldWidget);
     _controller.duration = widget.duration;
-
-    // Update curve.
-    if (widget.curve != oldWidget.curve) {
-      // _animation = CurvedAnimation(
-      //   parent: _controller,
-      //   curve: widget.curve,
-      // );
-    }
 
     if (widget.toggle != oldWidget.toggle) {
       forward();
@@ -313,19 +247,30 @@ class _AnimatedEffectState extends State<AnimatedEffect>
       if (_repeatTimes == -1 || _repeatTimes > 0) {
         if (_repeatTimes != -1 && (!widget.reverse || !shouldReverse)) {
           _repeatTimes--;
-        } else {}
+        }
         forward();
       }
     }
   }
 
   void forward() {
-    if (widget.reverse && shouldReverse) {
-      _controller.reverse();
+    ensureDelay(() {
+      if (!mounted) return;
+      if (widget.reverse && shouldReverse) {
+        _controller.reverse();
+      } else {
+        _controller.forward(from: 0);
+      }
+      shouldReverse = !shouldReverse;
+    });
+  }
+
+  void ensureDelay(VoidCallback fn) {
+    if (widget.delay == Duration.zero) {
+      fn();
     } else {
-      _controller.forward(from: 0);
+      Future.delayed(widget.delay, fn);
     }
-    shouldReverse = !shouldReverse;
   }
 
   @override

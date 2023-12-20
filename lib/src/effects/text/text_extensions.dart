@@ -6,6 +6,7 @@ export 'rolling_text_effect.dart';
 
 /// Provides a extension method to apply a [RollingTextEffect] to a [Widget].
 extension TextEffectExt on Text {
+
   /// Rolls each character individually to form the [newText].
   ///
   /// The [padding] is the internal padding to apply between the row of symbol

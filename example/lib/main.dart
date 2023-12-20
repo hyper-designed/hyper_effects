@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_box_transform/flutter_box_transform.dart';
-import 'package:hyper_effects_demo/stories/chained_animation.dart';
+import 'package:hyper_effects_demo/stories/spring_animation.dart';
 import 'package:hyper_effects_demo/stories/color_filter_scroll_transition.dart';
 import 'package:hyper_effects_demo/stories/counter_app.dart';
 import 'package:hyper_effects_demo/stories/scroll_phase_transition.dart';
 import 'package:hyper_effects_demo/stories/scroll_wheel_blur.dart';
 import 'package:hyper_effects_demo/stories/scroll_wheel_transition.dart';
-import 'package:hyper_effects_demo/stories/spring_animation.dart';
+import 'package:hyper_effects_demo/stories/one_shot_animation.dart';
 import 'package:hyper_effects_demo/stories/text_animation.dart';
 import 'package:hyper_effects_demo/stories/windows_settings_transition.dart';
 
@@ -29,7 +29,6 @@ class MyApp extends StatelessWidget {
     return AdaptiveTheme(
       light: ThemeData(
         useMaterial3: true,
-        // brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(
           brightness: Brightness.light,
           seedColor: Colors.blue,
@@ -46,8 +45,6 @@ class MyApp extends StatelessWidget {
       ),
       dark: ThemeData(
         useMaterial3: true,
-        // brightness: Brightness.dark,
-        // colorSchemeSeed: Colors.blue,
         colorScheme: ColorScheme.fromSeed(
           brightness: Brightness.dark,
           seedColor: Colors.blue,
@@ -84,25 +81,21 @@ class Storyboard extends StatefulWidget {
 class _StoryboardState extends State<Storyboard> {
   final List<Story> animationStories = [
     const Story(
-      title: 'Spring Animation',
-      child: SpringAnimation(),
-    ),
-    const Story(
-      title: 'Text Animations',
+      title: 'Text Rolling Animations',
       child: TextAnimation(),
     ),
     const Story(
-      title: 'Chained Animation',
-      child: ChainedAnimation(),
-    ),
-    const Story(
-      title: 'Counter App',
+      title: 'Rolling Counter App',
       child: CounterApp(),
     ),
-    // const Story(
-    //   title: 'Chained Animation',
-    //   child: ChainedAnimation(),
-    // )
+    const Story(
+      title: 'Fade In Animation',
+      child: OneShotAnimation(),
+    ),
+    const Story(
+      title: 'Spring Animation',
+      child: SpringAnimation(),
+    ),
   ];
   final List<Story> transitionStories = [
     const Story(
