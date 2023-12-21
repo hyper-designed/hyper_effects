@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_box_transform/flutter_box_transform.dart';
-import 'package:hyper_effects_demo/stories/shake_and_spring_animation.dart';
 import 'package:hyper_effects_demo/stories/color_filter_scroll_transition.dart';
 import 'package:hyper_effects_demo/stories/counter_app.dart';
+import 'package:hyper_effects_demo/stories/one_shot_reset_animation.dart';
 import 'package:hyper_effects_demo/stories/scroll_phase_transition.dart';
 import 'package:hyper_effects_demo/stories/scroll_wheel_blur.dart';
 import 'package:hyper_effects_demo/stories/scroll_wheel_transition.dart';
-import 'package:hyper_effects_demo/stories/one_shot_reset_animation.dart';
+import 'package:hyper_effects_demo/stories/shake_and_spring_animation.dart';
 import 'package:hyper_effects_demo/stories/text_animation.dart';
 import 'package:hyper_effects_demo/stories/windows_settings_transition.dart';
 
@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           brightness: Brightness.light,
           seedColor: Colors.blue,
-          background: const Color(0xFF0F0F0F),
+          background: const Color(0xFFF0F0F0),
         ),
         inputDecorationTheme: InputDecorationTheme(
           isDense: true,
@@ -78,7 +78,7 @@ class Storyboard extends StatefulWidget {
   State<Storyboard> createState() => _StoryboardState();
 }
 
-class _StoryboardState extends State<Storyboard> {
+class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
   final List<Story> animationStories = [
     const Story(
       title: 'Text Rolling Animations',
@@ -124,112 +124,159 @@ class _StoryboardState extends State<Storyboard> {
   int? selectedTransition;
   int? selectedCategory;
 
+  bool openDrawer = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final screen = MediaQuery.sizeOf(context);
+
+    if (screen.width > 800) {
+      openDrawer = true;
+    }
+  }
+
+  @override
+  void didChangeMetrics() {
+    super.didChangeMetrics();
+
+    final screen = MediaQuery.sizeOf(context);
+    openDrawer = screen.width > 800;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: Text(
+          'Hyper Effects Storyboard',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () {
+            setState(() {
+              openDrawer = !openDrawer;
+            });
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.brightness_4),
+            onPressed: () {
+              AdaptiveTheme.of(context).toggleThemeMode();
+            },
+          ),
+        ],
+      ),
       body: Row(
         children: [
-          SizedBox(
-            width: 300,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutQuart,
+            width: openDrawer ? 350 : 0,
+            child: Stack(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    'Hyper Effects Storyboard',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ),
-                const Divider(height: 0),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text('Animations',
-                      style: Theme.of(context).textTheme.titleLarge),
-                ),
-                // CustomExpansionTile(
-                //   title: const Text('Animations'),
-                //   isExpanded: selectedCategory == 0,
-                //   onExpansionChanged: () {
-                //     setState(() {
-                //       if (selectedCategory == 0) {
-                //         selectedCategory = null;
-                //       } else {
-                //         selectedCategory = 0;
-                //       }
-                //     });
-                //   },
-                //   children: [
-                for (final Story story in animationStories)
-                  Material(
-                    type: MaterialType.transparency,
-                    borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(32),
-                      bottomRight: Radius.circular(32),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: ListTile(
-                      title: Padding(
-                        padding: const EdgeInsets.only(left: 16),
-                        child: Text(story.title),
-                      ),
-                      onTap: () {
-                        setState(() {
-                          selectedAnimation = animationStories.indexOf(story);
-                          selectedTransition = null;
-                        });
-                      },
-                      selected:
-                          animationStories.indexOf(story) == selectedAnimation,
-                    ),
-                  ),
-                // ],
-                // ),
-                const Divider(height: 0, indent: 16, endIndent: 16),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text('Transitions',
-                      style: Theme.of(context).textTheme.titleLarge),
-                ),
-                // CustomExpansionTile(
-                //   title: const Text('Transitions'),
-                //   isExpanded: selectedCategory == 1,
-                //   onExpansionChanged: () {
-                //     setState(() {
-                //       if (selectedCategory == 1) {
-                //         selectedCategory = null;
-                //       } else {
-                //         selectedCategory = 1;
-                //       }
-                //     });
-                //   },
-                //   children: [
-                for (final Story story in transitionStories)
-                  Material(
-                    type: MaterialType.transparency,
-                    borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(32),
-                      bottomRight: Radius.circular(32),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: ListTile(
-                      title: Padding(
-                        padding: const EdgeInsets.only(left: 16),
-                        child: Text(story.title),
-                      ),
-                      onTap: () {
-                        setState(() {
-                          selectedTransition = transitionStories.indexOf(story);
-                          selectedAnimation = null;
-                        });
-                      },
-                      selected: transitionStories.indexOf(story) ==
-                          selectedTransition,
+                Positioned(
+                  top: 0,
+                  bottom: 0,
+                  left: 0,
+                  width: 350,
+                  child: SizedBox(
+                    width: 350,
+                    child: ListView(
+                      children: [
+                        const SizedBox(height: 16),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            bottom: 16,
+                            top: 0,
+                          ),
+                          child: Text('Animations',
+                              style: Theme.of(context).textTheme.titleLarge),
+                        ),
+                        for (final Story story in animationStories)
+                          Material(
+                            type: MaterialType.transparency,
+                            borderRadius: const BorderRadius.only(
+                              topRight: Radius.circular(32),
+                              bottomRight: Radius.circular(32),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: ListTile(
+                              title: Padding(
+                                padding: const EdgeInsets.only(left: 16),
+                                child: Text(story.title),
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  selectedAnimation =
+                                      animationStories.indexOf(story);
+                                  selectedTransition = null;
+                                });
+                              },
+                              selected: animationStories.indexOf(story) ==
+                                  selectedAnimation,
+                            ),
+                          ),
+                        const Divider(height: 32, indent: 16, endIndent: 16),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            bottom: 16,
+                            top: 0,
+                          ),
+                          child: Text('Transitions',
+                              style: Theme.of(context).textTheme.titleLarge),
+                        ),
+                        for (final Story story in transitionStories)
+                          Material(
+                            type: MaterialType.transparency,
+                            borderRadius: const BorderRadius.only(
+                              topRight: Radius.circular(32),
+                              bottomRight: Radius.circular(32),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: ListTile(
+                              title: Padding(
+                                padding: const EdgeInsets.only(left: 16),
+                                child: Text(story.title),
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  selectedTransition =
+                                      transitionStories.indexOf(story);
+                                  selectedAnimation = null;
+                                });
+                              },
+                              selected: transitionStories.indexOf(story) ==
+                                  selectedTransition,
+                            ),
+                          ),
+                        const Divider(height: 16),
+                      ],
                     ),
                   ),
-                // ],
-                // ),
-                const Divider(height: 0),
+                ),
               ],
             ),
           ),
