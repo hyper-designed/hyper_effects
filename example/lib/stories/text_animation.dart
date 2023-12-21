@@ -16,52 +16,64 @@ class TextAnimation extends StatefulWidget {
 class _TextAnimationState extends State<TextAnimation> {
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const SizedBox(height: 32),
-        const Translation(),
-        const SizedBox(height: 32),
-        const TagLine(),
-        const SizedBox(height: 56),
-        const EmojiLine(),
-        const SizedBox(height: 56),
-        const LikeButton(),
-        Expanded(
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Positioned(
-                bottom: -650,
-                width: 500,
-                height: 1040,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(100),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      width: 2,
-                    ),
-                  ),
-                  clipBehavior: Clip.hardEdge,
-                  child: const ColorPalettePage(),
-                ),
-              ),
-              Positioned(
-                bottom: -650,
-                child: IgnorePointer(
-                  child: Image.asset(
-                    'assets/iphone15pro_1024x.png',
-                    width: 512,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        Translation(),
+        SizedBox(height: 16),
+        TagLine(),
+        SizedBox(height: 16),
+        EmojiLine(),
+        SizedBox(height: 32),
+        LikeButton(),
+        SizedBox(height: 32),
+        Flexible(
+            flex: 10,
+            child: IPhone()),
       ],
+    );
+  }
+}
+
+class IPhone extends StatelessWidget {
+  const IPhone({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: SizedBox(
+        width: 512,
+        height: 512,
+        child: Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              width: 512,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(100)),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  width: 2,
+                ),
+              ),
+              clipBehavior: Clip.hardEdge,
+              child: const ColorPalettePage(),
+            ),
+            Positioned(
+              bottom: -530,
+              child: IgnorePointer(
+                child: Image.asset(
+                  'assets/iphone15pro_1024x.png',
+                  width: 512,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -87,10 +99,15 @@ class _EmojiLineState extends State<EmojiLine> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFF272727),
+          color: Theme.of(context).colorScheme.primaryContainer,
           borderRadius: BorderRadius.circular(32),
         ),
-        child: const Text('Hello😀😃😄😁😆😅😂🤣🥲🥹️😊😇🙂🙃😉😌Sexy')
+        child: Text(
+          'Hello😀😃😄😁😆😅😂🤣🥲🥹️😊😇🙂🙃😉😌Sexy',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
+          ),
+        )
             .roll(
               'World🧳🌂☂️🧵🪡🪢🪭🧶👓🕶🥽🥼🦺👔👖🧣Effect',
               tapeStrategy: const ConsistentSymbolTapeStrategy(4),
@@ -160,7 +177,7 @@ class _TagLineState extends State<TagLine> {
         Text(
           'We help you',
           style: GoogleFonts.robotoMono().copyWith(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onBackground,
             fontSize: 48,
           ),
           strutStyle: const StrutStyle(
@@ -318,7 +335,7 @@ class _TranslationState extends State<Translation> {
         Text(
           ', Stranger',
           style: GoogleFonts.sacramento().copyWith(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onBackground,
             fontSize: 56,
           ),
           strutStyle: const StrutStyle(
@@ -330,20 +347,6 @@ class _TranslationState extends State<Translation> {
         ),
       ],
     );
-  }
-}
-
-class RisingStrong extends StatefulWidget {
-  const RisingStrong({super.key});
-
-  @override
-  State<RisingStrong> createState() => _RisingStrongState();
-}
-
-class _RisingStrongState extends State<RisingStrong> {
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
   }
 }
 
@@ -382,7 +385,7 @@ class _LikeButtonState extends State<LikeButton> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.thumb_up_sharp, size: 18),
+                  const Icon(Icons.thumb_up_sharp, size: 18, color: Colors.white,),
                   const SizedBox(width: 8),
                   Text(
                     '${lastCounter}K',
@@ -409,7 +412,7 @@ class _LikeButtonState extends State<LikeButton> {
                     indent: 4,
                     endIndent: 4,
                   ),
-                  const Icon(Icons.thumb_down_sharp, size: 18),
+                  const Icon(Icons.thumb_down_sharp, size: 18, color: Colors.white,),
                 ],
               ),
             ),
@@ -432,7 +435,7 @@ class _LikeButtonState extends State<LikeButton> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.share, size: 18),
+                  const Icon(Icons.share, size: 18, color: Colors.white,),
                   const SizedBox(width: 8),
                   Text(
                     'Share',
@@ -478,7 +481,7 @@ class _LikeButtonState extends State<LikeButton> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.download, size: 18),
+                  const Icon(Icons.download, size: 18, color: Colors.white,),
                   const SizedBox(width: 8),
                   Text(
                     switch ((downloadIteration - 1) % 3) {
