@@ -10,8 +10,17 @@ extension ColorFilterEffectExtension on Widget {
     Color? color,
     BlendMode mode = BlendMode.overlay,
     List<double>? matrix,
+    Color? colorFrom,
+    List<double>? fromMatrix,
   }) {
     return EffectWidget(
+      start: colorFrom == null
+          ? null
+          : ColorFilterEffect(
+              color: colorFrom,
+              mode: mode,
+              matrix: fromMatrix,
+            ),
       end: ColorFilterEffect(
         color: color,
         mode: mode,
@@ -26,7 +35,7 @@ extension ColorFilterEffectExtension on Widget {
   Widget flashIn({
     Color color = Colors.white,
     BlendMode mode = BlendMode.overlay,
-    List<double>? matrix,
+    List<double> matrix = ColorFilterMatrix.identity,
   }) {
     return EffectWidget(
       start: ColorFilterEffect(
@@ -47,7 +56,7 @@ extension ColorFilterEffectExtension on Widget {
   Widget flashOut({
     Color color = Colors.white,
     BlendMode mode = BlendMode.overlay,
-    List<double>? matrix,
+    List<double> matrix = ColorFilterMatrix.identity,
   }) {
     return EffectWidget(
       start: ColorFilterEffect(

@@ -7,8 +7,8 @@ import 'effects/effect.dart';
 /// used directly. Instead, use the extension methods provided by the effects
 /// to apply them to a [Widget].
 ///
-/// This widget does a parent lookup to find the [EffectAnimationValue] widget
-/// to get the animation value. If no [EffectAnimationValue] is found, the
+/// This widget does a parent lookup to find the [EffectQuery] widget
+/// to get the animation value. If no [EffectQuery] is found, the
 /// animation value is 1.
 ///
 /// If an animation value is found, the [Effect.lerp] method is called to
@@ -41,18 +41,17 @@ class _EffectWidgetState extends State<EffectWidget> {
   late Effect end = widget.end;
 
   /// The [Effect] to interpolate from.
-  late Effect begin = widget.start ?? widget.end;
+  late Effect start = widget.start ?? widget.end;
 
   /// caches the previous animation value to use in didUpdateWidget
   /// to calculate the begin value. This is used to create a smooth transition
   /// between two [Effect]s when the [Effect] changes mid animation.
   late double previousAnimationValue = 0;
 
-  /// Pulls the parent [EffectAnimationValue] inherited widget.
-  EffectAnimationValue? get effectAnimationValue =>
-      EffectAnimationValue.maybeOf(context);
+  /// Pulls the parent [EffectQuery] inherited widget.
+  EffectQuery? get effectAnimationValue => EffectQuery.maybeOf(context);
 
-  /// Pulls the animation value from the parent [EffectAnimationValue] widget.
+  /// Pulls the animation value from the parent [EffectQuery] widget.
   double get animationValue => effectAnimationValue?.curvedValue ?? 0;
 
   @override
@@ -67,7 +66,7 @@ class _EffectWidgetState extends State<EffectWidget> {
     if (oldWidget.end != widget.end &&
         oldWidget.end.runtimeType == widget.end.runtimeType) {
       if (effectAnimationValue != null && !effectAnimationValue!.isTransition) {
-        begin = begin.lerp(end, previousAnimationValue);
+        start = start.lerp(end, previousAnimationValue);
       }
 
       end = widget.end;
@@ -79,9 +78,9 @@ class _EffectWidgetState extends State<EffectWidget> {
     if (effectAnimationValue?.lerpValues == false) {
       return end.apply(context, widget.child);
     } else {
-      if (begin.runtimeType != end.runtimeType) return widget.child;
+      if (start.runtimeType != end.runtimeType) return widget.child;
 
-      final Effect newEffect = begin.lerp(end, animationValue);
+      final Effect newEffect = start.lerp(end, animationValue);
       return newEffect.apply(context, widget.child);
     }
   }

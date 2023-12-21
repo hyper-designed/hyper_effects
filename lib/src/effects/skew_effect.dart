@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 
-import '../effect_builder.dart';
+import '../effect_widget.dart';
 import 'effect.dart';
 
 /// Provides a extension method to apply a [SkewEffect] to a [Widget].
@@ -15,11 +15,19 @@ extension SkewEffectExt on Widget {
   /// [origin] is the origin of the skew. This allows to translate the origin
   /// of the skew to a different point.
   Widget skew(
-    double? skew, {
+    double skew, {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
+    double skewFrom = 0,
+    AlignmentGeometry alignmentFrom = Alignment.center,
+    Offset originFrom = Offset.zero,
   }) {
     return EffectWidget(
+      start: SkewEffect(
+        skew: skewFrom,
+        alignment: alignmentFrom,
+        origin: originFrom,
+      ),
       end: SkewEffect(
         skew: skew,
         alignment: alignment,
@@ -37,11 +45,19 @@ extension SkewEffectExt on Widget {
   /// [origin] is the origin of the skew. This allows to translate the origin
   /// of the skew to a different point.
   Widget skewX(
-    double? skewX, {
+    double skewX, {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
+    double skewFrom = 0,
+    AlignmentGeometry alignmentFrom = Alignment.center,
+    Offset originFrom = Offset.zero,
   }) {
     return EffectWidget(
+      start: SkewEffect(
+        skewX: skewFrom,
+        alignment: alignmentFrom,
+        origin: originFrom,
+      ),
       end: SkewEffect(
         skewX: skewX,
         alignment: alignment,
@@ -59,11 +75,19 @@ extension SkewEffectExt on Widget {
   /// [origin] is the origin of the skew. This allows to translate the origin
   /// of the skew to a different point.
   Widget skewY(
-    double? skewY, {
+    double skewY, {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
+    double skewFrom = 0,
+    AlignmentGeometry alignmentFrom = Alignment.center,
+    Offset originFrom = Offset.zero,
   }) {
     return EffectWidget(
+      start: SkewEffect(
+        skewY: skewFrom,
+        alignment: alignmentFrom,
+        origin: originFrom,
+      ),
       end: SkewEffect(
         skewY: skewY,
         alignment: alignment,
@@ -81,12 +105,22 @@ extension SkewEffectExt on Widget {
   /// [origin] is the origin of the skew. This allows to translate the origin
   /// of the skew to a different point.
   Widget skewXY(
-    double? skewX,
-    double? skewY, {
+    double skewX,
+    double skewY, {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
+    double skewFromX = 0,
+    double skewFromY = 0,
+    AlignmentGeometry alignmentFrom = Alignment.center,
+    Offset originFrom = Offset.zero,
   }) {
     return EffectWidget(
+      start: SkewEffect(
+        skewX: skewFromX,
+        skewY: skewFromY,
+        alignment: alignmentFrom,
+        origin: originFrom,
+      ),
       end: SkewEffect(
         skewX: skewX,
         skewY: skewY,

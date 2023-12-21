@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import '../effect_builder.dart';
+import '../effect_widget.dart';
 import 'effect.dart';
 
 const double _kDefaultSlideOffset = 100.0;
@@ -10,8 +10,18 @@ extension TranslateEffectExt on Widget {
   /// Applies a [TranslateEffect] to a [Widget] with the given [offset].
   /// [fractional] determines whether the [offset] moves the [Widget] by using
   /// its own size as a percentage or by a fixed amount.
-  Widget translate(Offset offset, {bool fractional = false}) {
+  Widget translate(
+    Offset offset, {
+    bool fractional = false,
+    Offset? from,
+  }) {
     return EffectWidget(
+      start: from == null
+          ? null
+          : TranslateEffect(
+              offset: from,
+              fractional: fractional,
+            ),
       end: TranslateEffect(
         offset: offset,
         fractional: fractional,
@@ -23,8 +33,18 @@ extension TranslateEffectExt on Widget {
   /// Applies a [TranslateEffect] to a [Widget] only on the x-axis.
   /// [fractional] determines whether the [offset] moves the [Widget] by using
   /// its own size as a percentage or by a fixed amount.
-  Widget translateX(double x, {bool fractional = false}) {
+  Widget translateX(
+    double x, {
+    bool fractional = false,
+    double? from,
+  }) {
     return EffectWidget(
+      start: from == null
+          ? null
+          : TranslateEffect(
+              offset: Offset(from, 0),
+              fractional: fractional,
+            ),
       end: TranslateEffect(
         offset: Offset(x, 0),
         fractional: fractional,
@@ -36,8 +56,18 @@ extension TranslateEffectExt on Widget {
   /// Applies a [TranslateEffect] to a [Widget] only on the y-axis.
   /// [fractional] determines whether the [offset] moves the [Widget] by using
   /// its own size as a percentage or by a fixed amount.
-  Widget translateY(double y, {bool fractional = false}) {
+  Widget translateY(
+    double y, {
+    bool fractional = false,
+    double? from,
+  }) {
     return EffectWidget(
+      start: from == null
+          ? null
+          : TranslateEffect(
+              offset: Offset(0, from),
+              fractional: fractional,
+            ),
       end: TranslateEffect(
         offset: Offset(0, y),
         fractional: fractional,
@@ -54,8 +84,15 @@ extension TranslateEffectExt on Widget {
     double x,
     double y, {
     bool fractional = false,
+    Offset? from,
   }) {
     return EffectWidget(
+      start: from == null
+          ? null
+          : TranslateEffect(
+              offset: from,
+              fractional: fractional,
+            ),
       end: TranslateEffect(
         offset: Offset(x, y),
         fractional: fractional,
@@ -101,80 +138,88 @@ extension TranslateEffectExt on Widget {
   Widget slideInFromLeft({
     double? value,
     bool fractional = false,
-  }) => slideIn(
-      Offset(value ?? (fractional ? -1 : -_kDefaultSlideOffset), 0),
-      fractional: fractional,
-    );
+  }) =>
+      slideIn(
+        Offset(value ?? (fractional ? -1 : -_kDefaultSlideOffset), 0),
+        fractional: fractional,
+      );
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
   /// to slide this widget in from the right.
   Widget slideInFromRight({
     double? value,
     bool fractional = false,
-  }) => slideIn(
-      Offset(value ?? (fractional ? 1 : _kDefaultSlideOffset), 0),
-      fractional: fractional,
-    );
+  }) =>
+      slideIn(
+        Offset(value ?? (fractional ? 1 : _kDefaultSlideOffset), 0),
+        fractional: fractional,
+      );
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
   /// to slide this widget in from the top.
   Widget slideInFromTop({
     double? value,
     bool fractional = false,
-  }) => slideIn(
-      Offset(0, value ?? (fractional ? -1 : -_kDefaultSlideOffset)),
-      fractional: fractional,
-    );
+  }) =>
+      slideIn(
+        Offset(0, value ?? (fractional ? -1 : -_kDefaultSlideOffset)),
+        fractional: fractional,
+      );
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
   /// to slide this widget in from the bottom.
   Widget slideInFromBottom({
     double? value,
     bool fractional = false,
-  }) => slideIn(
-      Offset(0, value ?? (fractional ? 1 : _kDefaultSlideOffset)),
-      fractional: fractional,
-    );
+  }) =>
+      slideIn(
+        Offset(0, value ?? (fractional ? 1 : _kDefaultSlideOffset)),
+        fractional: fractional,
+      );
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
   /// to slide this widget out to the left.
   Widget slideOutToLeft({
     double? value,
     bool fractional = false,
-  }) => slideOut(
-      Offset(value ?? (fractional ? -1 : -_kDefaultSlideOffset), 0),
-      fractional: fractional,
-    );
+  }) =>
+      slideOut(
+        Offset(value ?? (fractional ? -1 : -_kDefaultSlideOffset), 0),
+        fractional: fractional,
+      );
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
   /// to slide this widget out to the right.
   Widget slideOutToRight({
     double? value,
     bool fractional = false,
-  }) => slideOut(
-      Offset(value ?? (fractional ? 1 : _kDefaultSlideOffset), 0),
-      fractional: fractional,
-    );
+  }) =>
+      slideOut(
+        Offset(value ?? (fractional ? 1 : _kDefaultSlideOffset), 0),
+        fractional: fractional,
+      );
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
   /// to slide this widget out to the top.
   Widget slideOutToTop({
     double? value,
     bool fractional = false,
-  }) => slideOut(
-      Offset(0, value ?? (fractional ? -1 : -_kDefaultSlideOffset)),
-      fractional: fractional,
-    );
+  }) =>
+      slideOut(
+        Offset(0, value ?? (fractional ? -1 : -_kDefaultSlideOffset)),
+        fractional: fractional,
+      );
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
   /// to slide this widget out to the bottom.
   Widget slideOutToBottom({
     double? value,
     bool fractional = false,
-  }) => slideOut(
-      Offset(0, value ?? (fractional ? 1 : _kDefaultSlideOffset)),
-      fractional: fractional,
-    );
+  }) =>
+      slideOut(
+        Offset(0, value ?? (fractional ? 1 : _kDefaultSlideOffset)),
+        fractional: fractional,
+      );
 }
 
 /// An effect that translates a [Widget] by a given [offset].

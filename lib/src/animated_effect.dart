@@ -1,7 +1,21 @@
-import 'dart:math';
-
 import 'package:flutter/widgets.dart';
 import 'package:hyper_effects/hyper_effects.dart';
+
+/// Represents the different ways that can trigger an animation.
+enum AnimationTriggerType {
+  /// The animation is triggered by a [toggle] parameter.
+  toggle,
+
+  /// The animation is fired immediately when the widget is built.
+  oneShot,
+
+  /// The animation stays idle until the last animation in the chain.
+  /// This does not give this effect autonomy over its animations, rather
+  /// it stays idle. The last animation that plays will look up the
+  /// ancestor tree for the next [AnimatedEffect] and trigger it
+  /// manually if `shouldTriggerAfterLast` is true.
+  afterLast;
+}
 
 /// Provides extension methods for [Widget] to animate it's appearance.
 extension AnimatedEffectExt on Widget {
@@ -29,6 +43,7 @@ extension AnimatedEffectExt on Widget {
     VoidCallback? onEnd,
   }) {
     return AnimatedEffect(
+      triggerType: AnimationTriggerType.toggle,
       toggle: toggle,
       duration: duration,
       curve: curve,
@@ -40,6 +55,8 @@ extension AnimatedEffectExt on Widget {
     );
   }
 
+  /// Animate the effects applied to this widget after the last animation
+  /// in the chain ends.
   Widget animateAfter({
     Duration duration = const Duration(milliseconds: 350),
     Curve curve = appleEaseInOut,
@@ -49,8 +66,7 @@ extension AnimatedEffectExt on Widget {
     VoidCallback? onEnd,
   }) {
     return AnimatedEffect(
-      shouldTriggerAfterLast: true,
-      startImmediately: false,
+      triggerType: AnimationTriggerType.afterLast,
       toggle: false,
       duration: duration,
       curve: curve,
@@ -61,8 +77,6 @@ extension AnimatedEffectExt on Widget {
       child: this,
     );
   }
-
-  Widget resetAll() => ResetEffect(child: this);
 
   /// Animate the effects applied to this widget.
   ///
@@ -83,42 +97,24 @@ extension AnimatedEffectExt on Widget {
     Curve curve = appleEaseInOut,
     int repeat = 0,
     bool reverse = false,
-    Duration delay = const Duration(milliseconds: 350),
+    Duration delay = Duration.zero,
     VoidCallback? onEnd,
   }) {
     return AnimatedEffect(
+      triggerType: AnimationTriggerType.oneShot,
       duration: duration,
       curve: curve,
       onEnd: onEnd,
       repeat: repeat,
       reverse: reverse,
-      startImmediately: true,
       delay: delay,
       child: this,
     );
   }
 
-  /// Repeats the chain of preceding effects.
-  /// [delay] is the delay between each repetition.
-  /// [repeat] determines how the animation should be repeated.
-  Widget repeat({
-    Duration duration = const Duration(milliseconds: 350),
-    Curve curve = appleEaseInOut,
-    Duration delay = Duration.zero,
-    int times = -1,
-    bool reverse = false,
-  }) {
-    return AnimatedEffect(
-      toggle: null,
-      duration: duration,
-      curve: curve,
-      startImmediately: true,
-      repeat: times,
-      reverse: reverse,
-      delay: delay,
-      child: this,
-    );
-  }
+  /// Resets all animations in the chain by going down
+  /// the children tree and resetting all animations.
+  Widget resetAll() => ResetAllAnimationsEffect(child: this);
 }
 
 /// A widget that animates the effects applied to it's child.
@@ -130,9 +126,8 @@ class AnimatedEffect extends StatefulWidget {
   /// is the same, the animation will not be triggered again.
   final Object? toggle;
 
-  /// Whether the animation should start immediately as soon as the widget is
-  /// built.
-  final bool startImmediately;
+  /// Defines how the animation is fired.
+  final AnimationTriggerType triggerType;
 
   /// The duration of the animation.
   final Duration duration;
@@ -152,30 +147,27 @@ class AnimatedEffect extends StatefulWidget {
   /// A delay before the animation starts.
   final Duration delay;
 
-  final bool shouldTriggerAfterLast;
-
   /// Creates [AnimatedEffect] widget.
   const AnimatedEffect({
     super.key,
     required this.child,
     required this.duration,
+    required this.triggerType,
     this.toggle,
-    this.startImmediately = false,
     this.curve = appleEaseInOut,
     this.onEnd,
     this.repeat = 0,
     this.reverse = false,
     this.delay = Duration.zero,
-    this.shouldTriggerAfterLast = false,
   });
 
   @override
   State<AnimatedEffect> createState() => _AnimatedEffectState();
 
-  /// Returns the animation value of the nearest [EffectAnimationValue] ancestor.
+  /// Returns the animation value of the nearest [EffectQuery] ancestor.
   /// If there is no ancestor, it returns null.
-  EffectAnimationValue? maybeOf(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<EffectAnimationValue>();
+  EffectQuery? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<EffectQuery>();
 }
 
 class _AnimatedEffectState extends State<AnimatedEffect>
@@ -194,9 +186,7 @@ class _AnimatedEffectState extends State<AnimatedEffect>
   void initState() {
     super.initState();
 
-    _controller.addStatusListener(onAnimationStatusChanged);
-
-    if (widget.startImmediately) forward();
+    if (widget.triggerType == AnimationTriggerType.oneShot) drive();
   }
 
   @override
@@ -205,69 +195,69 @@ class _AnimatedEffectState extends State<AnimatedEffect>
     _controller.duration = widget.duration;
 
     if (widget.toggle != oldWidget.toggle) {
-      forward();
+      drive();
     }
   }
 
   @override
   void dispose() {
-    _controller.removeStatusListener(onAnimationStatusChanged);
     _controller.dispose();
     super.dispose();
   }
 
-  void startAfterListener(AnimationStatus status) {
-    if (status == AnimationStatus.completed) {
-      forward();
-    }
-  }
-
-  void onAnimationStatusChanged(AnimationStatus status) {
-    print('onAnimationStatusChanged: $status | ${this.hashCode}');
+  Future<void> onAnimationStatusChanged() async {
+    final status = _controller.status;
     if (status == AnimationStatus.completed ||
         status == AnimationStatus.dismissed) {
       widget.onEnd?.call();
 
       if (_repeatTimes == -1 || _repeatTimes > 0) {
-        if (_repeatTimes != -1 && (!widget.reverse || !shouldReverse)) {
-          _repeatTimes = max(0, _repeatTimes - 1);
+        if (_repeatTimes != -1) {
+          _repeatTimes--;
         }
-        forward();
+        drive();
       } else if (_repeatTimes == 0) {
         // chaining animations
         final parentState =
             context.findAncestorStateOfType<_AnimatedEffectState>();
-        if (parentState?.widget.shouldTriggerAfterLast == true) {
-          parentState?.forward();
-        }
-        if (parentState == null) {
-          print('resetting from state: ${this.hashCode}');
+        if (parentState != null) {
+          if (parentState.widget.triggerType ==
+              AnimationTriggerType.afterLast) {
+            await parentState.drive();
+          }
+        } else {
           final resetState =
-              context.findAncestorStateOfType<_ResetEffectState>();
+              context.findAncestorStateOfType<_ResetAllAnimationsEffectState>();
           resetState?.reset();
         }
       }
     }
   }
 
-  void forward() {
-    ensureDelay(() {
+  void reset() {
+    _repeatTimes = widget.repeat;
+    _controller.reset();
+  }
+
+  Future<void> drive() async {
+    return ensureDelay(() async {
       if (!mounted) return;
       if (widget.reverse && shouldReverse) {
-        _controller.reverse();
+        shouldReverse = false;
+        await _controller.reverse().orCancel;
       } else {
-        _controller.reset();
-        _controller.forward(from: 0);
+        shouldReverse = widget.reverse;
+        await _controller.forward(from: 0).orCancel;
       }
-      shouldReverse = !shouldReverse;
+      return onAnimationStatusChanged();
     });
   }
 
-  void ensureDelay(VoidCallback fn) {
+  Future<void> ensureDelay(Future Function() fn) async {
     if (widget.delay == Duration.zero) {
-      fn();
+      return fn();
     } else {
-      Future.delayed(widget.delay, fn);
+      return Future.delayed(widget.delay, fn);
     }
   }
 
@@ -275,7 +265,7 @@ class _AnimatedEffectState extends State<AnimatedEffect>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _controller,
-      builder: (context, child) => EffectAnimationValue(
+      builder: (context, child) => EffectQuery(
         linearValue: _controller.value,
         curvedValue: widget.curve.transform(_controller.value),
         isTransition: false,
@@ -288,25 +278,25 @@ class _AnimatedEffectState extends State<AnimatedEffect>
   }
 }
 
-class ResetEffect extends StatefulWidget {
+/// Provides the functionality to reset all animations in
+/// its child widget tree.
+/// This is particularly useful when you want to reset a
+/// series of chained animations to their initial state.
+class ResetAllAnimationsEffect extends StatefulWidget {
+  /// The widget below this widget in the tree.
   final Widget child;
-  const ResetEffect({super.key, required this.child});
+
+  /// Creates [ResetAllAnimationsEffect] widget.
+  const ResetAllAnimationsEffect({super.key, required this.child});
 
   @override
-  State<ResetEffect> createState() => _ResetEffectState();
+  State<ResetAllAnimationsEffect> createState() =>
+      _ResetAllAnimationsEffectState();
 }
 
-class _ResetEffectState extends State<ResetEffect> {
-  @override
-  Widget build(BuildContext context) => widget.child;
-
-  void reset() {
-    print('reset');
-    final state = findLeafAnimatedEffectState(context);
-    print('found state: ${state.hashCode}');
-    state?.forward();
-  }
-
+class _ResetAllAnimationsEffectState extends State<ResetAllAnimationsEffect> {
+  /// Finds the last possible [AnimatedEffect] state in the tree while
+  /// resetting all the ones on the way down.
   _AnimatedEffectState? findLeafAnimatedEffectState(BuildContext context) {
     _AnimatedEffectState? result;
 
@@ -316,6 +306,9 @@ class _ResetEffectState extends State<ResetEffect> {
         final StatefulElement editableTextElement = element as StatefulElement;
 
         result = editableTextElement.state as _AnimatedEffectState;
+
+        // Reset ALL animations in the chain.
+        result?.reset();
       }
       element.visitChildren(visitor);
     }
@@ -323,4 +316,16 @@ class _ResetEffectState extends State<ResetEffect> {
     context.visitChildElements(visitor);
     return result;
   }
+
+  /// Resets all animations in the chain by going down
+  /// the children tree and resetting all animations.
+  void reset() {
+    final state = findLeafAnimatedEffectState(context);
+    if (state?.widget.triggerType == AnimationTriggerType.oneShot) {
+      state?.drive();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

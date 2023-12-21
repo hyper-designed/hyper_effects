@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 
-import '../effect_builder.dart';
+import '../effect_widget.dart';
 import 'effect.dart';
 
 /// Provides a extension method to apply a [RotationEffect] to a [Widget].
@@ -14,11 +14,14 @@ extension RotationEffectExt on Widget {
   ///
   /// [origin] is the origin of the rotation. This allows to translate the
   /// origin of the rotation to a different point.
-  Widget rotate(double angle, {
+  Widget rotate(
+    double angle, {
     Offset origin = Offset.zero,
     AlignmentGeometry alignment = Alignment.center,
+    double? from,
   }) {
     return EffectWidget(
+      start: from == null ? null : RotationEffect(angle: from),
       end: RotationEffect(
         angle: angle,
         origin: origin,

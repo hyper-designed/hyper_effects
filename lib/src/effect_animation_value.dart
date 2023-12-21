@@ -6,8 +6,7 @@ import 'package:hyper_effects/src/pointer_transition.dart';
 /// This widget is used by [AnimatedEffect], [ScrollTransition], and
 /// [PointerTransition] widgets to provide their animation values to their
 /// descendants in order to animate them.
-class EffectAnimationValue extends InheritedWidget {
-
+class EffectQuery extends InheritedWidget {
   /// The linear animation value. It's value is between 0 and 1.
   final double linearValue;
 
@@ -31,8 +30,8 @@ class EffectAnimationValue extends InheritedWidget {
   /// The curve of the animation.
   final Curve curve;
 
-  /// Creates [EffectAnimationValue] widget.
-  const EffectAnimationValue({
+  /// Creates [EffectQuery] widget.
+  const EffectQuery({
     super.key,
     required super.child,
     required this.linearValue,
@@ -44,19 +43,19 @@ class EffectAnimationValue extends InheritedWidget {
   });
 
   @override
-  bool updateShouldNotify(covariant EffectAnimationValue oldWidget) {
+  bool updateShouldNotify(covariant EffectQuery oldWidget) {
     return oldWidget.curvedValue != curvedValue ||
         oldWidget.isTransition != isTransition ||
         oldWidget.lerpValues != lerpValues;
   }
 
-  /// Returns the [EffectAnimationValue] from the given [context].
-  static EffectAnimationValue of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<EffectAnimationValue>()!;
+  /// Returns the [EffectQuery] from the given [context].
+  static EffectQuery of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<EffectQuery>()!;
   }
 
-  /// Returns the [EffectAnimationValue] from the given [context].
-  static EffectAnimationValue? maybeOf(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<EffectAnimationValue>();
+  /// Returns the [EffectQuery] from the given [context].
+  static EffectQuery? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<EffectQuery>();
   }
 }
