@@ -1,6 +1,11 @@
 import 'package:flutter/widgets.dart';
 import 'package:hyper_effects/hyper_effects.dart';
 
+/// A callback that returns whether an animation should be allowed
+/// to follow through with its animation or be skipped completely,
+/// even when explicitly triggered.
+typedef BooleanCallback = bool Function();
+
 /// Represents the different ways that can trigger an animation.
 enum AnimationTriggerType {
   /// The animation is triggered by a [toggle] parameter.
@@ -41,6 +46,7 @@ extension AnimatedEffectExt on Widget {
     bool reverse = false,
     Duration delay = Duration.zero,
     VoidCallback? onEnd,
+    BooleanCallback? playIf,
   }) {
     return AnimatedEffect(
       triggerType: AnimationTriggerType.toggle,
@@ -51,6 +57,7 @@ extension AnimatedEffectExt on Widget {
       reverse: reverse,
       delay: delay,
       onEnd: onEnd,
+      playIf: playIf,
       child: this,
     );
   }
@@ -64,7 +71,7 @@ extension AnimatedEffectExt on Widget {
     bool reverse = false,
     Duration delay = Duration.zero,
     VoidCallback? onEnd,
-  }) {
+      BooleanCallback? playIf}) {
     return AnimatedEffect(
       triggerType: AnimationTriggerType.afterLast,
       toggle: false,
@@ -74,6 +81,7 @@ extension AnimatedEffectExt on Widget {
       reverse: reverse,
       delay: delay,
       onEnd: onEnd,
+      playIf: playIf,
       child: this,
     );
   }
@@ -99,7 +107,7 @@ extension AnimatedEffectExt on Widget {
     bool reverse = false,
     Duration delay = Duration.zero,
     VoidCallback? onEnd,
-  }) {
+      BooleanCallback? playIf}) {
     return AnimatedEffect(
       triggerType: AnimationTriggerType.oneShot,
       duration: duration,
@@ -108,6 +116,7 @@ extension AnimatedEffectExt on Widget {
       repeat: repeat,
       reverse: reverse,
       delay: delay,
+      playIf: playIf,
       child: this,
     );
   }
@@ -147,6 +156,11 @@ class AnimatedEffect extends StatefulWidget {
   /// A delay before the animation starts.
   final Duration delay;
 
+  /// A callback that returns whether the animation should be played
+  /// or skipped. If the callback returns false, the animation will
+  /// be skipped, even when it is explicitly triggered.
+  final BooleanCallback? playIf;
+
   /// Creates [AnimatedEffect] widget.
   const AnimatedEffect({
     super.key,
@@ -159,6 +173,7 @@ class AnimatedEffect extends StatefulWidget {
     this.repeat = 0,
     this.reverse = false,
     this.delay = Duration.zero,
+    this.playIf,
   });
 
   @override
@@ -182,11 +197,15 @@ class _AnimatedEffectState extends State<AnimatedEffect>
     duration: widget.duration,
   );
 
+  bool get shouldPlay => widget.playIf?.call() ?? true;
+
   @override
   void initState() {
     super.initState();
 
-    if (widget.triggerType == AnimationTriggerType.oneShot) drive();
+    if (widget.triggerType == AnimationTriggerType.oneShot) {
+      drive();
+    }
   }
 
   @override
@@ -221,8 +240,8 @@ class _AnimatedEffectState extends State<AnimatedEffect>
         final parentState =
             context.findAncestorStateOfType<_AnimatedEffectState>();
         if (parentState != null) {
-          if (parentState.widget.triggerType ==
-              AnimationTriggerType.afterLast) {
+          final triggerType = parentState.widget.triggerType;
+          if (triggerType == AnimationTriggerType.afterLast) {
             await parentState.drive();
           }
         } else {
@@ -242,6 +261,7 @@ class _AnimatedEffectState extends State<AnimatedEffect>
   Future<void> drive() async {
     return ensureDelay(() async {
       if (!mounted) return;
+      if (!shouldPlay) return;
       if (widget.reverse && shouldReverse) {
         shouldReverse = false;
         await _controller.reverse().orCancel;
@@ -249,6 +269,7 @@ class _AnimatedEffectState extends State<AnimatedEffect>
         shouldReverse = widget.reverse;
         await _controller.forward(from: 0).orCancel;
       }
+
       return onAnimationStatusChanged();
     });
   }
