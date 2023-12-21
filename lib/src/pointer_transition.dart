@@ -358,7 +358,7 @@ class _PointerTransitionState extends State<PointerTransition>
     return PostFrame(
       child: AnimatedBuilder(
         animation: _animation,
-        builder: (context, child) => EffectAnimationValue(
+        builder: (context, child) => EffectQuery(
           curvedValue: currentValue,
           linearValue: currentValue,
           isTransition: true,

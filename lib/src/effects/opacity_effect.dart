@@ -8,8 +8,8 @@ extension OpacityEffectExtension on Widget {
   /// Applies an [OpacityEffect] to a [Widget].
   Widget opacity(double opacity, {double? from}) {
     return EffectWidget(
+      start: from == null ? null : OpacityEffect(opacity: from),
       end: OpacityEffect(opacity: opacity),
-      start: from != null ? OpacityEffect(opacity: from) : null,
       child: this,
     );
   }
@@ -17,28 +17,28 @@ extension OpacityEffectExtension on Widget {
   /// Alias to [opacity].
   Widget fade(double opacity, {double? from}) {
     return EffectWidget(
+      start: from == null ? null : OpacityEffect(opacity: from),
       end: OpacityEffect(opacity: opacity),
-      start: from != null ? OpacityEffect(opacity: from) : null,
       child: this,
     );
   }
 
   /// Applies an [OpacityEffect] to a [Widget] with a default fade in
   /// animation.
-  Widget fadeIn({double? start, double? end}) {
+  Widget fadeIn({double start = 0, double end = 1}) {
     return EffectWidget(
-      start: OpacityEffect(opacity: start ?? 0),
-      end: OpacityEffect(opacity: end ?? 1),
+      start: OpacityEffect(opacity: start),
+      end: OpacityEffect(opacity: end),
       child: this,
     );
   }
 
   /// Applies an [OpacityEffect] to a [Widget] with a default fade out
   /// animation.
-  Widget fadeOut({double? start, double? end}) {
+  Widget fadeOut({double start = 1, double end = 0}) {
     return EffectWidget(
-      start: OpacityEffect(opacity: start ?? 1),
-      end: OpacityEffect(opacity: end ?? 0),
+      start: OpacityEffect(opacity: start),
+      end: OpacityEffect(opacity: end),
       child: this,
     );
   }

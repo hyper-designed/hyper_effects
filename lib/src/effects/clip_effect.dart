@@ -4,11 +4,18 @@ import 'package:hyper_effects/hyper_effects.dart';
 /// Provides a extension method to apply an [ClipEffect] to a [Widget].
 extension ClipEffectExtension on Widget {
   /// Applies an [ClipEffect] to a [Widget] with the given [clip] and [radius].
-  Widget clip([
-    double radius = 16,
+  Widget clip(
+    double radius, {
     Clip? clip,
-  ]) {
+    double? from,
+  }) {
     return EffectWidget(
+      start: from == null
+          ? null
+          : ClipEffect(
+              clip: clip ?? Clip.antiAlias,
+              borderRadius: BorderRadius.circular(from),
+            ),
       end: ClipEffect(
         clip: clip ?? Clip.antiAlias,
         borderRadius: BorderRadius.circular(radius),
@@ -19,15 +26,35 @@ extension ClipEffectExtension on Widget {
 
   /// Applies an [ClipEffect] to a [Widget] with the given [clip] and a
   /// [corners].
-  Widget clipCorners([
-    List<double> corners = const [16, 16, 16, 16],
+  Widget clipCorners(
+    List<double> corners, {
     Clip? clip,
-  ]) {
+    List<double>? from,
+  }) {
     final length = corners.length;
 
     assert(length != 3 && length <= 4, 'Corners must have 1, 2 or 4 values');
 
-    final BorderRadius borderRadius = switch (corners) {
+    final BorderRadius? borderRadiusFrom = from == null
+        ? null
+        : switch (from) {
+            [num all] => BorderRadius.circular(all.toDouble()),
+            [num horizontal, num vertical] => BorderRadius.only(
+                topLeft: Radius.circular(horizontal.toDouble()),
+                topRight: Radius.circular(horizontal.toDouble()),
+                bottomRight: Radius.circular(vertical.toDouble()),
+                bottomLeft: Radius.circular(vertical.toDouble()),
+              ),
+            [num topLeft, num topRight, num bottomRight, num bottomLeft] =>
+              BorderRadius.only(
+                topLeft: Radius.circular(topLeft.toDouble()),
+                topRight: Radius.circular(topRight.toDouble()),
+                bottomRight: Radius.circular(bottomRight.toDouble()),
+                bottomLeft: Radius.circular(bottomLeft.toDouble()),
+              ),
+            _ => BorderRadius.zero
+          };
+    final BorderRadius borderRadiusTo = switch (corners) {
       [num all] => BorderRadius.circular(all.toDouble()),
       [num horizontal, num vertical] => BorderRadius.only(
           topLeft: Radius.circular(horizontal.toDouble()),
@@ -46,9 +73,15 @@ extension ClipEffectExtension on Widget {
     };
 
     return EffectWidget(
+      start: borderRadiusFrom == null
+          ? null
+          : ClipEffect(
+              clip: clip ?? Clip.antiAlias,
+              borderRadius: borderRadiusFrom,
+            ),
       end: ClipEffect(
         clip: clip ?? Clip.antiAlias,
-        borderRadius: borderRadius,
+        borderRadius: borderRadiusTo,
       ),
       child: this,
     );
@@ -56,11 +89,16 @@ extension ClipEffectExtension on Widget {
 
   /// Applies an [ClipEffect] to a [Widget] with the given [clip] and a
   /// [borderRadius].
-  Widget clipRRect([
-    BorderRadius borderRadius = const BorderRadius.all(Radius.circular(16)),
+  Widget clipRRect(
+    BorderRadius borderRadius, {
     Clip? clip,
-  ]) {
+    BorderRadius? from,
+  }) {
     return EffectWidget(
+      start: ClipEffect(
+        clip: clip ?? Clip.antiAlias,
+        borderRadius: from ?? BorderRadius.zero,
+      ),
       end: ClipEffect(
         clip: clip ?? Clip.antiAlias,
         borderRadius: borderRadius,

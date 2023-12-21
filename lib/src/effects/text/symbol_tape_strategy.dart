@@ -189,7 +189,7 @@ class ConsistentSymbolTapeStrategy extends SymbolTapeStrategy {
       }
     }
     if (length <= 2) {
-     final int halfDist = maxDistance ~/ 2;
+      final int halfDist = maxDistance ~/ 2;
       return a * (halfDist + 1) + b * (halfDist + 1);
     }
 

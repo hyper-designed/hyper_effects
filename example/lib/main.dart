@@ -11,7 +11,7 @@ import 'package:hyper_effects_demo/stories/counter_app.dart';
 import 'package:hyper_effects_demo/stories/scroll_phase_transition.dart';
 import 'package:hyper_effects_demo/stories/scroll_wheel_blur.dart';
 import 'package:hyper_effects_demo/stories/scroll_wheel_transition.dart';
-import 'package:hyper_effects_demo/stories/one_shot_animation.dart';
+import 'package:hyper_effects_demo/stories/one_shot_reset_animation.dart';
 import 'package:hyper_effects_demo/stories/text_animation.dart';
 import 'package:hyper_effects_demo/stories/windows_settings_transition.dart';
 
@@ -89,8 +89,8 @@ class _StoryboardState extends State<Storyboard> {
       child: CounterApp(),
     ),
     const Story(
-      title: 'Fade In Animation',
-      child: OneShotAnimation(),
+      title: 'One-Shot Reset Animation',
+      child: OneShotResetAnimation(),
     ),
     const Story(
       title: 'Spring Animation',
@@ -363,7 +363,7 @@ class _ContentViewState extends State<ContentView> with WidgetsBindingObserver {
                   strokeAlign: BorderSide.strokeAlignOutside,
                 ),
               ),
-              child: Center(child: widget.child),
+              child: Center(child: ClipRect(child: widget.child)),
             );
           },
         ),

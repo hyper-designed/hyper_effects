@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 
-import '../effect_builder.dart';
+import '../effect_widget.dart';
 import 'effect.dart';
 
 /// Provides a extension method to apply a [ScaleEffect] to a [Widget].
@@ -15,11 +15,13 @@ extension ScaleEffectExt on Widget {
   /// [origin] is the origin of the scale. This allows to translate the origin
   /// of the scale to a different point.
   Widget scale(
-    double? scale, {
+    double scale, {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
+    double? from,
   }) {
     return EffectWidget(
+      start: from == null ? null : ScaleEffect(scale: from),
       end: ScaleEffect(
         scale: scale,
         alignment: alignment,
@@ -37,11 +39,13 @@ extension ScaleEffectExt on Widget {
   /// [origin] is the origin of the scale. This allows to translate the origin
   /// of the scale to a different point.
   Widget scaleX(
-    double? scaleX, {
+    double scaleX, {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
+    double? from,
   }) {
     return EffectWidget(
+      start: from == null ? null : ScaleEffect(scaleX: from),
       end: ScaleEffect(
         scaleX: scaleX,
         alignment: alignment,
@@ -59,11 +63,13 @@ extension ScaleEffectExt on Widget {
   /// [origin] is the origin of the scale. This allows to translate the origin
   /// of the scale to a different point.
   Widget scaleY(
-    double? scaleY, {
+    double scaleY, {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
+    double? from,
   }) {
     return EffectWidget(
+      start: from == null ? null : ScaleEffect(scaleY: from),
       end: ScaleEffect(
         scaleY: scaleY,
         alignment: alignment,
@@ -82,12 +88,15 @@ extension ScaleEffectExt on Widget {
   /// [origin] is the origin of the scale. This allows to translate the origin
   /// of the scale to a different point.
   Widget scaleXY(
-    double? scaleX,
-    double? scaleY, {
+    double scaleX,
+    double scaleY, {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
+    Offset? from,
   }) {
     return EffectWidget(
+      start:
+          from == null ? null : ScaleEffect(scaleX: from.dx, scaleY: from.dy),
       end: ScaleEffect(
         scaleX: scaleX,
         scaleY: scaleY,
@@ -123,7 +132,8 @@ extension ScaleEffectExt on Widget {
     Offset origin = Offset.zero,
   }) {
     return EffectWidget(
-      start: ScaleEffect(scale: start ?? 1, alignment: alignment, origin: origin),
+      start:
+          ScaleEffect(scale: start ?? 1, alignment: alignment, origin: origin),
       end: ScaleEffect(scale: end ?? 0, alignment: alignment, origin: origin),
       child: this,
     );

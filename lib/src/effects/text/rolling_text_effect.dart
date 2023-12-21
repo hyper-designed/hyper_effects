@@ -524,9 +524,10 @@ class _RollingTextState extends State<RollingText> {
 
   @override
   Widget build(BuildContext context) {
-    final int longest = max(widget.oldText.characters.length, widget.newText.characters.length);
+    final int longest =
+        max(widget.oldText.characters.length, widget.newText.characters.length);
 
-    final effectAnimationValue = EffectAnimationValue.maybeOf(context);
+    final effectAnimationValue = EffectQuery.maybeOf(context);
     final timeValue = effectAnimationValue?.linearValue ?? 1;
     final curve =
         widget.tapeCurve ?? effectAnimationValue?.curve ?? Curves.linear;

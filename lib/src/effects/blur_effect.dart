@@ -2,14 +2,15 @@ import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 
-import '../effect_builder.dart';
+import '../effect_widget.dart';
 import 'effect.dart';
 
 /// Provides extension methods for [Widget] to apply blur effects.
 extension BlurEffectExt on Widget {
   /// Applies a [BlurEffect] to this widget with given [blur] value.
-  Widget blur(double? blur) {
+  Widget blur(double blur, {double? from}) {
     return EffectWidget(
+      start: from == null ? null : BlurEffect(blur: from),
       end: BlurEffect(blur: blur),
       child: this,
     );
@@ -17,8 +18,9 @@ extension BlurEffectExt on Widget {
 
   /// Applies a [BlurEffect] to only the horizontal axis of this widget with
   /// given [blurX] value.
-  Widget blurX(double? blurX) {
+  Widget blurX(double blurX, {double? from}) {
     return EffectWidget(
+      start: from == null ? null : BlurEffect(blurX: from),
       end: BlurEffect(blurX: blurX),
       child: this,
     );
@@ -26,8 +28,9 @@ extension BlurEffectExt on Widget {
 
   /// Applies a [BlurEffect] to only the vertical axis of this widget with
   /// given [blurY] value.
-  Widget blurY(double? blurY) {
+  Widget blurY(double blurY, {double? from}) {
     return EffectWidget(
+      start: from == null ? null : BlurEffect(blurY: from),
       end: BlurEffect(blurY: blurY),
       child: this,
     );
@@ -35,26 +38,31 @@ extension BlurEffectExt on Widget {
 
   /// Applies a [BlurEffect] to this widget with given [blurX] and [blurY]
   /// values.
-  Widget blurXY(double? blurX, double? blurY) {
+  Widget blurXY(
+    double blurX,
+    double blurY, {
+    Offset? from,
+  }) {
     return EffectWidget(
+      start: from == null ? null : BlurEffect(blurX: from.dx, blurY: from.dy),
       end: BlurEffect(blurX: blurX, blurY: blurY),
       child: this,
     );
   }
 
   /// Applies a [BlurEffect] to this widget with a default blur in animation.
-  Widget blurIn({double blur = 10}) {
+  Widget blurIn({double blur = 10, double? end}) {
     return EffectWidget(
       start: BlurEffect(blur: blur),
-      end: BlurEffect(blur: 0),
+      end: BlurEffect(blur: end ?? 0),
       child: this,
     );
   }
 
   /// Applies a [BlurEffect] to this widget with a default blur out animation.
-  Widget blurOut({double blur = 10}) {
+  Widget blurOut({double blur = 10, double? start}) {
     return EffectWidget(
-      start: BlurEffect(blur: 0),
+      start: BlurEffect(blur: start ?? 0),
       end: BlurEffect(blur: blur),
       child: this,
     );

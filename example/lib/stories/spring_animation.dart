@@ -21,18 +21,18 @@ class _SpringAnimationState extends State<SpringAnimation> {
           });
         },
         child: Image.asset('assets/pin_ball_256x.png', width: 150, height: 150)
-            .translateY(selected ? 300 : 0)
+            .translateY(300, from: 0)
             .animate(
-                toggle: selected,
-                curve: selected ? Curves.easeOutQuart : Curves.elasticOut,
-                duration: Duration(milliseconds: selected ? 1000 : 450),
-                onEnd: () {
-                  if (selected) {
-                    setState(() {
-                      selected = false;
-                    });
-                  }
-                }),
+              toggle: selected,
+              curve: Curves.easeOutQuart,
+              duration: const Duration(milliseconds: 1000),
+            )
+            .slideOut(const Offset(0, -300))
+            .animateAfter(
+              curve: Curves.elasticOut,
+              duration: const Duration(milliseconds: 450),
+            )
+            .resetAll(),
       ),
     );
   }
