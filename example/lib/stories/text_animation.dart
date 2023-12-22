@@ -101,16 +101,17 @@ class _EmojiLineState extends State<EmojiLine> {
           borderRadius: BorderRadius.circular(32),
         ),
         child: Text(
-          'Hello😀😃😄😁😆😅😂🤣🥲🥹️😊😇🙂🙃😉😌Sexy',
+          'Hello 😀😃😄😁😆😅😂🤣🥲🥹️😊😇🙂🙃😉😌 Sexy',
           style: TextStyle(
             color: Theme.of(context).colorScheme.onPrimaryContainer,
           ),
         )
             .roll(
-              'World🧳🌂☂️🧵🪡🪢🪭🧶👓🕶🥽🥼🦺👔👖🧣Effect',
+              'World 🧳🌂☂️🧵🪡🪢🪭🧶👓🕶🥽🥼🦺👔👖🧣 Effect',
               tapeStrategy: const ConsistentSymbolTapeStrategy(4),
               tapeSlideDirection: TapeSlideDirection.alternating,
-              tapeCurve: Curves.easeInOutQuart,
+              staggerTapes: false,
+              tapeCurve: Curves.easeInOutBack,
               widthCurve: Curves.easeOutQuart,
               symbolDistanceMultiplier: 2,
             )
