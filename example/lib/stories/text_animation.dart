@@ -28,9 +28,7 @@ class _TextAnimationState extends State<TextAnimation> {
         SizedBox(height: 32),
         LikeButton(),
         SizedBox(height: 32),
-        Flexible(
-            flex: 10,
-            child: IPhone()),
+        Flexible(flex: 10, child: IPhone()),
       ],
     );
   }
@@ -111,6 +109,7 @@ class _EmojiLineState extends State<EmojiLine> {
             .roll(
               'World🧳🌂☂️🧵🪡🪢🪭🧶👓🕶🥽🥼🦺👔👖🧣Effect',
               tapeStrategy: const ConsistentSymbolTapeStrategy(4),
+              tapeSlideDirection: TapeSlideDirection.alternating,
               tapeCurve: Curves.easeInOutQuart,
               widthCurve: Curves.easeOutQuart,
               symbolDistanceMultiplier: 2,
@@ -118,7 +117,7 @@ class _EmojiLineState extends State<EmojiLine> {
             .animate(
               toggle: toggle,
               reverse: true,
-              duration: const Duration(milliseconds: 1000),
+              duration: const Duration(milliseconds: 1500),
             ),
       ),
     );
@@ -220,6 +219,7 @@ class _TagLineState extends State<TagLine> {
                 .roll(
                   tagLines[tagLine],
                   symbolDistanceMultiplier: 2,
+                  tapeSlideDirection: TapeSlideDirection.down,
                   tapeCurve: Curves.easeInOutCubic,
                   widthCurve: Curves.easeOutCubic,
                   widthDuration: const Duration(milliseconds: 1000),
@@ -385,7 +385,11 @@ class _LikeButtonState extends State<LikeButton> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.thumb_up_sharp, size: 18, color: Colors.white,),
+                  const Icon(
+                    Icons.thumb_up_sharp,
+                    size: 18,
+                    color: Colors.white,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     '${lastCounter}K',
@@ -412,7 +416,11 @@ class _LikeButtonState extends State<LikeButton> {
                     indent: 4,
                     endIndent: 4,
                   ),
-                  const Icon(Icons.thumb_down_sharp, size: 18, color: Colors.white,),
+                  const Icon(
+                    Icons.thumb_down_sharp,
+                    size: 18,
+                    color: Colors.white,
+                  ),
                 ],
               ),
             ),
@@ -435,7 +443,11 @@ class _LikeButtonState extends State<LikeButton> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.share, size: 18, color: Colors.white,),
+                  const Icon(
+                    Icons.share,
+                    size: 18,
+                    color: Colors.white,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'Share',
@@ -481,7 +493,11 @@ class _LikeButtonState extends State<LikeButton> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.download, size: 18, color: Colors.white,),
+                  const Icon(
+                    Icons.download,
+                    size: 18,
+                    color: Colors.white,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     switch ((downloadIteration - 1) % 3) {
@@ -639,7 +655,7 @@ class _ColorPalettePageState extends State<ColorPalettePage> {
       theme: ThemeData(
         brightness: Brightness.light,
         colorSchemeSeed: Colors.blue,
-        textTheme: GoogleFonts.interTextTheme(),
+        // textTheme: GoogleFonts.robotoTextTheme(),
       ),
       home: Padding(
         padding: const EdgeInsets.only(left: 32, right: 32, top: 100),
@@ -675,20 +691,21 @@ class _ColorPalettePageState extends State<ColorPalettePage> {
                       ).createShader(rect),
                       child: Text(
                         palettes.keys.elementAt(lastPage).toUpperCase(),
-                        style: GoogleFonts.inter().copyWith(
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                        ),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700, color: Colors.white),
                       )
                           .roll(
                             palettes.keys.elementAt(currentPage).toUpperCase(),
-                            staggerSoftness: 4,
+                            staggerSoftness: 6,
+                            reverseStaggerDirection: false,
+                            tapeSlideDirection: TapeSlideDirection.down,
                             tapeCurve: Curves.easeOutBack,
                             widthCurve: Curves.easeOutQuart,
                             widthDuration: const Duration(milliseconds: 500),
                           )
                           .animate(
                             toggle: currentPage,
+                            curve: Curves.linear,
                             duration: const Duration(milliseconds: 800),
                           ),
                     ),

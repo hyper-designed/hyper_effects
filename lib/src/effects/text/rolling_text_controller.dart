@@ -20,6 +20,10 @@ class RollingTextController with ChangeNotifier {
   /// new text.
   final SymbolTapeStrategy tapeStrategy;
 
+  /// Determines the direction in which each tape of characters will
+  /// slide.
+  final TapeSlideDirection tapeSlideDirection;
+
   /// If non-null, the style to use for this text.
   ///
   /// If the style's "inherit" property is true, the style will be merged with
@@ -95,6 +99,7 @@ class RollingTextController with ChangeNotifier {
     required this.oldText,
     required this.newText,
     required this.tapeStrategy,
+    this.tapeSlideDirection = TapeSlideDirection.up,
     this.style,
     this.strutStyle,
     this.textAlign,
@@ -175,14 +180,21 @@ class RollingTextController with ChangeNotifier {
   Widget paintTape(
     int tapeIndex,
     double value, {
+    bool? directionReversed,
     Curve widthCurve = appleEaseInOut,
     Duration widthDuration = const Duration(milliseconds: 350),
     double? fixedWidth,
   }) {
     final painter = tapePainters[tapeIndex];
+    directionReversed ??= switch (tapeSlideDirection) {
+      TapeSlideDirection.up => false,
+      TapeSlideDirection.down => true,
+      TapeSlideDirection.alternating => tapeIndex % 2 == 0,
+      TapeSlideDirection.random => Random('$tapeIndex'.hashCode).nextBool(),
+    };
     final selection = selectionAtTapeIndexNearValue(
       tapeIndex,
-      value > 0.5,
+      value > 0.5 ? !directionReversed : directionReversed,
     );
     final rects = painter
         .getBoxesForSelection(selection, boxHeightStyle: ui.BoxHeightStyle.max)
@@ -210,19 +222,32 @@ class RollingTextController with ChangeNotifier {
 
   /// Builds a list of tapes that represent the characters to roll through
   /// for each character index between the old and new text.
-  List<String> buildTapes() => [
-        for (int i = 0;
-            i < max(oldText.characters.length, newText.characters.length);
-            i++)
-          tapeStrategy.build(
-            oldText.characters.length <= i
-                ? _kZeroWidth
-                : oldText.characters.elementAt(i),
-            newText.characters.length <= i
-                ? _kZeroWidth
-                : newText.characters.elementAt(i),
-          ),
-      ];
+  List<String> buildTapes() {
+    final tapes = <String>[];
+    final longest = max(oldText.characters.length, newText.characters.length);
+    for (int i = 0; i < longest; i++) {
+      final String tape = tapeStrategy.build(
+        oldText.characters.length <= i
+            ? _kZeroWidth
+            : oldText.characters.elementAt(i),
+        newText.characters.length <= i
+            ? _kZeroWidth
+            : newText.characters.elementAt(i),
+      );
+
+      tapes.add(switch (tapeSlideDirection) {
+        TapeSlideDirection.up => tape,
+        TapeSlideDirection.down => tape.characters.toList().reversed.join(''),
+        TapeSlideDirection.alternating =>
+          i % 2 == 0 ? tape : tape.characters.toList().reversed.join(''),
+        TapeSlideDirection.random => Random('$i'.hashCode).nextBool()
+            ? tape
+            : tape.characters.toList().reversed.join(''),
+      });
+    }
+
+    return tapes;
+  }
 
   /// Builds a list of painters that represent each tape of characters
   /// from [tapes].
