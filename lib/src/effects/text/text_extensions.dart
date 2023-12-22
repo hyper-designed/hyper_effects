@@ -20,6 +20,9 @@ extension TextEffectExt on Text {
   /// If null, the same curve is used as the one provided to the [animate]
   /// function.
   ///
+  /// The [tapeSlideDirection] parameter is used to determine the direction
+  /// each roll of symbol tape slides through its characters.
+  ///
   /// The [staggerTapes] parameter is used to determine whether the tapes should
   /// be staggered or not. If set to true, the starting tapes will move and end
   /// their sliding faster than the ending tapes.
@@ -36,6 +39,12 @@ extension TextEffectExt on Text {
   /// A value of 10 will result in the animation timeline being split into
   /// (text's length + 10) equal parts, so the first tape will have a duration
   /// of sliding time that is very similar to the last tape.
+  ///
+  /// The [reverseStaggerDirection] parameter is used to determine whether the
+  /// stagger effect should be reversed or not. If set to true, the starting
+  /// tapes will move their sliding slower than the ending tapes.
+  /// If set to false, the starting tapes will move their sliding faster
+  /// than the ending tapes.
   ///
   /// The [clipBehavior] parameter is used to determine how the text should be
   /// clipped. The rendered text is going to be a fixed-height box based on the
@@ -74,8 +83,10 @@ extension TextEffectExt on Text {
     EdgeInsets padding = EdgeInsets.zero,
     SymbolTapeStrategy tapeStrategy = const ConsistentSymbolTapeStrategy(0),
     Curve? tapeCurve,
+    TapeSlideDirection tapeSlideDirection = TapeSlideDirection.up,
     bool staggerTapes = true,
     int staggerSoftness = 10,
+    bool reverseStaggerDirection = false,
     Clip clipBehavior = Clip.hardEdge,
     double symbolDistanceMultiplier = 1,
     double? fixedTapeWidth,
@@ -108,8 +119,10 @@ extension TextEffectExt on Text {
           padding: padding,
           tapeStrategy: tapeStrategy,
           tapeCurve: tapeCurve,
+          tapeSlideDirection: tapeSlideDirection,
           staggerTapes: staggerTapes,
           staggerSoftness: staggerSoftness,
+          reverseStaggerDirection: reverseStaggerDirection,
           clipBehavior: clipBehavior,
           style: effectiveStyle,
           fixedTapeWidth: fixedTapeWidth,

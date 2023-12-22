@@ -7,6 +7,7 @@ import 'package:hyper_effects/hyper_effects.dart';
 import 'rolling_text_controller.dart';
 
 export 'symbol_tape_strategy.dart';
+export 'tape_slide_direction.dart';
 
 /// Rolls each character with a tape of characters individually
 /// to form the [newText] from the [oldText].
@@ -31,20 +32,31 @@ class RollingTextEffect extends Effect {
   /// the one provided to the [animate] function.
   final Curve? tapeCurve;
 
-  /// Determines whether the tapes should be staggered or not.
-  /// If set to true, the starting tapes will move and end their sliding
-  /// faster than the ending tapes.
-  final bool staggerTapes;
+  /// Determines the direction in which each tape of characters will
+  /// slide.
+  final TapeSlideDirection tapeSlideDirection;
 
   /// Determines how the text should be clipped. The rendered text is
   /// going to be a fixed-height box based on the font size.
   final Clip clipBehavior;
+
+  /// Determines whether the tapes should be staggered or not.
+  /// If set to true, the starting tapes will move and end their sliding
+  /// faster than the ending tapes.
+  final bool staggerTapes;
 
   /// Determines how harsh the stagger effect is. The higher the number,
   /// the more the stagger effect is softened,
   /// and the interpolation between each tape will more similar to each
   /// other.
   final int staggerSoftness;
+
+  /// Determines whether the stagger effect should be reversed.
+  /// Normally, the staggering makes the beginning letters move fast
+  /// and the ending letters move slow. If this is set to true, the
+  /// staggering will be reversed, so the beginning letters will move
+  /// slow and the ending letters will move fast.
+  final bool reverseStaggerDirection;
 
   /// Can be optionally used to set a fixed width for each tape.
   /// If null, the width of each tape will be the width of the active
@@ -184,8 +196,10 @@ class RollingTextEffect extends Effect {
     this.tapeStrategy = const ConsistentSymbolTapeStrategy(0),
     this.clipBehavior = Clip.hardEdge,
     this.tapeCurve,
+    this.tapeSlideDirection = TapeSlideDirection.up,
     this.staggerTapes = true,
     this.staggerSoftness = 1,
+    this.reverseStaggerDirection = false,
     this.fixedTapeWidth,
     this.widthDuration,
     this.widthCurve,
@@ -216,8 +230,10 @@ class RollingTextEffect extends Effect {
       padding: padding,
       tapeStrategy: tapeStrategy,
       tapeCurve: tapeCurve,
+      tapeSlideDirection: tapeSlideDirection,
       staggerTapes: staggerTapes,
       staggerSoftness: staggerSoftness,
+      reverseStaggerDirection: reverseStaggerDirection,
       fixedTapeWidth: fixedTapeWidth,
       widthDuration: widthDuration,
       widthCurve: widthCurve,
@@ -244,8 +260,10 @@ class RollingTextEffect extends Effect {
         newText,
         padding,
         tapeCurve,
+        tapeSlideDirection,
         staggerTapes,
         staggerSoftness,
+        reverseStaggerDirection,
         tapeStrategy,
         fixedTapeWidth,
         widthDuration,
@@ -298,20 +316,31 @@ class RollingText extends StatefulWidget {
   /// the one provided to the [animate] function.
   final Curve? tapeCurve;
 
-  /// Determines whether the tapes should be staggered or not.
-  /// If set to true, the starting tapes will move and end their sliding
-  /// faster than the ending tapes.
-  final bool staggerTapes;
+  /// Determines the direction in which each tape of characters will
+  /// slide.
+  final TapeSlideDirection tapeSlideDirection;
 
   /// Determines how the text should be clipped. The rendered text is
   /// going to be a fixed-height box based on the font size.
   final Clip clipBehavior;
+
+  /// Determines whether the tapes should be staggered or not.
+  /// If set to true, the starting tapes will move and end their sliding
+  /// faster than the ending tapes.
+  final bool staggerTapes;
 
   /// Determines how harsh the stagger effect is. The higher the number,
   /// the more the stagger effect is softened,
   /// and the interpolation between each tape will more similar to each
   /// other.
   final int staggerSoftness;
+
+  /// Determines whether the stagger effect should be reversed.
+  /// Normally, the staggering makes the beginning letters move fast
+  /// and the ending letters move slow. If this is set to true, the
+  /// staggering will be reversed, so the beginning letters will move
+  /// slow and the ending letters will move fast.
+  final bool reverseStaggerDirection;
 
   /// Can be optionally used to set a fixed width for each tape.
   /// If null, the width of each tape will be the width of the active
@@ -437,9 +466,11 @@ class RollingText extends StatefulWidget {
     this.padding = EdgeInsets.zero,
     this.tapeStrategy = const ConsistentSymbolTapeStrategy(0),
     this.tapeCurve,
+    this.tapeSlideDirection = TapeSlideDirection.up,
     this.clipBehavior = Clip.hardEdge,
     this.staggerTapes = true,
     this.staggerSoftness = 1,
+    this.reverseStaggerDirection = false,
     this.fixedTapeWidth,
     this.widthDuration,
     this.widthCurve,
@@ -474,9 +505,11 @@ class _RollingTextState extends State<RollingText> {
         oldWidget.newText == widget.newText &&
         oldWidget.padding == widget.padding &&
         oldWidget.tapeStrategy == widget.tapeStrategy &&
-        oldWidget.staggerTapes == widget.staggerTapes &&
         oldWidget.tapeCurve == widget.tapeCurve &&
+        oldWidget.tapeSlideDirection == widget.tapeSlideDirection &&
+        oldWidget.staggerTapes == widget.staggerTapes &&
         oldWidget.staggerSoftness == widget.staggerSoftness &&
+        oldWidget.reverseStaggerDirection == widget.reverseStaggerDirection &&
         oldWidget.fixedTapeWidth == widget.fixedTapeWidth &&
         oldWidget.widthCurve == widget.widthCurve &&
         oldWidget.widthDuration == widget.widthDuration &&
@@ -503,6 +536,7 @@ class _RollingTextState extends State<RollingText> {
         oldText: widget.oldText,
         newText: widget.newText,
         tapeStrategy: widget.tapeStrategy,
+        tapeSlideDirection: widget.tapeSlideDirection,
         style: widget.style,
         strutStyle: widget.strutStyle,
         textAlign: widget.textAlign,
@@ -557,8 +591,11 @@ class _RollingTextState extends State<RollingText> {
             final double scaledVal;
             if (widget.staggerTapes) {
               final int softness = widget.staggerSoftness;
-              final double charPercent =
+              double charPercent =
                   (charIndex + softness) / (longest + softness);
+              if (widget.reverseStaggerDirection) {
+                charPercent = 1 - charPercent;
+              }
               scaledVal = timeValue / charPercent;
             } else {
               scaledVal = timeValue;
@@ -566,7 +603,17 @@ class _RollingTextState extends State<RollingText> {
             final double effectiveVal = curve.transform(scaledVal.clamp(0, 1));
 
             final tapeHeight = rollingTextPainter.getTapeHeight(charIndex);
-            final transformedValue = effectiveVal * -1 * tapeHeight;
+
+            final bool directionReversed = switch (widget.tapeSlideDirection) {
+              TapeSlideDirection.up => false,
+              TapeSlideDirection.down => true,
+              TapeSlideDirection.alternating => charIndex % 2 == 0,
+              TapeSlideDirection.random =>
+                Random('$charIndex'.hashCode).nextBool(),
+            };
+            final transformedValue =
+                effectiveVal * tapeHeight * (directionReversed ? 1 : -1) -
+                    (directionReversed ? tapeHeight : 0);
 
             return RepaintBoundary(
               child: Transform.translate(
@@ -574,6 +621,7 @@ class _RollingTextState extends State<RollingText> {
                 child: rollingTextPainter.paintTape(
                   charIndex,
                   effectiveVal,
+                  directionReversed: directionReversed,
                   fixedWidth: widget.fixedTapeWidth,
                   widthDuration: widget.widthDuration ?? duration,
                   widthCurve: widthCurve,
