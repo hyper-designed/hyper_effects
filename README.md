@@ -38,6 +38,11 @@ pointer events.
       <br />
       Scroll Blur
     </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/shake.gif" width="200px">
+      <br />
+      Shake
+    </td>
   </tr>
   <tr>
     <td align="center">
@@ -54,6 +59,33 @@ pointer events.
       <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/spring.gif" width="200px">
       <br />
       Spring Animation
+    </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/counter_app.gif" width="200px">
+      <br />
+      Rolling Text 1
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/rolling_text_1.gif" width="200px">
+      <br />
+      Rolling Text 2
+    </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/rolling_text_2.gif" width="200px">
+      <br />
+      Rolling Text 3
+    </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/rolling_text_3.gif" width="200px">
+      <br />
+      Rolling Text 4
+    </td>
+    <td align="bottom">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/animation_chain.gif" width="200px">
+      <br />
+      Animation Chain
     </td>
   </tr>
 </table>
