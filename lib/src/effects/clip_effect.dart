@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:hyper_effects/hyper_effects.dart';
+import '../../hyper_effects.dart';
 
 /// Provides a extension method to apply an [ClipEffect] to a [Widget].
 extension ClipEffectExtension on Widget {

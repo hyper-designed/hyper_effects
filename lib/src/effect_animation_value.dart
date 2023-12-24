@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:hyper_effects/src/pointer_transition.dart';
+import 'pointer_transition.dart';
 
 /// An inherited widget that provides the animation value to it's descendants.
 ///

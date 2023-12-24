@@ -1,4 +1,4 @@
-import 'package:hyper_effects/hyper_effects.dart';
+import '../../../hyper_effects.dart';
 
 /// Determines the direction in which each tape of characters will
 /// slide in the [RollingTextEffect].

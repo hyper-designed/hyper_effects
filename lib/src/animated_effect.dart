@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:hyper_effects/hyper_effects.dart';
+import '../hyper_effects.dart';
 
 /// A callback that returns whether an animation should be allowed
 /// to follow through with its animation or be skipped completely,
@@ -64,13 +64,13 @@ extension AnimatedEffectExt on Widget {
 
   /// Animate the effects applied to this widget after the last animation
   /// in the chain ends.
-  Widget animateAfter({
-    Duration duration = const Duration(milliseconds: 350),
-    Curve curve = appleEaseInOut,
-    int repeat = 0,
-    bool reverse = false,
-    Duration delay = Duration.zero,
-    VoidCallback? onEnd,
+  Widget animateAfter(
+      {Duration duration = const Duration(milliseconds: 350),
+      Curve curve = appleEaseInOut,
+      int repeat = 0,
+      bool reverse = false,
+      Duration delay = Duration.zero,
+      VoidCallback? onEnd,
       BooleanCallback? playIf}) {
     return AnimatedEffect(
       triggerType: AnimationTriggerType.afterLast,
@@ -100,13 +100,13 @@ extension AnimatedEffectExt on Widget {
   ///
   /// The [repeat] parameter is used to determine how the animation should be
   /// repeated.
-  AnimatedEffect oneShot({
-    Duration duration = const Duration(milliseconds: 350),
-    Curve curve = appleEaseInOut,
-    int repeat = 0,
-    bool reverse = false,
-    Duration delay = Duration.zero,
-    VoidCallback? onEnd,
+  AnimatedEffect oneShot(
+      {Duration duration = const Duration(milliseconds: 350),
+      Curve curve = appleEaseInOut,
+      int repeat = 0,
+      bool reverse = false,
+      Duration delay = Duration.zero,
+      VoidCallback? onEnd,
       BooleanCallback? playIf}) {
     return AnimatedEffect(
       triggerType: AnimationTriggerType.oneShot,

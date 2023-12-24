@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:hyper_effects/src/post_frame_widget.dart';
+import 'post_frame_widget.dart';
 
 import 'apple_curves.dart';
 import 'effect_animation_value.dart';

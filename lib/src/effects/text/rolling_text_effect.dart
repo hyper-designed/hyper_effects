@@ -2,7 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:hyper_effects/hyper_effects.dart';
+import '../../../hyper_effects.dart';
 
 import 'rolling_text_controller.dart';
 
