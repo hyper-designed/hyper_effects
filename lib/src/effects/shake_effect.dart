@@ -2,7 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:hyper_effects/hyper_effects.dart';
+import '../../hyper_effects.dart';
 
 /// Provides a extension method to apply a [ShakeEffect] to a [Widget].
 extension ShakeEffectExt on Widget {
