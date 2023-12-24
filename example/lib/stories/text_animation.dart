@@ -44,10 +44,12 @@ class IPhone extends StatelessWidget {
         width: 512,
         height: 512,
         child: Stack(
+          alignment: Alignment.center,
           children: [
             Container(
+              margin: const EdgeInsets.only(top: 8),
               padding: const EdgeInsets.all(16),
-              width: 512,
+              width: 500,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius:
@@ -84,14 +86,14 @@ class EmojiLine extends StatefulWidget {
 }
 
 class _EmojiLineState extends State<EmojiLine> {
-  bool toggle = false;
+  bool trigger = false;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         setState(() {
-          toggle = !toggle;
+          trigger = !trigger;
         });
       },
       child: Container(
@@ -116,7 +118,7 @@ class _EmojiLineState extends State<EmojiLine> {
               symbolDistanceMultiplier: 2,
             )
             .animate(
-              toggle: toggle,
+              trigger: trigger,
               reverse: true,
               duration: const Duration(milliseconds: 1500),
             ),
@@ -227,7 +229,7 @@ class _TagLineState extends State<TagLine> {
                   padding: const EdgeInsets.only(left: 16),
                 )
                 .animate(
-                  toggle: tagLine,
+                  trigger: tagLine,
                   duration: const Duration(milliseconds: 1000),
                 ),
           ),
@@ -328,7 +330,7 @@ class _TranslationState extends State<Translation> {
                   padding: const EdgeInsets.only(right: 3),
                 )
                 .animate(
-                  toggle: translation,
+                  trigger: translation,
                   duration: const Duration(milliseconds: 1000),
                 ),
           ),
@@ -361,7 +363,7 @@ class LikeButton extends StatefulWidget {
 class _LikeButtonState extends State<LikeButton> {
   int lastCounter = 19;
   int counter = 19;
-  bool toggleShare = false;
+  bool triggerShare = false;
   int downloadIteration = 1;
 
   @override
@@ -406,7 +408,7 @@ class _LikeButtonState extends State<LikeButton> {
                         tapeCurve: Curves.easeOutQuart,
                       )
                       .animate(
-                        toggle: counter,
+                        trigger: counter,
                         duration: const Duration(milliseconds: 1000),
                       ),
                   VerticalDivider(
@@ -435,7 +437,7 @@ class _LikeButtonState extends State<LikeButton> {
           child: InkWell(
             onTap: () {
               setState(() {
-                toggleShare = !toggleShare;
+                triggerShare = !triggerShare;
               });
             },
             child: Container(
@@ -463,12 +465,12 @@ class _LikeButtonState extends State<LikeButton> {
                         symbolDistanceMultiplier: 2,
                         clipBehavior: Clip.none,
                         tapeCurve:
-                            toggleShare ? Curves.bounceOut : Curves.bounceIn,
+                            triggerShare ? Curves.bounceOut : Curves.bounceIn,
                         widthCurve: Curves.bounceOut,
                         staggerTapes: false,
                       )
                       .animate(
-                        toggle: toggleShare,
+                        trigger: triggerShare,
                         reverse: true,
                         duration: const Duration(milliseconds: 800),
                       ),
@@ -525,7 +527,7 @@ class _LikeButtonState extends State<LikeButton> {
                         staggerSoftness: 100,
                       )
                       .animate(
-                        toggle: downloadIteration,
+                        trigger: downloadIteration,
                         duration: const Duration(milliseconds: 800),
                       ),
                 ],
@@ -658,8 +660,9 @@ class _ColorPalettePageState extends State<ColorPalettePage> {
         colorSchemeSeed: Colors.blue,
         // textTheme: GoogleFonts.robotoTextTheme(),
       ),
+      debugShowCheckedModeBanner: false,
       home: Padding(
-        padding: const EdgeInsets.only(left: 32, right: 32, top: 100),
+        padding: const EdgeInsets.only(left: 16, right: 16, top: 64),
         child: Builder(builder: (context) {
           return Scaffold(
             appBar: AppBar(
@@ -705,7 +708,7 @@ class _ColorPalettePageState extends State<ColorPalettePage> {
                             widthDuration: const Duration(milliseconds: 500),
                           )
                           .animate(
-                            toggle: currentPage,
+                            trigger: currentPage,
                             curve: Curves.linear,
                             duration: const Duration(milliseconds: 800),
                           ),

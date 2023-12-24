@@ -36,7 +36,7 @@ class _CounterAppState extends State<CounterApp> {
             Text(
               '${max(0, _counter - 1)}',
               style: Theme.of(context).textTheme.headlineMedium,
-            ).roll('$_counter').animate(toggle: _counter),
+            ).roll('$_counter').animate(trigger: _counter),
           ],
         ),
       ),

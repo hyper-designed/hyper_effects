@@ -9,7 +9,7 @@ class SpringAnimation extends StatefulWidget {
 }
 
 class _SpringAnimationState extends State<SpringAnimation> {
-  bool selected = false;
+  bool trigger = false;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class _SpringAnimationState extends State<SpringAnimation> {
       child: GestureDetector(
         onTap: () {
           setState(() {
-            selected = !selected;
+            trigger = !trigger;
           });
         },
         child: Image.asset('assets/pin_ball_256x.png', width: 150, height: 150)
@@ -25,20 +25,20 @@ class _SpringAnimationState extends State<SpringAnimation> {
             .oneShot(
               delay: const Duration(seconds: 1),
               repeat: -1,
-              playIf: () => !selected,
+              playIf: () => !trigger,
             )
             .translateY(300, from: 0)
             .animate(
-              toggle: selected,
+              trigger: trigger,
               curve: Curves.easeOutQuart,
               duration: const Duration(milliseconds: 2000),
-              playIf: () => selected,
+              playIf: () => trigger,
             )
             .slideOut(const Offset(0, -300))
             .animateAfter(
               curve: Curves.elasticOut,
               duration: const Duration(milliseconds: 450),
-              onEnd: () => setState(() => selected = false),
+              onEnd: () => setState(() => trigger = false),
             )
             .resetAll(),
       ),
