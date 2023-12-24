@@ -49,7 +49,7 @@ class _WindowsSettingsTransitionState extends State<WindowsSettingsTransition> {
                       event.isInsideBounds ? 1 : 0,
                     )
                     .animate(
-                      toggle: event.isInsideBounds,
+                      trigger: event.isInsideBounds,
                       duration: const Duration(milliseconds: 150),
                     )
                     .translateXY(
@@ -85,7 +85,7 @@ class _WindowsSettingsTransitionState extends State<WindowsSettingsTransition> {
                       event.isInsideBounds ? 1 : 0,
                     )
                     .animate(
-                      toggle: event.isInsideBounds,
+                      trigger: event.isInsideBounds,
                       duration: const Duration(milliseconds: 150),
                     )
                     .translateXY(

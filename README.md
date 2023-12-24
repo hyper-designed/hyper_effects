@@ -91,6 +91,36 @@ Widget build(BuildContext context) {
 However, this will not animate the effect. This will only wrap the widget with the specific effect and use the value
 provided.
 
+### List of Effects
+
+| Effect Name | Description                                           |
+|-------------|-------------------------------------------------------|
+| Opacity     | Changes the opacity of a widget.                      |
+| Blur        | Applies a blur effect to a widget.                    |
+| Scale       | Scales a widget.                                      |
+| TranslateX  | Translates a widget along the X-axis.                 |
+| TranslateY  | Translates a widget along the Y-axis.                 |
+| TranslateXY | Translates a widget along both the X and Y axes.      |
+| Rotate      | Rotates a widget.                                     |
+| RotateX     | Rotates a widget around the X-axis.                   |
+| RotateY     | Rotates a widget around the Y-axis.                   |
+| RotateZ     | Rotates a widget around the Z-axis.                   |
+| SkewX       | Skews a widget along the X-axis.                      |
+| SkewY       | Skews a widget along the Y-axis.                      |
+| SkewXY      | Skews a widget along both the X and Y axes.           |
+| ColorFilter | Applies a color filter to a widget.                   |
+| Transform   | Applies a transformation before painting the widget.  |
+| ClipRect    | Clips its child using a rectangle.                    |
+| ClipRRect   | Clips its child using a rounded rectangle.            |
+| RollingText | Creates a rolling animation from one text to another. |
+| Shake       | Applies a shake effect to a widget.                   |
+| Align       | Changes the alignment of a widget.                    |
+
+For details about each effect, please visit the source code of the effect.
+Link: [hyper_effects/lib/src/effects](https://github.com/hyper-designed/hyper_effects/tree/main/lib/src/effects)
+
+### Animations
+
 To animate the effects, you need to call the `animate` method on the widget like so:
 
 ```dart
@@ -100,13 +130,14 @@ Widget build(BuildContext context) {
     color: Colors.blue,
   )
       .opacity(myCondition ? 0 : 1)
-      .animate(toggle: myCondition);
+      .animate(trigger: myCondition);
 }
 ```
 
-`toggle` is a parameter of type `Object`. It's inspired from SwiftUI's `value` parameter on its `animation` modifier.
-Whenever the value of `toggle` changes, the effect will animate to the new value. In this case, `myCondition` is the
-toggle value. You can use any object as a toggle value, but you will likely want to use the same object that you use to
+`trigger` is a parameter of type `Object`. It's inspired from SwiftUI's `value` parameter on its `animation` modifier.
+Whenever the value of `trigger` changes, the effect will animate to the new value. In this case, `myCondition` is the
+trigger value. You can use any object as a trigger value, but you will likely want to use the same object that you use
+to
 control the condition of the effect as it is the point in which the effect should animate.
 
 HyperEffects takes heavy inspiration from SwiftUI in that it attempts to provide Apple-like default values for
@@ -124,7 +155,7 @@ Widget build(BuildContext context) {
   )
       .opacity(myCondition ? 0 : 1)
       .animate(
-        toggle: myCondition,
+        trigger: myCondition,
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutQuart,
       );
@@ -143,7 +174,7 @@ Widget build(BuildContext context) {
       .blur(myCondition ? 10 : 0)
       .scale(myCondition ? 0.5 : 1)
       .translateX(myCondition ? 100 : 0)
-      .animate(toggle: myCondition);
+      .animate(trigger: myCondition);
 }
 ```
 
@@ -174,6 +205,224 @@ Widget build(BuildContext context) {
         ),
       ),
     ),
+  );
+}
+```
+
+#### Properties
+
+* trigger: The value used to trigger the animation. As long as the value of trigger is the same, the animation will not
+  be triggered again.
+* duration: The duration of the animation.
+* curve: The curve of the animation.
+* onEnd: A callback that is called when the animation ends.
+* repeat: Determines how many times the animation should be repeated.
+* reverse: A boolean property that determines whether the animation should be reversed after each repetition.
+* delay: A delay before the animation starts.
+* playIf: A callback that returns whether the animation should be played or skipped. If the callback returns false, the
+  animation will be skipped, even when it is explicitly triggered.
+
+### One Shot Animations
+
+If you want to trigger an animation immediately, you can use the `oneShot` function which triggers a chain of effects
+immediately without a trigger parameter.
+This function is useful when you want to start an animation as soon as the widget is built, without waiting for a
+specific trigger to change.
+
+Here's an example of how to use the `oneShot` function:
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return Container(
+    color: Colors.blue,
+  ).slideInFromBottom()
+      .oneShot(
+    // All the normal parameters inside of .animate() but without the trigger parameter.
+  );
+}
+```
+
+### Animate After Animations
+
+The `animateAfter` function triggers the animation after the last animation in the chain ends.
+It's useful when you want to create a sequence of animations where one animation starts after the previous one ends.
+
+Here's an example of how to use the `animateAfter` function:
+
+```dart
+  @override
+Widget build(BuildContext context) {
+  return Center(
+    child: GestureDetector(
+      onTap: () {
+        setState(() {
+          trigger = !trigger;
+        });
+      },
+      child: Image.asset('assets/pin_ball_256x.png', width: 150, height: 150)
+          .shake()
+          .oneShot(
+        delay: const Duration(seconds: 1),
+        repeat: -1,
+        playIf: () => !trigger,
+      )
+          .translateY(300, from: 0)
+          .animate(
+        trigger: trigger,
+        curve: Curves.easeOutQuart,
+        duration: const Duration(milliseconds: 2000),
+        playIf: () => trigger,
+      )
+          .slideOut(const Offset(0, -300))
+          .animateAfter(
+        curve: Curves.elasticOut,
+        duration: const Duration(milliseconds: 450),
+        onEnd: () => setState(() => trigger = false),
+      )
+          .resetAll(),
+    ),
+  );
+}
+```
+
+See this example in action in the demo app: [hyper-effects-demo.web.app](https://hyper-effects-demo.web.app/)
+
+### Reset Animations
+
+Using `resetAll` at the end of the chain of animations will reset all the effects in the chain to their original values.
+
+When the animation is triggered again, all the effects will animate from their original values to the new values.
+
+### Delayed Animations
+
+The `delay` parameter is used in the `animate`, `animateAfter` and `oneShot` methods. This parameter allows you to
+specify a delay
+before the animation starts.
+The `delay` is specified as a `Duration`. Here's an example of how to use the `delay` parameter:
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return Container(
+    color: Colors.blue,
+  )
+   .opacity(myCondition ? 0 : 1)
+   .animate(
+    trigger: myCondition,
+    delay: const Duration(seconds: 1), // 1 second delay before the animation starts after the trigger changes.
+  );
+}
+```
+
+In this example, the opacity animation will start 1 second after the `myCondition` trigger changes.
+
+### Repeat Animations
+
+The `repeat` parameter is used in the `animate`, `animateAfter`, and `oneShot` functions.
+This parameter allows you to specify how many times the animation will be repeated.
+The repeat parameter is an `integer`, where 0 (default) means the animation will only play once and not repeat.
+Any positive integer specifies the number of times the animation will repeat.
+If the `repeat` parameter is set to -1, the animation will repeat indefinitely.
+
+Here's an example of how to use the `repeat` parameter:
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return Container(
+    color: Colors.blue,
+  )
+   .opacity(myCondition ? 0 : 1)
+   .animate(
+    trigger: myCondition,
+    repeat: 3, // The animation will repeat 3 times
+  );
+}
+```
+
+Note that if the `reverse` parameter is set to true, the repetition counter will count for each animation direction.
+For example, if the `repeat` parameter is set to 3 and the `reverse` parameter is set to true, the animation will
+play only 3 times, one of which is the reverse animation.
+
+`forwards -> backwards -> forwards -> done.`
+
+### Rolling Text
+
+The Rolling Text feature in Hyper Effects allows you to create a rolling animation from one text to another. Each
+character rolls individually to form the new text. This feature provides a visually appealing way to transition between
+different text states in your application.
+
+#### Usage
+
+To use the Rolling Text feature, you can use the roll extension on any Text widget. Here's an example:
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return Text('Hello').roll('World');
+}
+```
+
+In this example, the text will roll from 'Hello' to 'World'. Each character in 'Hello' will roll until it changes to the
+corresponding character in 'World'.
+
+#### Customization
+
+The Rolling Text feature provides several options for customization:
+
+- padding: This option allows you to set the internal padding between the row of symbol tapes and the clipping mask.
+- tapeStrategy: This option determines the string of characters to create and roll through for each character index
+  between the old and new text.
+- tapeCurve: This option determines the curve each roll of symbol tape uses to slide up and down through its characters.
+- tapeSlideDirection: This option determines the direction each roll of symbol tape slides through its characters.
+- staggerTapes: This option determines whether the tapes should be staggered or not.
+- staggerSoftness: This option determines how harsh the stagger effect is.
+- reverseStaggerDirection: This option determines whether the stagger effect should be reversed or not.
+
+Here's an example of how to use these options:
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return Text('Hello').roll(
+    'World',
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    tapeStrategy: TapeStrategy.random,
+    tapeCurve: Curves.easeInOutQuart,
+    tapeSlideDirection: TapeSlideDirection.down,
+    staggerTapes: true,
+    staggerSoftness: 0.5,
+    reverseStaggerDirection: true,
+  );
+}
+```
+
+To trigger the rolling text effect, you need to call the `animate` or `oneShot` functions as normal:
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return Text('Hello').roll('World').animate(trigger: myTrigger);
+}
+```
+
+When myTrigger changes, the text will roll from 'Hello' to 'World' or vice versa.
+The animate method also accepts duration and curve parameters that allow you to customize the animation's duration
+and easing curve.
+
+Please note that if you specify a curve that goes outside the bounds of 0 and 1 like Curves.elasticIn/Out or
+Curves.easeIn/OutBack, the UI will crash with a warning that the width cannot be negative. To resolve this,
+simply specify a custom curve for the width. You can do so like this:
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return Text('Hello').roll('World').animate(
+    trigger: myTrigger,
+    curve: Curves.easeInOutQuart,
+    duration: const Duration(milliseconds: 500),
+    widthCurve: Curves.easeInOutQuart,
   );
 }
 ```

@@ -8,8 +8,8 @@ typedef BooleanCallback = bool Function();
 
 /// Represents the different ways that can trigger an animation.
 enum AnimationTriggerType {
-  /// The animation is triggered by a [toggle] parameter.
-  toggle,
+  /// The animation is triggered by a [trigger] parameter.
+  trigger,
 
   /// The animation is fired immediately when the widget is built.
   oneShot,
@@ -26,8 +26,8 @@ enum AnimationTriggerType {
 extension AnimatedEffectExt on Widget {
   /// Animate the effects applied to this widget.
   ///
-  /// The [toggle] parameter is used to trigger the animation. As long as the
-  /// value of [toggle] is the same, the animation will not be triggered again.
+  /// The [trigger] parameter is used to trigger the animation. As long as the
+  /// value of [trigger] is the same, the animation will not be triggered again.
   ///
   /// The [duration] parameter is used to set the duration of the animation.
   ///
@@ -39,7 +39,7 @@ extension AnimatedEffectExt on Widget {
   /// The [repeat] parameter is used to determine how the animation should be
   /// repeated.
   Widget animate({
-    required Object? toggle,
+    required Object? trigger,
     Duration duration = const Duration(milliseconds: 350),
     Curve curve = appleEaseInOut,
     int repeat = 0,
@@ -49,8 +49,8 @@ extension AnimatedEffectExt on Widget {
     BooleanCallback? playIf,
   }) {
     return AnimatedEffect(
-      triggerType: AnimationTriggerType.toggle,
-      toggle: toggle,
+      triggerType: AnimationTriggerType.trigger,
+      trigger: trigger,
       duration: duration,
       curve: curve,
       repeat: repeat,
@@ -74,7 +74,7 @@ extension AnimatedEffectExt on Widget {
       BooleanCallback? playIf}) {
     return AnimatedEffect(
       triggerType: AnimationTriggerType.afterLast,
-      toggle: false,
+      trigger: false,
       duration: duration,
       curve: curve,
       repeat: repeat,
@@ -89,7 +89,7 @@ extension AnimatedEffectExt on Widget {
   /// Animate the effects applied to this widget.
   ///
   /// Unlike [animate], this method triggers the animation immediately without
-  /// a [toggle] parameter.
+  /// a [trigger] parameter.
   ///
   /// The [duration] parameter is used to set the duration of the animation.
   ///
@@ -131,9 +131,9 @@ class AnimatedEffect extends StatefulWidget {
   /// The widget below this widget in the tree.
   final Widget child;
 
-  /// The value used to trigger the animation. As long as the value of [toggle]
+  /// The value used to trigger the animation. As long as the value of [trigger]
   /// is the same, the animation will not be triggered again.
-  final Object? toggle;
+  final Object? trigger;
 
   /// Defines how the animation is fired.
   final AnimationTriggerType triggerType;
@@ -167,7 +167,7 @@ class AnimatedEffect extends StatefulWidget {
     required this.child,
     required this.duration,
     required this.triggerType,
-    this.toggle,
+    this.trigger,
     this.curve = appleEaseInOut,
     this.onEnd,
     this.repeat = 0,
@@ -213,7 +213,7 @@ class _AnimatedEffectState extends State<AnimatedEffect>
     super.didUpdateWidget(oldWidget);
     _controller.duration = widget.duration;
 
-    if (widget.toggle != oldWidget.toggle) {
+    if (widget.trigger != oldWidget.trigger) {
       drive();
     }
   }
