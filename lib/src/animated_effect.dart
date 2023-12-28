@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+
 import '../hyper_effects.dart';
 
 /// A callback that returns whether an animation should be allowed
@@ -187,21 +188,21 @@ class AnimatedEffect extends StatefulWidget {
 
 class _AnimatedEffectState extends State<AnimatedEffect>
     with SingleTickerProviderStateMixin {
-  late int _repeatTimes = widget.repeat;
-
-  bool shouldReverse = false;
-
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    value: 0,
-    duration: widget.duration,
-  );
-
   bool get shouldPlay => widget.playIf?.call() ?? true;
+
+  late AnimationController controller;
+  late int repeatTimes = widget.repeat;
+  bool shouldReverse = false;
 
   @override
   void initState() {
     super.initState();
+
+    controller = AnimationController(
+      vsync: this,
+      value: 0,
+      duration: widget.duration,
+    );
 
     if (widget.triggerType == AnimationTriggerType.oneShot) {
       drive();
@@ -211,7 +212,7 @@ class _AnimatedEffectState extends State<AnimatedEffect>
   @override
   void didUpdateWidget(covariant AnimatedEffect oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _controller.duration = widget.duration;
+    controller.duration = widget.duration;
 
     if (widget.trigger != oldWidget.trigger) {
       drive();
@@ -220,22 +221,22 @@ class _AnimatedEffectState extends State<AnimatedEffect>
 
   @override
   void dispose() {
-    _controller.dispose();
+    controller.dispose();
     super.dispose();
   }
 
   Future<void> onAnimationStatusChanged() async {
-    final status = _controller.status;
+    final status = controller.status;
     if (status == AnimationStatus.completed ||
         status == AnimationStatus.dismissed) {
       widget.onEnd?.call();
 
-      if (_repeatTimes == -1 || _repeatTimes > 0) {
-        if (_repeatTimes != -1) {
-          _repeatTimes--;
+      if (repeatTimes == -1 || repeatTimes > 0) {
+        if (repeatTimes != -1) {
+          repeatTimes--;
         }
         drive();
-      } else if (_repeatTimes == 0) {
+      } else if (repeatTimes == 0) {
         // chaining animations
         final parentState =
             context.findAncestorStateOfType<_AnimatedEffectState>();
@@ -254,8 +255,8 @@ class _AnimatedEffectState extends State<AnimatedEffect>
   }
 
   void reset() {
-    _repeatTimes = widget.repeat;
-    _controller.reset();
+    repeatTimes = widget.repeat;
+    controller.reset();
   }
 
   Future<void> drive() async {
@@ -264,10 +265,14 @@ class _AnimatedEffectState extends State<AnimatedEffect>
       if (!shouldPlay) return;
       if (widget.reverse && shouldReverse) {
         shouldReverse = false;
-        await _controller.reverse().orCancel;
+        await controller.reverse().catchError((err) {
+          // ignore
+        });
       } else {
         shouldReverse = widget.reverse;
-        await _controller.forward(from: 0).orCancel;
+        await controller.forward(from: 0).catchError((err) {
+          // ignore
+        });
       }
 
       return onAnimationStatusChanged();
@@ -285,10 +290,10 @@ class _AnimatedEffectState extends State<AnimatedEffect>
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _controller,
+      animation: controller,
       builder: (context, child) => EffectQuery(
-        linearValue: _controller.value,
-        curvedValue: widget.curve.transform(_controller.value),
+        linearValue: controller.value,
+        curvedValue: widget.curve.transform(controller.value),
         isTransition: false,
         duration: widget.duration,
         curve: widget.curve,
