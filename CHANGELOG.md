@@ -1,3 +1,6 @@
+## 0.2.1
+- Fix exceptions being thrown when animation controller state is changed before completion.
+
 ## 0.2.0
 - [BREAKING] Renamed `toggle` to `trigger` in .animate() to better reflect its purpose.
 - [BREAKING] Renamed `AnimatedEffect` to `EffectWidget` to better reflect its purpose.
