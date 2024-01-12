@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+
 import 'pointer_transition.dart';
 
 /// An inherited widget that provides the animation value to it's descendants.
@@ -51,7 +52,9 @@ class EffectQuery extends InheritedWidget {
 
   /// Returns the [EffectQuery] from the given [context].
   static EffectQuery of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<EffectQuery>()!;
+    final EffectQuery? result = maybeOf(context);
+    assert(result != null, 'No EffectQuery found in context.');
+    return result!;
   }
 
   /// Returns the [EffectQuery] from the given [context].

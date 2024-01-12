@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import 'effect_animation_value.dart';
+import 'effect_query.dart';
 import 'extensions.dart';
 import 'post_frame_widget.dart';
 import 'scroll_phase.dart';

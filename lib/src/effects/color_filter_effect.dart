@@ -1,10 +1,27 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+
 import '../../hyper_effects.dart';
 
 /// Provides a extension method to apply an [ColorFilterEffect] to a [Widget].
 extension ColorFilterEffectExtension on Widget {
+  /// Applies an [ColorFilterEffect] to a [Widget].
+  Widget modulate({
+    Color? color,
+    BlendMode mode = BlendMode.overlay,
+    List<double>? matrix,
+    Color? colorFrom,
+    List<double>? fromMatrix,
+  }) =>
+      this.color(
+        color: color,
+        mode: mode,
+        matrix: matrix,
+        colorFrom: colorFrom,
+        fromMatrix: fromMatrix,
+      );
+
   /// Applies an [ColorFilterEffect] to a [Widget].
   Widget color({
     Color? color,

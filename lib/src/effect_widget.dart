@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import 'effect_animation_value.dart';
+import 'effect_query.dart';
 import 'effects/effect.dart';
 
 /// A widget that applies given [Effect] to a [Widget]. This widget is hardly

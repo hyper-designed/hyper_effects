@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'post_frame_widget.dart';
 
 import 'apple_curves.dart';
-import 'effect_animation_value.dart';
+import 'effect_query.dart';
 
 /// Represents the pointer event for [PointerTransition].
 class PointerTransitionEvent {
