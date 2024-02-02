@@ -1,3 +1,6 @@
+## 0.2.3
+- Fix dart analysis issues.
+
 ## 0.2.2
 - Clamp `OpacityEffect`, `ClipEffect`, and `ColorFilterEffect` values to 0.0 - 1.0 to prevent exceptions with
 curves that go outside of this range.
