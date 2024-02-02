@@ -115,11 +115,21 @@ class ColorFilterEffect extends Effect {
   ColorFilterEffect lerp(covariant ColorFilterEffect other, double value) {
     final List<double> lerped = [];
     for (final (index, item) in (matrix ?? []).indexed) {
-      final double? val = lerpDouble(item, other.matrix?[index], value);
+      final double? val = lerpDouble(
+        item,
+        other.matrix?[index],
+        value.clamp(0, 1),
+      );
       lerped.add(val ?? 0);
     }
     return ColorFilterEffect(
-      color: color != null ? Color.lerp(color, other.color, value) : null,
+      color: color != null
+          ? Color.lerp(
+              color,
+              other.color,
+              value.clamp(0, 1),
+            )
+          : null,
       matrix: lerped,
       mode: mode,
     );

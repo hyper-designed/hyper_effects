@@ -170,8 +170,15 @@ Widget build(BuildContext context) {
 `trigger` is a parameter of type `Object`. It's inspired from SwiftUI's `value` parameter on its `animation` modifier.
 Whenever the value of `trigger` changes, the effect will animate to the new value. In this case, `myCondition` is the
 trigger value. You can use any object as a trigger value, but you will likely want to use the same object that you use
-to
-control the condition of the effect as it is the point in which the effect should animate.
+to control the condition of the effect as it is the point in which the effect should animate.
+
+In simpler words, `trigger` takes any object. When the value of the object changes to anything else, the effect will
+animate to the new value. The animation will never play if the value of the trigger is the same as the previous value.
+
+> Note: If you want the animation to trigger immediately when the widget is built and then allow it to be triggered
+> again later, you can use the `startImmediately` parameter in the `animate` method. This will start the animation
+> immediately without waiting for an initial change in the `trigger` object. Subsequent changes in the `trigger` object
+> will still trigger the animation as normal.
 
 HyperEffects takes heavy inspiration from SwiftUI in that it attempts to provide Apple-like default values for
 everything, that means that by default, animations are of 350ms duration and use Apple's custom easeInOut curve. The
@@ -191,6 +198,7 @@ Widget build(BuildContext context) {
         trigger: myCondition,
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutQuart,
+        startImmediately: true,
       );
 }
 ```
@@ -254,13 +262,15 @@ Widget build(BuildContext context) {
 * delay: A delay before the animation starts.
 * playIf: A callback that returns whether the animation should be played or skipped. If the callback returns false, the
   animation will be skipped, even when it is explicitly triggered.
+* startImmediately: A boolean property that determines whether the animation should start immediately without waiting for
+  an initial change in the trigger object.
 
 ### One Shot Animations
 
 If you want to trigger an animation immediately, you can use the `oneShot` function which triggers a chain of effects
 immediately without a trigger parameter.
 This function is useful when you want to start an animation as soon as the widget is built, without waiting for a
-specific trigger to change.
+specific trigger to change. The animation will never play again after it ends.
 
 Here's an example of how to use the `oneShot` function:
 

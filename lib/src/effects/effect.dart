@@ -32,6 +32,9 @@ abstract class Effect with EquatableMixin {
   /// if [value] is 1.0. Otherwise, returns an [Effect] that is a combination
   /// of [this] and [other] by interpolating between them.
   ///
+  /// [clampedValue] is the clamped value of [value] between 0.0 and 1.0, if
+  /// desired.
+  ///
   /// If no parent [AnimatableEffect] or [ScrollTransition] is provided, then
   /// this method is called with [other] being the same as [this] effectively
   /// nullifying the effect.

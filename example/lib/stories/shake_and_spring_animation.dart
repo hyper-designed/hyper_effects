@@ -22,7 +22,9 @@ class _SpringAnimationState extends State<SpringAnimation> {
         },
         child: Image.asset('assets/pin_ball_256x.png', width: 150, height: 150)
             .shake()
-            .oneShot(
+            .animate(
+              trigger: trigger,
+              startImmediately: true,
               delay: const Duration(seconds: 1),
               repeat: -1,
               playIf: () => !trigger,
@@ -34,7 +36,7 @@ class _SpringAnimationState extends State<SpringAnimation> {
               duration: const Duration(milliseconds: 2000),
               playIf: () => trigger,
             )
-            .slideOut(const Offset(0, -300))
+            .translateY(-300, from: 0)
             .animateAfter(
               curve: Curves.elasticOut,
               duration: const Duration(milliseconds: 450),

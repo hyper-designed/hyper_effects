@@ -53,9 +53,10 @@ class OpacityEffect extends Effect {
   OpacityEffect({required this.opacity});
 
   @override
-  OpacityEffect lerp(covariant OpacityEffect other, double value) {
+  OpacityEffect lerp(
+      covariant OpacityEffect other, double value) {
     return OpacityEffect(
-      opacity: lerpDouble(opacity, other.opacity, value) ?? 1,
+      opacity: lerpDouble(opacity, other.opacity, value.clamp(0, 1)) ?? 1,
     );
   }
 

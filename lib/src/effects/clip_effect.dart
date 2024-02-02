@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+
 import '../../hyper_effects.dart';
 
 /// Provides a extension method to apply an [ClipEffect] to a [Widget].
@@ -126,7 +127,11 @@ class ClipEffect extends Effect {
   ClipEffect lerp(covariant ClipEffect other, double value) {
     return ClipEffect(
       clip: other.clip,
-      borderRadius: BorderRadius.lerp(borderRadius, other.borderRadius, value)!,
+      borderRadius: BorderRadius.lerp(
+        borderRadius,
+        other.borderRadius,
+        value.clamp(0, 1),
+      )!,
     );
   }
 

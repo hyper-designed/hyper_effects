@@ -39,12 +39,26 @@ extension AnimatedEffectExt on Widget {
   ///
   /// The [repeat] parameter is used to determine how the animation should be
   /// repeated.
+  ///
+  /// The [reverse] parameter is used to determine whether the animation should
+  /// play backwards after each repetition.
+  ///
+  /// The [delay] parameter is used to set a delay before the animation starts.
+  ///
+  /// The [playIf] parameter is used to determine whether the animation should
+  /// be played or skipped. If the callback returns false, the animation will
+  /// be skipped, even when it is explicitly triggered.
+  ///
+  /// The [startImmediately] parameter is used to determine whether the
+  /// animation should be triggered immediately when the widget is built,
+  /// ignoring the value of [trigger] initially.
   Widget animate({
     required Object? trigger,
     Duration duration = const Duration(milliseconds: 350),
     Curve curve = appleEaseInOut,
     int repeat = 0,
     bool reverse = false,
+    bool startImmediately = false,
     Duration delay = Duration.zero,
     VoidCallback? onEnd,
     BooleanCallback? playIf,
@@ -56,6 +70,7 @@ extension AnimatedEffectExt on Widget {
       curve: curve,
       repeat: repeat,
       reverse: reverse,
+      startImmediately: startImmediately,
       delay: delay,
       onEnd: onEnd,
       playIf: playIf,
@@ -65,14 +80,41 @@ extension AnimatedEffectExt on Widget {
 
   /// Animate the effects applied to this widget after the last animation
   /// in the chain ends.
-  Widget animateAfter(
-      {Duration duration = const Duration(milliseconds: 350),
-      Curve curve = appleEaseInOut,
-      int repeat = 0,
-      bool reverse = false,
-      Duration delay = Duration.zero,
-      VoidCallback? onEnd,
-      BooleanCallback? playIf}) {
+  ///
+  /// Unlike [animate], this method does not trigger the animation immediately
+  /// and instead waits for the last animation in the chain to end.
+  /// This does not give this effect autonomy over its animations, rather
+  /// it stays idle. The last animation that plays will look up the
+  /// ancestor tree for the next [AnimatedEffect] and trigger it
+  /// manually if `shouldTriggerAfterLast` is true.
+  ///
+  /// The [duration] parameter is used to set the duration of the animation.
+  ///
+  /// The [curve] parameter is used to set the curve of the animation.
+  ///
+  /// The [onEnd] parameter is used to set a callback that is called when the
+  /// animation ends.
+  ///
+  /// The [repeat] parameter is used to determine how the animation should be
+  /// repeated.
+  ///
+  /// The [reverse] parameter is used to determine whether the animation should
+  /// play backwards after each repetition.
+  ///
+  /// The [delay] parameter is used to set a delay before the animation starts.
+  ///
+  /// The [playIf] parameter is used to determine whether the animation should
+  /// be played or skipped. If the callback returns false, the animation will
+  /// be skipped, even when it is explicitly triggered.
+  Widget animateAfter({
+    Duration duration = const Duration(milliseconds: 350),
+    Curve curve = appleEaseInOut,
+    int repeat = 0,
+    bool reverse = false,
+    Duration delay = Duration.zero,
+    VoidCallback? onEnd,
+    BooleanCallback? playIf,
+  }) {
     return AnimatedEffect(
       triggerType: AnimationTriggerType.afterLast,
       trigger: false,
@@ -101,14 +143,25 @@ extension AnimatedEffectExt on Widget {
   ///
   /// The [repeat] parameter is used to determine how the animation should be
   /// repeated.
-  AnimatedEffect oneShot(
-      {Duration duration = const Duration(milliseconds: 350),
-      Curve curve = appleEaseInOut,
-      int repeat = 0,
-      bool reverse = false,
-      Duration delay = Duration.zero,
-      VoidCallback? onEnd,
-      BooleanCallback? playIf}) {
+  ///
+  /// The [reverse] parameter is used to determine whether the animation should
+  /// play backwards after each repetition.
+  ///
+  /// The [delay] parameter is used to set a delay before the animation starts.
+  ///
+  /// The [playIf] parameter is used to determine whether the animation should
+  /// be played or skipped. If the callback returns false, the animation will
+  /// be skipped, even when it is explicitly triggered.
+  ///
+  AnimatedEffect oneShot({
+    Duration duration = const Duration(milliseconds: 350),
+    Curve curve = appleEaseInOut,
+    int repeat = 0,
+    bool reverse = false,
+    Duration delay = Duration.zero,
+    VoidCallback? onEnd,
+    BooleanCallback? playIf,
+  }) {
     return AnimatedEffect(
       triggerType: AnimationTriggerType.oneShot,
       duration: duration,
@@ -154,6 +207,10 @@ class AnimatedEffect extends StatefulWidget {
   /// Whether the animation should be reversed after each repetition.
   final bool reverse;
 
+  /// Whether the animation should be triggered immediately when the widget is
+  /// built, ignoring the value of [trigger] initially.
+  final bool startImmediately;
+
   /// A delay before the animation starts.
   final Duration delay;
 
@@ -173,6 +230,7 @@ class AnimatedEffect extends StatefulWidget {
     this.onEnd,
     this.repeat = 0,
     this.reverse = false,
+    this.startImmediately = false,
     this.delay = Duration.zero,
     this.playIf,
   });
@@ -188,23 +246,31 @@ class AnimatedEffect extends StatefulWidget {
 
 class _AnimatedEffectState extends State<AnimatedEffect>
     with SingleTickerProviderStateMixin {
+  /// Returns whether the animation should be played or skipped based
+  /// on the [playIf] callback.
   bool get shouldPlay => widget.playIf?.call() ?? true;
 
-  late AnimationController controller;
+  /// The animation controller that drives the animation.
+  late final AnimationController controller = AnimationController(
+    vsync: this,
+    value: 0,
+    duration: widget.duration,
+  );
+
+  /// The number of times the animation should be repeated.
   late int repeatTimes = widget.repeat;
+
+  /// Whether the animation should be reversed after each repetition.
   bool shouldReverse = false;
 
   @override
   void initState() {
     super.initState();
 
-    controller = AnimationController(
-      vsync: this,
-      value: 0,
-      duration: widget.duration,
-    );
-
-    if (widget.triggerType == AnimationTriggerType.oneShot) {
+    // If the trigger type is one shot or trigger immediately is true,
+    // drive the animation.
+    if (widget.triggerType == AnimationTriggerType.oneShot ||
+        widget.startImmediately) {
       drive();
     }
   }
@@ -214,6 +280,7 @@ class _AnimatedEffectState extends State<AnimatedEffect>
     super.didUpdateWidget(oldWidget);
     controller.duration = widget.duration;
 
+    // If the trigger value changed, drive the animation.
     if (widget.trigger != oldWidget.trigger) {
       drive();
     }
@@ -225,27 +292,50 @@ class _AnimatedEffectState extends State<AnimatedEffect>
     super.dispose();
   }
 
+  /// Handles status changes of the animation controller. This is used to
+  /// determine whether the animation should be repeated or not, and whether
+  /// the [onEnd] callback should be called.
+  ///
+  /// If the animation is repeated, it calls [drive] again. If the animation
+  /// is not repeated, it calls [onEnd] callback if it is not null.
+  ///
+  /// In addition, if the animation is not repeated, it looks up the widget
+  /// tree for the next [AnimatedEffect] and triggers it manually if the
+  /// ancestor's [AnimationTriggerType] is [AnimationTriggerType.afterLast].
   Future<void> onAnimationStatusChanged() async {
     final status = controller.status;
     if (status == AnimationStatus.completed ||
         status == AnimationStatus.dismissed) {
       widget.onEnd?.call();
 
+      // If repeatTimes is set to -1, repeat the animation indefinitely.
+      // If repeatTimes is > 0, we keep repeating the animation until
+      // repeatTimes becomes 0.
       if (repeatTimes == -1 || repeatTimes > 0) {
+        // Only decrement if the animation is not meant to play forever.
         if (repeatTimes != -1) {
           repeatTimes--;
         }
+
+        // The animation must be repeated, call [drive] again.
         drive();
       } else if (repeatTimes == 0) {
-        // chaining animations
+        // If the animation is not repeated and just ended, look up the widget
+        // tree for the next [AnimatedEffect] and trigger it manually if the
+        // ancestor's [AnimationTriggerType] is
+        // [AnimationTriggerType.afterLast].
         final parentState =
             context.findAncestorStateOfType<_AnimatedEffectState>();
         if (parentState != null) {
           final triggerType = parentState.widget.triggerType;
           if (triggerType == AnimationTriggerType.afterLast) {
+            // Trigger the next animation.
             await parentState.drive();
           }
-        } else {
+        }
+        // If instead of an [AnimatedEffect] we find  a
+        // [ResetAllAnimationsEffect], reset all animations in the chain.
+        else {
           final resetState =
               context.findAncestorStateOfType<_ResetAllAnimationsEffectState>();
           resetState?.reset();
@@ -254,11 +344,14 @@ class _AnimatedEffectState extends State<AnimatedEffect>
     }
   }
 
+  /// Resets the animation. Called by [ResetAllAnimationsEffect] if
+  /// it is found in the widget tree.
   void reset() {
     repeatTimes = widget.repeat;
     controller.reset();
   }
 
+  /// Drives the animation.
   Future<void> drive() async {
     return ensureDelay(() async {
       if (!mounted) return;
@@ -279,6 +372,8 @@ class _AnimatedEffectState extends State<AnimatedEffect>
     });
   }
 
+  /// Ensures that the animation is delayed if [widget.delay] is not
+  /// [Duration.zero].
   Future<void> ensureDelay(Future Function() fn) async {
     if (widget.delay == Duration.zero) {
       return fn();

@@ -1,3 +1,10 @@
+## 0.2.2
+- Clamp `OpacityEffect`, `ClipEffect`, and `ColorFilterEffect` values to 0.0 - 1.0 to prevent exceptions with
+curves that go outside of this range.
+- Add new `startImmediately` boolean to .animate() to allow for animations to start immediately without waiting for an 
+initial change in the `trigger` object.
+- Improve documentation of `AnimatedEffect`.
+
 ## 0.2.1
 - Fix exceptions being thrown when animation controller state is changed before completion.
 
