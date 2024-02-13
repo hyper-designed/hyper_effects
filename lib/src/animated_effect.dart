@@ -154,6 +154,7 @@ extension AnimatedEffectExt on Widget {
   /// be skipped, even when it is explicitly triggered.
   ///
   AnimatedEffect oneShot({
+    Key? key,
     Duration duration = const Duration(milliseconds: 350),
     Curve curve = appleEaseInOut,
     int repeat = 0,
@@ -163,6 +164,7 @@ extension AnimatedEffectExt on Widget {
     BooleanCallback? playIf,
   }) {
     return AnimatedEffect(
+      key: key,
       triggerType: AnimationTriggerType.oneShot,
       duration: duration,
       curve: curve,
@@ -246,6 +248,8 @@ class AnimatedEffect extends StatefulWidget {
 
 class _AnimatedEffectState extends State<AnimatedEffect>
     with SingleTickerProviderStateMixin {
+  bool didPlay = false;
+
   /// Returns whether the animation should be played or skipped based
   /// on the [playIf] callback.
   bool get shouldPlay => widget.playIf?.call() ?? true;
@@ -264,14 +268,29 @@ class _AnimatedEffectState extends State<AnimatedEffect>
   bool shouldReverse = false;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (didPlay) return;
+
+    if (widget.key case Key key) {
+      final persister = AnimatedEffectStateRetainer.maybeOf(context);
+      final alreadyPlayed = persister?.didPlay(key) ?? false;
+      if (alreadyPlayed) {
+        // If the animation has already played, end it immediately.
+        controller.value = 1;
+        return;
+      }
+
+      persister?.markAsPlayed(key);
+    }
 
     // If the trigger type is one shot or trigger immediately is true,
     // drive the animation.
     if (widget.triggerType == AnimationTriggerType.oneShot ||
         widget.startImmediately) {
       drive();
+      didPlay = false;
     }
   }
 
@@ -320,6 +339,8 @@ class _AnimatedEffectState extends State<AnimatedEffect>
         // The animation must be repeated, call [drive] again.
         drive();
       } else if (repeatTimes == 0) {
+        if (!mounted) return;
+
         // If the animation is not repeated and just ended, look up the widget
         // tree for the next [AnimatedEffect] and trigger it manually if the
         // ancestor's [AnimationTriggerType] is

@@ -38,10 +38,10 @@ class EffectWidget extends StatefulWidget {
 
 class _EffectWidgetState extends State<EffectWidget> {
   /// The [Effect] to interpolate to.
-  late Effect end = widget.end;
+  late Effect end;
 
   /// The [Effect] to interpolate from.
-  late Effect start = widget.start ?? widget.end;
+  late Effect start;
 
   /// caches the previous animation value to use in didUpdateWidget
   /// to calculate the begin value. This is used to create a smooth transition
@@ -53,6 +53,13 @@ class _EffectWidgetState extends State<EffectWidget> {
 
   /// Pulls the animation value from the parent [EffectQuery] widget.
   double get animationValue => effectAnimationValue?.curvedValue ?? 0;
+
+  @override
+  void initState() {
+    super.initState();
+    end = widget.end;
+    start = widget.start ?? widget.end;
+  }
 
   @override
   void didChangeDependencies() {
