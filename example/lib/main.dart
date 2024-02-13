@@ -8,6 +8,7 @@ import 'package:flutter_box_transform/flutter_box_transform.dart';
 import 'package:hyper_effects_demo/stories/color_filter_scroll_transition.dart';
 import 'package:hyper_effects_demo/stories/counter_app.dart';
 import 'package:hyper_effects_demo/stories/one_shot_reset_animation.dart';
+import 'package:hyper_effects_demo/stories/rolling_widget_animation.dart';
 import 'package:hyper_effects_demo/stories/scroll_phase_transition.dart';
 import 'package:hyper_effects_demo/stories/scroll_wheel_blur.dart';
 import 'package:hyper_effects_demo/stories/scroll_wheel_transition.dart';
@@ -95,6 +96,10 @@ class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
     const Story(
       title: 'Spring Animation',
       child: SpringAnimation(),
+    ),
+    const Story(
+      title: 'Rolling Animation',
+      child: RollingWidgetAnimation(),
     ),
   ];
   final List<Story> transitionStories = [

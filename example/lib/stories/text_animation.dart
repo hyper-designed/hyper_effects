@@ -111,7 +111,7 @@ class _EmojiLineState extends State<EmojiLine> {
             .roll(
               'World 🧳🌂☂️🧵🪡🪢🪭🧶👓🕶🥽🥼🦺👔👖🧣 Effect',
               tapeStrategy: const ConsistentSymbolTapeStrategy(4),
-              tapeSlideDirection: TapeSlideDirection.alternating,
+              tapeSlideDirection: TextTapeSlideDirection.alternating,
               staggerTapes: false,
               tapeCurve: Curves.easeInOutBack,
               widthCurve: Curves.easeOutQuart,
@@ -222,7 +222,7 @@ class _TagLineState extends State<TagLine> {
                 .roll(
                   tagLines[tagLine],
                   symbolDistanceMultiplier: 2,
-                  tapeSlideDirection: TapeSlideDirection.down,
+                  tapeSlideDirection: TextTapeSlideDirection.down,
                   tapeCurve: Curves.easeInOutCubic,
                   widthCurve: Curves.easeOutCubic,
                   widthDuration: const Duration(milliseconds: 1000),
@@ -702,7 +702,7 @@ class _ColorPalettePageState extends State<ColorPalettePage> {
                             palettes.keys.elementAt(currentPage).toUpperCase(),
                             staggerSoftness: 6,
                             reverseStaggerDirection: false,
-                            tapeSlideDirection: TapeSlideDirection.down,
+                            tapeSlideDirection: TextTapeSlideDirection.down,
                             tapeCurve: Curves.easeOutBack,
                             widthCurve: Curves.easeOutQuart,
                             widthDuration: const Duration(milliseconds: 500),

@@ -22,7 +22,7 @@ class RollingTextController with ChangeNotifier {
 
   /// Determines the direction in which each tape of characters will
   /// slide.
-  final TapeSlideDirection tapeSlideDirection;
+  final TextTapeSlideDirection tapeSlideDirection;
 
   /// If non-null, the style to use for this text.
   ///
@@ -99,7 +99,7 @@ class RollingTextController with ChangeNotifier {
     required this.oldText,
     required this.newText,
     required this.tapeStrategy,
-    this.tapeSlideDirection = TapeSlideDirection.up,
+    this.tapeSlideDirection = TextTapeSlideDirection.up,
     this.style,
     this.strutStyle,
     this.textAlign,
@@ -187,10 +187,10 @@ class RollingTextController with ChangeNotifier {
   }) {
     final painter = tapePainters[tapeIndex];
     directionReversed ??= switch (tapeSlideDirection) {
-      TapeSlideDirection.up => false,
-      TapeSlideDirection.down => true,
-      TapeSlideDirection.alternating => tapeIndex % 2 == 0,
-      TapeSlideDirection.random => Random('$tapeIndex'.hashCode).nextBool(),
+      TextTapeSlideDirection.up => false,
+      TextTapeSlideDirection.down => true,
+      TextTapeSlideDirection.alternating => tapeIndex % 2 == 0,
+      TextTapeSlideDirection.random => Random('$tapeIndex'.hashCode).nextBool(),
     };
     final selection = selectionAtTapeIndexNearValue(
       tapeIndex,
@@ -236,11 +236,11 @@ class RollingTextController with ChangeNotifier {
       );
 
       tapes.add(switch (tapeSlideDirection) {
-        TapeSlideDirection.up => tape,
-        TapeSlideDirection.down => tape.characters.toList().reversed.join(''),
-        TapeSlideDirection.alternating =>
+        TextTapeSlideDirection.up => tape,
+        TextTapeSlideDirection.down => tape.characters.toList().reversed.join(''),
+        TextTapeSlideDirection.alternating =>
           i % 2 == 0 ? tape : tape.characters.toList().reversed.join(''),
-        TapeSlideDirection.random => Random('$i'.hashCode).nextBool()
+        TextTapeSlideDirection.random => Random('$i'.hashCode).nextBool()
             ? tape
             : tape.characters.toList().reversed.join(''),
       });

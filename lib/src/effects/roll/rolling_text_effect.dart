@@ -2,12 +2,13 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'rolling_text_effect.dart';
 import '../../../hyper_effects.dart';
 
 import 'rolling_text_controller.dart';
 
 export 'symbol_tape_strategy.dart';
-export 'tape_slide_direction.dart';
+export 'slide_direction.dart';
 
 /// Rolls each character with a tape of characters individually
 /// to form the [newText] from the [oldText].
@@ -34,7 +35,7 @@ class RollingTextEffect extends Effect {
 
   /// Determines the direction in which each tape of characters will
   /// slide.
-  final TapeSlideDirection tapeSlideDirection;
+  final TextTapeSlideDirection tapeSlideDirection;
 
   /// Determines how the text should be clipped. The rendered text is
   /// going to be a fixed-height box based on the font size.
@@ -196,7 +197,7 @@ class RollingTextEffect extends Effect {
     this.tapeStrategy = const ConsistentSymbolTapeStrategy(0),
     this.clipBehavior = Clip.hardEdge,
     this.tapeCurve,
-    this.tapeSlideDirection = TapeSlideDirection.up,
+    this.tapeSlideDirection = TextTapeSlideDirection.up,
     this.staggerTapes = true,
     this.staggerSoftness = 1,
     this.reverseStaggerDirection = false,
@@ -318,7 +319,7 @@ class RollingText extends StatefulWidget {
 
   /// Determines the direction in which each tape of characters will
   /// slide.
-  final TapeSlideDirection tapeSlideDirection;
+  final TextTapeSlideDirection tapeSlideDirection;
 
   /// Determines how the text should be clipped. The rendered text is
   /// going to be a fixed-height box based on the font size.
@@ -466,7 +467,7 @@ class RollingText extends StatefulWidget {
     this.padding = EdgeInsets.zero,
     this.tapeStrategy = const ConsistentSymbolTapeStrategy(0),
     this.tapeCurve,
-    this.tapeSlideDirection = TapeSlideDirection.up,
+    this.tapeSlideDirection = TextTapeSlideDirection.up,
     this.clipBehavior = Clip.hardEdge,
     this.staggerTapes = true,
     this.staggerSoftness = 1,
@@ -605,10 +606,10 @@ class _RollingTextState extends State<RollingText> {
             final tapeHeight = rollingTextPainter.getTapeHeight(charIndex);
 
             final bool directionReversed = switch (widget.tapeSlideDirection) {
-              TapeSlideDirection.up => false,
-              TapeSlideDirection.down => true,
-              TapeSlideDirection.alternating => charIndex % 2 == 0,
-              TapeSlideDirection.random =>
+              TextTapeSlideDirection.up => false,
+              TextTapeSlideDirection.down => true,
+              TextTapeSlideDirection.alternating => charIndex % 2 == 0,
+              TextTapeSlideDirection.random =>
                 Random('$charIndex'.hashCode).nextBool(),
             };
             final transformedValue =

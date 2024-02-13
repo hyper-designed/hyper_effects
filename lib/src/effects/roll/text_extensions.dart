@@ -83,7 +83,7 @@ extension TextEffectExt on Text {
     EdgeInsets padding = EdgeInsets.zero,
     SymbolTapeStrategy tapeStrategy = const ConsistentSymbolTapeStrategy(0),
     Curve? tapeCurve,
-    TapeSlideDirection tapeSlideDirection = TapeSlideDirection.up,
+    TextTapeSlideDirection tapeSlideDirection = TextTapeSlideDirection.up,
     bool staggerTapes = true,
     int staggerSoftness = 10,
     bool reverseStaggerDirection = false,

@@ -2,7 +2,7 @@ import '../../../hyper_effects.dart';
 
 /// Determines the direction in which each tape of characters will
 /// slide in the [RollingTextEffect].
-enum TapeSlideDirection {
+enum TextTapeSlideDirection {
   /// The tape of characters will slide from bottom to top.
   up,
 
@@ -15,4 +15,11 @@ enum TapeSlideDirection {
 
   /// The tape of characters will slide in a random direction.
   random,
+}
+
+enum SlideDirection {
+  up,
+  down,
+  left,
+  right,
 }
