@@ -36,7 +36,7 @@ class _RollingWidgetAnimationState extends State<RollingWidgetAnimation> {
                 .animate(
                   trigger: counter,
                   curve: Curves.easeInOutQuart,
-                  duration: Duration(milliseconds: 500),
+                  duration: const Duration(milliseconds: 500),
                 ),
           ),
           ElevatedButton(
