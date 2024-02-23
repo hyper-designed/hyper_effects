@@ -135,7 +135,7 @@ class _PointerTransitionState extends State<PointerTransition>
     duration: widget.duration,
   );
 
-  late Animation<double> _animation = CurvedAnimation(
+  late CurvedAnimation _animation = CurvedAnimation(
     parent: _controller,
     curve: widget.curve,
   );
@@ -187,6 +187,7 @@ class _PointerTransitionState extends State<PointerTransition>
     }
 
     if (widget.curve != oldWidget.curve) {
+      _animation.dispose();
       _animation = CurvedAnimation(
         parent: _controller,
         curve: widget.curve,
@@ -206,6 +207,7 @@ class _PointerTransitionState extends State<PointerTransition>
 
   @override
   void dispose() {
+    _animation.dispose();
     _controller.removeListener(animationListener);
     _controller.dispose();
     WidgetsBinding.instance.pointerRouter.removeGlobalRoute(updateState);
