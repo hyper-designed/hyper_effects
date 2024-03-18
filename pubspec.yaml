@@ -19,7 +19,7 @@ dependencies:
   flutter:
     sdk: flutter
   equatable: ^2.0.5
-  unicode_emojis: ^0.3.0
+  unicode_emojis: ^0.4.0
 
 dev_dependencies:
   flutter_test:

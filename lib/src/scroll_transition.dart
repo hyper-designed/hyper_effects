@@ -27,11 +27,23 @@ class ScrollTransitionEvent {
   /// towards -1. It clamps to -1 when the item is fully out of the scroll view.
   final double screenOffsetFraction;
 
+  /// The number of pixels scrolled inside of the parent scroll view.
+  final double? scrollPixels;
+
+  /// The height or width of the parent scroll view.
+  final double? viewportSize;
+
+  /// The change in scroll position since the last update.
+  final double scrollDelta;
+
   /// Creates a [ScrollTransitionEvent].
   ScrollTransitionEvent({
     required this.phase,
     required this.phaseOffsetFraction,
     required this.screenOffsetFraction,
+    required this.scrollPixels,
+    required this.viewportSize,
+    required this.scrollDelta,
   });
 }
 
@@ -92,6 +104,13 @@ class _ScrollTransitionState extends State<ScrollTransition> {
   /// The current animation value indicating the progress of the scroll
   /// animation through the parent viewport.
   double screenOffsetFraction = 0;
+
+  /// Keeps track of the last scroll position in pixels.
+  /// This is used to calculate the [_scrollDelta].
+  double? _lastScrollPixels;
+
+  /// The change in scroll position since the last update.
+  double _scrollDelta = 0;
 
   @override
   void didChangeDependencies() {
@@ -197,6 +216,11 @@ class _ScrollTransitionState extends State<ScrollTransition> {
     this.phase = phase;
     this.phaseOffsetFraction = phaseOffsetFraction;
     this.screenOffsetFraction = screenOffsetFraction;
+    final double currentPixels =
+        scrollPosition?.hasPixels == true ? scrollPosition!.pixels : 0.0;
+    _scrollDelta =
+        _lastScrollPixels != null ? currentPixels - _lastScrollPixels! : 0;
+    _lastScrollPixels = currentPixels;
 
     if (mounted) setState(() {});
   }
@@ -220,6 +244,13 @@ class _ScrollTransitionState extends State<ScrollTransition> {
                 phase: phase,
                 phaseOffsetFraction: phaseOffsetFraction,
                 screenOffsetFraction: screenOffsetFraction,
+                scrollPixels: scrollPosition?.hasPixels == true
+                    ? scrollPosition!.pixels
+                    : null,
+                viewportSize: scrollPosition?.hasViewportDimension == true
+                    ? scrollPosition!.viewportDimension
+                    : null,
+                scrollDelta: _scrollDelta,
               )) ??
           widget.child;
     } else {
