@@ -13,6 +13,7 @@ extension TranslateEffectExt on Widget {
   Widget translate(
     Offset offset, {
     bool fractional = false,
+    bool transformHitTests = false,
     Offset? from,
   }) {
     return EffectWidget(
@@ -21,10 +22,12 @@ extension TranslateEffectExt on Widget {
           : TranslateEffect(
               offset: from,
               fractional: fractional,
+              transformHitTests: transformHitTests,
             ),
       end: TranslateEffect(
         offset: offset,
         fractional: fractional,
+        transformHitTests: transformHitTests,
       ),
       child: this,
     );
@@ -36,6 +39,7 @@ extension TranslateEffectExt on Widget {
   Widget translateX(
     double x, {
     bool fractional = false,
+    bool transformHitTests = false,
     double? from,
   }) {
     return EffectWidget(
@@ -44,10 +48,12 @@ extension TranslateEffectExt on Widget {
           : TranslateEffect(
               offset: Offset(from, 0),
               fractional: fractional,
+              transformHitTests: transformHitTests,
             ),
       end: TranslateEffect(
         offset: Offset(x, 0),
         fractional: fractional,
+        transformHitTests: transformHitTests,
       ),
       child: this,
     );
@@ -59,6 +65,7 @@ extension TranslateEffectExt on Widget {
   Widget translateY(
     double y, {
     bool fractional = false,
+    bool transformHitTests = false,
     double? from,
   }) {
     return EffectWidget(
@@ -67,10 +74,12 @@ extension TranslateEffectExt on Widget {
           : TranslateEffect(
               offset: Offset(0, from),
               fractional: fractional,
+              transformHitTests: transformHitTests,
             ),
       end: TranslateEffect(
         offset: Offset(0, y),
         fractional: fractional,
+        transformHitTests: transformHitTests,
       ),
       child: this,
     );
@@ -84,6 +93,7 @@ extension TranslateEffectExt on Widget {
     double x,
     double y, {
     bool fractional = false,
+    bool transformHitTests = false,
     Offset? from,
   }) {
     return EffectWidget(
@@ -92,10 +102,12 @@ extension TranslateEffectExt on Widget {
           : TranslateEffect(
               offset: from,
               fractional: fractional,
+              transformHitTests: transformHitTests,
             ),
       end: TranslateEffect(
         offset: Offset(x, y),
         fractional: fractional,
+        transformHitTests: transformHitTests,
       ),
       child: this,
     );
@@ -103,15 +115,21 @@ extension TranslateEffectExt on Widget {
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
   /// to slide this widget in.
-  Widget slideIn(Offset offset, {bool fractional = false}) {
+  Widget slideIn(
+    Offset offset, {
+    bool fractional = false,
+    bool transformHitTests = false,
+  }) {
     return EffectWidget(
       start: TranslateEffect(
         offset: offset,
         fractional: fractional,
+        transformHitTests: transformHitTests,
       ),
       end: TranslateEffect(
         offset: Offset.zero,
         fractional: fractional,
+        transformHitTests: transformHitTests,
       ),
       child: this,
     );
@@ -119,15 +137,21 @@ extension TranslateEffectExt on Widget {
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
   /// to slide this widget out.
-  Widget slideOut(Offset offset, {bool fractional = false}) {
+  Widget slideOut(
+    Offset offset, {
+    bool fractional = false,
+    bool transformHitTests = false,
+  }) {
     return EffectWidget(
       start: TranslateEffect(
         offset: Offset.zero,
         fractional: fractional,
+        transformHitTests: transformHitTests,
       ),
       end: TranslateEffect(
         offset: offset,
         fractional: fractional,
+        transformHitTests: transformHitTests,
       ),
       child: this,
     );
@@ -138,10 +162,12 @@ extension TranslateEffectExt on Widget {
   Widget slideInFromLeft({
     double? value,
     bool fractional = false,
+    bool transformHitTests = false,
   }) =>
       slideIn(
         Offset(value ?? (fractional ? -1 : -_kDefaultSlideOffset), 0),
         fractional: fractional,
+        transformHitTests: transformHitTests,
       );
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
@@ -149,10 +175,12 @@ extension TranslateEffectExt on Widget {
   Widget slideInFromRight({
     double? value,
     bool fractional = false,
+    bool transformHitTests = false,
   }) =>
       slideIn(
         Offset(value ?? (fractional ? 1 : _kDefaultSlideOffset), 0),
         fractional: fractional,
+        transformHitTests: transformHitTests,
       );
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
@@ -160,10 +188,12 @@ extension TranslateEffectExt on Widget {
   Widget slideInFromTop({
     double? value,
     bool fractional = false,
+    bool transformHitTests = false,
   }) =>
       slideIn(
         Offset(0, value ?? (fractional ? -1 : -_kDefaultSlideOffset)),
         fractional: fractional,
+        transformHitTests: transformHitTests,
       );
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
@@ -171,10 +201,12 @@ extension TranslateEffectExt on Widget {
   Widget slideInFromBottom({
     double? value,
     bool fractional = false,
+    bool transformHitTests = false,
   }) =>
       slideIn(
         Offset(0, value ?? (fractional ? 1 : _kDefaultSlideOffset)),
         fractional: fractional,
+        transformHitTests: transformHitTests,
       );
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
@@ -182,10 +214,12 @@ extension TranslateEffectExt on Widget {
   Widget slideOutToLeft({
     double? value,
     bool fractional = false,
+    bool transformHitTests = false,
   }) =>
       slideOut(
         Offset(value ?? (fractional ? -1 : -_kDefaultSlideOffset), 0),
         fractional: fractional,
+        transformHitTests: transformHitTests,
       );
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
@@ -193,10 +227,12 @@ extension TranslateEffectExt on Widget {
   Widget slideOutToRight({
     double? value,
     bool fractional = false,
+    bool transformHitTests = false,
   }) =>
       slideOut(
         Offset(value ?? (fractional ? 1 : _kDefaultSlideOffset), 0),
         fractional: fractional,
+        transformHitTests: transformHitTests,
       );
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
@@ -204,10 +240,12 @@ extension TranslateEffectExt on Widget {
   Widget slideOutToTop({
     double? value,
     bool fractional = false,
+    bool transformHitTests = false,
   }) =>
       slideOut(
         Offset(0, value ?? (fractional ? -1 : -_kDefaultSlideOffset)),
         fractional: fractional,
+        transformHitTests: transformHitTests,
       );
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
@@ -215,10 +253,12 @@ extension TranslateEffectExt on Widget {
   Widget slideOutToBottom({
     double? value,
     bool fractional = false,
+    bool transformHitTests = false,
   }) =>
       slideOut(
         Offset(0, value ?? (fractional ? 1 : _kDefaultSlideOffset)),
         fractional: fractional,
+        transformHitTests: transformHitTests,
       );
 }
 
@@ -231,15 +271,22 @@ class TranslateEffect extends Effect {
   /// of the [Widget]'s size. If false, the [offset] is a fixed amount.
   final bool fractional;
 
+  /// Whether the [Widget] should be hit tested.
+  final bool transformHitTests;
+
   /// Creates a [TranslateEffect] with the given [offset] and [fractional].
   TranslateEffect({
     this.offset = Offset.zero,
     this.fractional = false,
+    this.transformHitTests = false,
   });
 
   @override
   TranslateEffect lerp(covariant TranslateEffect other, double value) {
     return TranslateEffect(
+      fractional: other.fractional,
+      transformHitTests:
+          value < 0.5 ? transformHitTests : other.transformHitTests,
       offset: Offset.lerp(offset, other.offset, value) ?? Offset.zero,
     );
   }
@@ -249,11 +296,13 @@ class TranslateEffect extends Effect {
     if (fractional) {
       return FractionalTranslation(
         translation: offset,
+        transformHitTests: transformHitTests,
         child: child,
       );
     } else {
       return Transform.translate(
         offset: offset,
+        transformHitTests: transformHitTests,
         child: child,
       );
     }
