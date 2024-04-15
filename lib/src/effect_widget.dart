@@ -22,7 +22,7 @@ class EffectWidget extends StatefulWidget {
   final Effect? start;
 
   /// The [Widget] to apply the [end] to.
-  final Widget child;
+  final Widget? child;
 
   /// Creates an [EffectWidget].
   const EffectWidget({
@@ -48,12 +48,6 @@ class _EffectWidgetState extends State<EffectWidget> {
   /// between two [Effect]s when the [Effect] changes mid animation.
   late double previousAnimationValue = 0;
 
-  /// Pulls the parent [EffectQuery] inherited widget.
-  EffectQuery? get effectAnimationValue => EffectQuery.maybeOf(context);
-
-  /// Pulls the animation value from the parent [EffectQuery] widget.
-  double get animationValue => effectAnimationValue?.curvedValue ?? 0;
-
   @override
   void initState() {
     super.initState();
@@ -64,6 +58,8 @@ class _EffectWidgetState extends State<EffectWidget> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final effectQuery = EffectQuery.maybeOf(context);
+    final double animationValue = effectQuery?.curvedValue ?? 0;
     previousAnimationValue = animationValue;
   }
 
@@ -71,8 +67,10 @@ class _EffectWidgetState extends State<EffectWidget> {
   void didUpdateWidget(covariant EffectWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.end != widget.end &&
-        oldWidget.end.runtimeType == widget.end.runtimeType) {
-      if (effectAnimationValue != null && !effectAnimationValue!.isTransition) {
+        oldWidget.end.runtimeType == widget.end.runtimeType &&
+        start.runtimeType == end.runtimeType) {
+      final effectQuery = EffectQuery.maybeOf(context);
+      if (effectQuery != null && !effectQuery.isTransition) {
         start = start.lerp(end, previousAnimationValue);
       }
 
@@ -82,13 +80,24 @@ class _EffectWidgetState extends State<EffectWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (effectAnimationValue?.lerpValues == false) {
-      return end.apply(context, widget.child);
-    } else {
-      if (start.runtimeType != end.runtimeType) return widget.child;
+    final effectQuery = EffectQuery.maybeOf(context);
 
-      final Effect newEffect = start.lerp(end, animationValue);
-      return newEffect.apply(context, widget.child);
+    final child = widget.child;
+
+    if (effectQuery?.lerpValues == false) {
+      return end.apply(context, child);
+    } else {
+      if (start.runtimeType != end.runtimeType) {
+        return child ?? const SizedBox.shrink();
+      }
+
+      final double animationValue = effectQuery?.curvedValue ?? 0;
+      Effect effectiveStart = start;
+      if (widget.start == null && effectQuery?.resetValues == true) {
+        effectiveStart = start.idle();
+      }
+      final Effect newEffect = effectiveStart.lerp(end, animationValue);
+      return newEffect.apply(context, child);
     }
   }
 }

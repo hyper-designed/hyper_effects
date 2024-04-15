@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
+
 import '../../hyper_effects.dart';
 
 /// Provides a extension method to apply an [OpacityEffect] to a [Widget].
@@ -64,8 +65,13 @@ class OpacityEffect extends Effect {
   }
 
   @override
-  Widget apply(BuildContext context, Widget child) =>
+  Widget apply(BuildContext context, Widget? child) =>
       Opacity(opacity: opacity, child: child);
+
+  @override
+  OpacityEffect idle() => OpacityEffect(
+        opacity: 1,
+      );
 
   @override
   List<Object?> get props => [opacity];

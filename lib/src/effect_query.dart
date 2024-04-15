@@ -25,6 +25,14 @@ class EffectQuery extends InheritedWidget {
   /// interpolated between 0 and 1.
   final bool lerpValues;
 
+  /// Normally, an effect represents the current state of the widget and this
+  /// animate effect is only in charge of lerping between states of those
+  /// effect values.
+  /// If this is set to true, instead of treating effects as current states
+  /// to animate between, it will always animate from an initial default
+  /// state towards the current state.
+  final bool resetValues;
+
   /// The duration of the animation.
   final Duration duration;
 
@@ -39,6 +47,7 @@ class EffectQuery extends InheritedWidget {
     required this.curvedValue,
     required this.isTransition,
     this.lerpValues = true,
+    this.resetValues = false,
     this.duration = Duration.zero,
     this.curve = Curves.linear,
   });
@@ -47,7 +56,10 @@ class EffectQuery extends InheritedWidget {
   bool updateShouldNotify(covariant EffectQuery oldWidget) {
     return oldWidget.curvedValue != curvedValue ||
         oldWidget.isTransition != isTransition ||
-        oldWidget.lerpValues != lerpValues;
+        oldWidget.lerpValues != lerpValues ||
+        oldWidget.resetValues != resetValues ||
+        oldWidget.duration != duration ||
+        oldWidget.curve != curve;
   }
 
   /// Returns the [EffectQuery] from the given [context].

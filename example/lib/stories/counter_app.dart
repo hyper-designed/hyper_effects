@@ -34,9 +34,9 @@ class _CounterAppState extends State<CounterApp> {
               'You have pushed the button this many times:',
             ),
             Text(
-              '${max(0, _counter - 1)}',
+              '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
-            ).roll('$_counter').animate(trigger: _counter),
+            ).roll().animate(trigger: _counter),
           ],
         ),
       ),

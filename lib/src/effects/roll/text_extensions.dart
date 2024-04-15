@@ -78,8 +78,7 @@ extension TextEffectExt on Text {
   /// width animation of each tape.
   /// If null, the same curve is used as the one provided to the [animate]
   /// function.
-  Widget roll(
-    String newText, {
+  Widget roll({
     EdgeInsets padding = EdgeInsets.zero,
     SymbolTapeStrategy tapeStrategy = const ConsistentSymbolTapeStrategy(0),
     Curve? tapeCurve,
@@ -102,7 +101,7 @@ extension TextEffectExt on Text {
       'staggerSoftness must be greater than 0.',
     );
     assert(
-      !(data ?? '').contains('\n') && !newText.contains('\n'),
+      !(data ?? '').contains('\n'),
       'Rolling text effect does not support multiline text.',
     );
 
@@ -114,8 +113,7 @@ extension TextEffectExt on Text {
 
       return EffectWidget(
         end: RollingTextEffect(
-          oldText: data ?? '',
-          newText: newText,
+          text: data ?? '',
           padding: padding,
           tapeStrategy: tapeStrategy,
           tapeCurve: tapeCurve,

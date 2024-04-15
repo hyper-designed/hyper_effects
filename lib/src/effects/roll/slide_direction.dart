@@ -16,10 +16,3 @@ enum TextTapeSlideDirection {
   /// The tape of characters will slide in a random direction.
   random,
 }
-
-enum SlideDirection {
-  up,
-  down,
-  left,
-  right,
-}

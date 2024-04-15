@@ -103,24 +103,26 @@ class _EmojiLineState extends State<EmojiLine> {
           borderRadius: BorderRadius.circular(32),
         ),
         child: Text(
-          'Hello 😀😃😄😁😆😅😂🤣🥲🥹️😊😇🙂🙃😉😌 Sexy',
+          trigger
+              ? 'World 🧳🌂☂️🧵🪡🪢🪭🧶👓🕶🥽🥼🦺👔👖🧣 Effect'
+              : 'Hello 😀😃😄😁😆😅😂🤣🥲🥹️😊😇🙂🙃😉😌 Sexy',
           style: TextStyle(
             color: Theme.of(context).colorScheme.onPrimaryContainer,
           ),
         )
             .roll(
-              'World 🧳🌂☂️🧵🪡🪢🪭🧶👓🕶🥽🥼🦺👔👖🧣 Effect',
               tapeStrategy: const ConsistentSymbolTapeStrategy(4),
               tapeSlideDirection: TextTapeSlideDirection.alternating,
-              staggerTapes: false,
+              staggerTapes: true,
               tapeCurve: Curves.easeInOutBack,
               widthCurve: Curves.easeOutQuart,
               symbolDistanceMultiplier: 2,
+              staggerSoftness: 30,
+              // clipBehavior: Clip.none,
             )
             .animate(
               trigger: trigger,
-              reverse: true,
-              duration: const Duration(milliseconds: 1500),
+              duration: const Duration(milliseconds: 2000),
             ),
       ),
     );
@@ -148,7 +150,6 @@ class _TagLineState extends State<TagLine> {
     'Build',
     'Code',
   ];
-  int lastTagLine = 0;
   int tagLine = 0;
 
   late Timer timer;
@@ -159,7 +160,6 @@ class _TagLineState extends State<TagLine> {
     timer = Timer.periodic(
         Duration(milliseconds: (1800 * timeDilation).toInt()), (timer) {
       setState(() {
-        lastTagLine = tagLine;
         tagLine = (tagLine + 1) % tagLines.length;
       });
     });
@@ -212,7 +212,7 @@ class _TagLineState extends State<TagLine> {
               ],
             ).createShader(rect),
             child: Text(
-              tagLines[lastTagLine],
+              tagLines[tagLine],
               style: GoogleFonts.gloriaHallelujah().copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -220,7 +220,6 @@ class _TagLineState extends State<TagLine> {
               ),
             )
                 .roll(
-                  tagLines[tagLine],
                   symbolDistanceMultiplier: 2,
                   tapeSlideDirection: TextTapeSlideDirection.down,
                   tapeCurve: Curves.easeInOutCubic,
@@ -263,7 +262,6 @@ class _TranslationState extends State<Translation> {
     'Namaste',
     'Salaam',
   ];
-  int lastTranslation = 0;
   int translation = 0;
 
   late Timer timer;
@@ -275,7 +273,6 @@ class _TranslationState extends State<Translation> {
     timer = Timer.periodic(
         Duration(milliseconds: (2000 * timeDilation).toInt()), (timer) {
       setState(() {
-        lastTranslation = translation;
         translation = (translation + 1) % translations.length;
       });
     });
@@ -315,7 +312,7 @@ class _TranslationState extends State<Translation> {
               ],
             ).createShader(rect),
             child: Text(
-              translations[lastTranslation],
+              translations[translation],
               style: GoogleFonts.sacramento().copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -323,7 +320,6 @@ class _TranslationState extends State<Translation> {
               ),
             )
                 .roll(
-                  translations[translation],
                   symbolDistanceMultiplier: 2,
                   tapeCurve: Curves.easeInOutBack,
                   widthCurve: Curves.easeInOutQuart,
@@ -361,7 +357,6 @@ class LikeButton extends StatefulWidget {
 }
 
 class _LikeButtonState extends State<LikeButton> {
-  int lastCounter = 19;
   int counter = 19;
   bool triggerShare = false;
   int downloadIteration = 1;
@@ -378,7 +373,6 @@ class _LikeButtonState extends State<LikeButton> {
           child: InkWell(
             onTap: () {
               setState(() {
-                lastCounter = counter;
                 counter++;
               });
             },
@@ -395,13 +389,12 @@ class _LikeButtonState extends State<LikeButton> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '${lastCounter}K',
+                    '${counter}K',
                     style: GoogleFonts.robotoTextTheme()
                         .bodyMedium!
                         .copyWith(color: Colors.white, fontSize: 16),
                   )
                       .roll(
-                        '${counter}K',
                         tapeStrategy: const AllSymbolsTapeStrategy(false),
                         symbolDistanceMultiplier: 2,
                         clipBehavior: Clip.none,
@@ -453,13 +446,12 @@ class _LikeButtonState extends State<LikeButton> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Share',
+                    triggerShare ? 'Thanks!' : 'Share',
                     style: GoogleFonts.robotoTextTheme()
                         .bodyMedium!
                         .copyWith(color: Colors.white, fontSize: 16),
                   )
                       .roll(
-                        'Thanks!',
                         tapeStrategy:
                             const ConsistentSymbolTapeStrategy(0, true),
                         symbolDistanceMultiplier: 2,
@@ -513,11 +505,6 @@ class _LikeButtonState extends State<LikeButton> {
                         .copyWith(color: Colors.white, fontSize: 16),
                   )
                       .roll(
-                        switch (downloadIteration) {
-                          1 => 'Downloading',
-                          2 => 'Downloaded',
-                          _ => 'Download',
-                        },
                         tapeStrategy:
                             const ConsistentSymbolTapeStrategy(0, false),
                         symbolDistanceMultiplier: 2,
@@ -642,7 +629,6 @@ class _ColorPalettePageState extends State<ColorPalettePage> {
     ]
   };
 
-  int lastPage = 0;
   int currentPage = 0;
   final PageController _pageController = PageController();
 
@@ -694,12 +680,11 @@ class _ColorPalettePageState extends State<ColorPalettePage> {
                         colors: palettes.values.elementAt(currentPage),
                       ).createShader(rect),
                       child: Text(
-                        palettes.keys.elementAt(lastPage).toUpperCase(),
+                        palettes.keys.elementAt(currentPage).toUpperCase(),
                         style: const TextStyle(
                             fontWeight: FontWeight.w700, color: Colors.white),
                       )
                           .roll(
-                            palettes.keys.elementAt(currentPage).toUpperCase(),
                             staggerSoftness: 6,
                             reverseStaggerDirection: false,
                             tapeSlideDirection: TextTapeSlideDirection.down,
@@ -731,7 +716,6 @@ class _ColorPalettePageState extends State<ColorPalettePage> {
                         itemCount: palettes.keys.length,
                         onPageChanged: (int page) {
                           setState(() {
-                            lastPage = currentPage;
                             currentPage = page;
                           });
                         },

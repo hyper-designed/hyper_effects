@@ -133,7 +133,7 @@ class TransformEffect extends Effect {
   }
 
   @override
-  Widget apply(BuildContext context, Widget child) {
+  Widget apply(BuildContext context, Widget? child) {
     final matrix = Matrix4.identity();
     if (depth > 0) {
       matrix.setEntry(3, 2, depth);
@@ -151,6 +151,9 @@ class TransformEffect extends Effect {
       child: child,
     );
   }
+
+  @override
+  TransformEffect idle() => TransformEffect();
 
   @override
   List<Object?> get props => [
