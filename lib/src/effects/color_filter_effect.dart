@@ -136,7 +136,7 @@ class ColorFilterEffect extends Effect {
   }
 
   @override
-  Widget apply(BuildContext context, Widget child) {
+  Widget apply(BuildContext context, Widget? child) {
     return ColorFiltered(
       colorFilter: color != null
           ? ColorFilter.mode(color!, mode)
@@ -144,6 +144,9 @@ class ColorFilterEffect extends Effect {
       child: child,
     );
   }
+
+  @override
+  ColorFilterEffect idle() => ColorFilterEffect(mode: mode);
 
   @override
   List<Object?> get props => [color, mode, matrix];

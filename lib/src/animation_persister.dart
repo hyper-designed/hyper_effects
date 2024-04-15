@@ -8,10 +8,22 @@ import '../hyper_effects.dart';
 /// not allowing [AnimationTriggerType.oneShot] animations from replaying
 /// if their [State] got disposed and recreated.
 ///
-/// This is useful for HyperEffect animations that are used in
+/// This is useful for animations that are used in
 /// [ListView.builder], [GridView.builder] or any other widget that
 /// disposes and recreates its children, discouraging the replay of
 /// animations that already played.
+///
+/// To use it, wrap your dynamic widget builder widget with this widget.
+///
+/// Example:
+/// ```dart
+/// AnimatedEffectStateRetainer(
+///    child: ListView.builder(
+///    itemBuilder: (context, index) {
+///     ...
+///    },
+///  ),
+/// ```
 class AnimatedEffectStateRetainer extends StatefulWidget {
   /// A subtree of widgets that contain [AnimatedEffect] widgets.
   final Widget child;

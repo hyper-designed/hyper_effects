@@ -155,7 +155,7 @@ class SkewEffect extends Effect {
   final Offset origin;
 
   /// Creates a [SkewEffect].
-  SkewEffect({
+  const SkewEffect({
     this.skew,
     this.skewX,
     this.skewY,
@@ -180,7 +180,7 @@ class SkewEffect extends Effect {
       );
 
   @override
-  Widget apply(BuildContext context, Widget child) {
+  Widget apply(BuildContext context, Widget? child) {
     return Transform(
       transform: Matrix4.skew(
         skewX ?? skew ?? 0,
@@ -191,6 +191,9 @@ class SkewEffect extends Effect {
       child: child,
     );
   }
+
+  @override
+  SkewEffect idle() => SkewEffect();
 
   @override
   List<Object?> get props => [skew, skewX, skewY, alignment, origin];

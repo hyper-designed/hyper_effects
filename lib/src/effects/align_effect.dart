@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/widgets.dart';
 
 import '../effect_widget.dart';
@@ -9,10 +11,24 @@ extension AlignEffectExt on Widget {
   Widget align(
     AlignmentGeometry alignment, {
     AlignmentGeometry? from,
+    double heightFactor = 1,
+    double widthFactor = 1,
+    double? fromHeightFactor,
+    double? fromWidthFactor,
   }) {
     return EffectWidget(
-      start: from == null ? null : AlignEffect(alignment: from),
-      end: AlignEffect(alignment: alignment),
+      start: from == null && fromHeightFactor == null && fromWidthFactor == null
+          ? null
+          : AlignEffect(
+              alignment: from ?? alignment,
+              heightFactor: fromHeightFactor ?? heightFactor,
+              widthFactor: fromWidthFactor ?? widthFactor,
+            ),
+      end: AlignEffect(
+        alignment: alignment,
+        heightFactor: heightFactor,
+        widthFactor: widthFactor,
+      ),
       child: this,
     );
   }
@@ -55,9 +71,15 @@ class AlignEffect extends Effect {
   /// The alignment by which the [Widget] is aligned.
   final AlignmentGeometry alignment;
 
+  final double widthFactor;
+
+  final double heightFactor;
+
   /// Creates a [AlignEffect] with the given [alignment] and [fractional].
   AlignEffect({
     this.alignment = AlignmentDirectional.topStart,
+    this.widthFactor = 1,
+    this.heightFactor = 1,
   });
 
   @override
@@ -65,17 +87,24 @@ class AlignEffect extends Effect {
     return AlignEffect(
       alignment: AlignmentGeometry.lerp(alignment, other.alignment, value) ??
           AlignmentDirectional.topStart,
+      widthFactor: lerpDouble(widthFactor, other.widthFactor, value) ?? 1,
+      heightFactor: lerpDouble(heightFactor, other.heightFactor, value) ?? 1,
     );
   }
 
   @override
-  Widget apply(BuildContext context, Widget child) {
+  Widget apply(BuildContext context, Widget? child) {
     return Align(
       alignment: alignment,
+      widthFactor: widthFactor,
+      heightFactor: heightFactor,
       child: child,
     );
   }
 
   @override
-  List<Object?> get props => [alignment];
+  AlignEffect idle() => AlignEffect();
+
+  @override
+  List<Object?> get props => [alignment, widthFactor, heightFactor];
 }

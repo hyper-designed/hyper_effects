@@ -201,7 +201,7 @@ class ScaleEffect extends Effect {
   }
 
   @override
-  Widget apply(BuildContext context, Widget child) => Transform.scale(
+  Widget apply(BuildContext context, Widget? child) => Transform.scale(
         scale: scale,
         scaleX: scaleX,
         scaleY: scaleY,
@@ -209,6 +209,9 @@ class ScaleEffect extends Effect {
         origin: origin,
         child: child,
       );
+
+  @override
+  ScaleEffect idle() => ScaleEffect(scale: 1);
 
   @override
   List<Object?> get props => [

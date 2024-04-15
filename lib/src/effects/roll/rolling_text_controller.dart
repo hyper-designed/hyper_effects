@@ -239,7 +239,7 @@ class RollingTextController with ChangeNotifier {
         TextTapeSlideDirection.up => tape,
         TextTapeSlideDirection.down => tape.characters.toList().reversed.join(''),
         TextTapeSlideDirection.alternating =>
-          i % 2 == 0 ? tape : tape.characters.toList().reversed.join(''),
+          i % 2 == 1 ? tape : tape.characters.toList().reversed.join(''),
         TextTapeSlideDirection.random => Random('$i'.hashCode).nextBool()
             ? tape
             : tape.characters.toList().reversed.join(''),

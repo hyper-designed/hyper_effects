@@ -2,22 +2,18 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'rolling_text_effect.dart';
-import '../../../hyper_effects.dart';
 
+import '../../../hyper_effects.dart';
 import 'rolling_text_controller.dart';
 
-export 'symbol_tape_strategy.dart';
 export 'slide_direction.dart';
+export 'symbol_tape_strategy.dart';
 
 /// Rolls each character with a tape of characters individually
 /// to form the [newText] from the [oldText].
 class RollingTextEffect extends Effect {
-  /// The text to display interpolating away from.
-  final String oldText;
-
   /// The text to display interpolating to.
-  final String newText;
+  final String text;
 
   /// Internal padding to apply between the row of symbol tapes and
   /// the clipping mask.
@@ -191,8 +187,7 @@ class RollingTextEffect extends Effect {
 
   /// Creates a [RollingTextEffect].
   const RollingTextEffect({
-    required this.oldText,
-    required this.newText,
+    required this.text,
     this.padding = EdgeInsets.zero,
     this.tapeStrategy = const ConsistentSymbolTapeStrategy(0),
     this.clipBehavior = Clip.hardEdge,
@@ -224,10 +219,9 @@ class RollingTextEffect extends Effect {
       other;
 
   @override
-  Widget apply(BuildContext context, Widget child) {
+  Widget apply(BuildContext context, Widget? child) {
     return RollingText(
-      newText: newText,
-      oldText: oldText,
+      text: text,
       padding: padding,
       tapeStrategy: tapeStrategy,
       tapeCurve: tapeCurve,
@@ -257,8 +251,7 @@ class RollingTextEffect extends Effect {
 
   @override
   List<Object?> get props => [
-        oldText,
-        newText,
+        text,
         padding,
         tapeCurve,
         tapeSlideDirection,
@@ -297,11 +290,8 @@ class RollingTextEffect extends Effect {
 /// The text style, alignment, directionality, and other text properties can
 /// also be customized.
 class RollingText extends StatefulWidget {
-  /// The text to display interpolating away from.
-  final String oldText;
-
   /// The text to display interpolating to.
-  final String newText;
+  final String text;
 
   /// Internal padding to apply between the row of symbol tapes and
   /// the clipping mask.
@@ -462,8 +452,7 @@ class RollingText extends StatefulWidget {
   /// Creates a new [RollingText] with the given parameters.
   const RollingText({
     super.key,
-    required this.oldText,
-    required this.newText,
+    required this.text,
     this.padding = EdgeInsets.zero,
     this.tapeStrategy = const ConsistentSymbolTapeStrategy(0),
     this.tapeCurve,
@@ -495,15 +484,20 @@ class RollingText extends StatefulWidget {
 }
 
 class _RollingTextState extends State<RollingText> {
-  late RollingTextController rollingTextPainter = createRollingTextPainter();
+  late RollingTextController rollingTextPainter = createRollingTextController();
+
+  late String oldText = widget.text;
 
   @override
   void didUpdateWidget(covariant RollingText oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    if (oldWidget.text != widget.text) {
+      oldText = oldWidget.text;
+    }
+
     // Account for all parameters except for value.
-    if (oldWidget.oldText == widget.oldText &&
-        oldWidget.newText == widget.newText &&
+    if (oldWidget.text == widget.text &&
         oldWidget.padding == widget.padding &&
         oldWidget.tapeStrategy == widget.tapeStrategy &&
         oldWidget.tapeCurve == widget.tapeCurve &&
@@ -530,12 +524,12 @@ class _RollingTextState extends State<RollingText> {
         oldWidget.selectionColor == widget.selectionColor) return;
 
     rollingTextPainter.dispose();
-    rollingTextPainter = createRollingTextPainter();
+    rollingTextPainter = createRollingTextController();
   }
 
-  RollingTextController createRollingTextPainter() => RollingTextController(
-        oldText: widget.oldText,
-        newText: widget.newText,
+  RollingTextController createRollingTextController() => RollingTextController(
+        oldText: oldText,
+        newText: widget.text,
         tapeStrategy: widget.tapeStrategy,
         tapeSlideDirection: widget.tapeSlideDirection,
         style: widget.style,
@@ -560,7 +554,7 @@ class _RollingTextState extends State<RollingText> {
   @override
   Widget build(BuildContext context) {
     final int longest =
-        max(widget.oldText.characters.length, widget.newText.characters.length);
+        max(oldText.characters.length, widget.text.characters.length);
 
     final effectAnimationValue = EffectQuery.maybeOf(context);
     final timeValue = effectAnimationValue?.linearValue ?? 1;

@@ -24,3 +24,29 @@ extension ScrollPositionExt on ScrollPosition {
   /// Returns true if the scroll position is at the end of the scroll view.
   bool get atEnd => pixels == maxScrollExtent;
 }
+
+extension DoubleHelper on double? {
+  bool get zeroIsFalse => this == null ? false : this! <= 0;
+
+  bool get oneIsTrue => this == null ? true : this! >= 1;
+
+  bool get middlePointBool => this == null ? false : this! >= 0.5;
+
+  double get magnetize => this == null
+      ? 0
+      : this! < 0.5
+          ? 0
+          : 1;
+
+  double get magnetizeReverse => this == null
+      ? 1
+      : this! < 0.5
+          ? 1
+          : 0;
+
+  bool get isZero => this == null ? false : this! == 0;
+
+  bool get isOne => this == null ? false : this! == 1;
+
+  bool get isMiddlePoint => this == null ? false : this! == 0.5;
+}

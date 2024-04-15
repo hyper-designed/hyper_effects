@@ -11,3 +11,4 @@ export 'src/pointer_transition.dart';
 export 'src/apple_curves.dart';
 export 'src/post_frame_widget.dart';
 export 'src/animation_persister.dart';
+export 'src/animated_group_effect.dart';

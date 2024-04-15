@@ -292,7 +292,7 @@ class TranslateEffect extends Effect {
   }
 
   @override
-  Widget apply(BuildContext context, Widget child) {
+  Widget apply(BuildContext context, Widget? child) {
     if (fractional) {
       return FractionalTranslation(
         translation: offset,
@@ -307,6 +307,13 @@ class TranslateEffect extends Effect {
       );
     }
   }
+
+  @override
+  TranslateEffect idle() => TranslateEffect(
+        offset: Offset.zero,
+        fractional: fractional,
+        transformHitTests: transformHitTests,
+      );
 
   @override
   List<Object?> get props => [offset, fractional];

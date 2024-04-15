@@ -63,7 +63,7 @@ class RotationEffect extends Effect {
   }
 
   @override
-  Widget apply(BuildContext context, Widget child) {
+  Widget apply(BuildContext context, Widget? child) {
     return Transform.rotate(
       angle: angle,
       alignment: alignment,
@@ -71,6 +71,9 @@ class RotationEffect extends Effect {
       child: child,
     );
   }
+
+  @override
+  RotationEffect idle() => const RotationEffect();
 
   @override
   List<Object?> get props => [angle, origin, alignment];
