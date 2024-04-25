@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
@@ -27,6 +28,32 @@ extension RotationEffectExt on Widget {
         origin: origin,
         alignment: alignment,
       ),
+      child: this,
+    );
+  }
+
+  /// Applies a [RotationEffect] to a [Widget] to rotate it in.
+  Widget rotateIn({
+    double? from,
+    Offset origin = Offset.zero,
+    AlignmentGeometry alignment = Alignment.center,
+  }) {
+    return EffectWidget(
+      start: RotationEffect(angle: from ?? -pi / 2),
+      end: RotationEffect(angle: 0, origin: origin, alignment: alignment),
+      child: this,
+    );
+  }
+
+  /// Applies a [RotationEffect] to a [Widget] to rotate it out.
+  Widget rotateOut({
+    double? to,
+    Offset origin = Offset.zero,
+    AlignmentGeometry alignment = Alignment.center,
+  }) {
+    return EffectWidget(
+      start: RotationEffect(angle: 0, origin: origin, alignment: alignment),
+      end: RotationEffect(angle: to ?? pi / 2),
       child: this,
     );
   }

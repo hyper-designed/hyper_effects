@@ -21,9 +21,9 @@ class _GroupAnimationState extends State<GroupAnimation> {
   ];
   final List<String> tags2 = [
     'family',
+    'work',
     'friends',
     'sports',
-    'work',
   ];
 
   @override
@@ -39,10 +39,10 @@ class _GroupAnimationState extends State<GroupAnimation> {
               color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(20),
             ),
-            // clipBehavior: Clip.antiAlias,
-              child: AnimatedGroup(
+            clipBehavior: Clip.antiAlias,
+            child: AnimatedGroup(
+              triggerAddImmediately: false,
               builder: (context, children) => Row(children: children),
-              valueGetter: (child, i) => tags[i],
               children: [
                 for (int i = 0; i < tags.length; i++)
                   Padding(
