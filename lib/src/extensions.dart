@@ -26,6 +26,8 @@ extension ScrollPositionExt on ScrollPosition {
 }
 
 extension DoubleHelper on double? {
+  double get clampUnderZero => this == null ? 0 : this! < 0 ? 0 : this!;
+
   bool get zeroIsFalse => this == null ? false : this! <= 0;
 
   bool get oneIsTrue => this == null ? true : this! >= 1;

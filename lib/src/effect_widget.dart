@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'effect_query.dart';
@@ -66,6 +67,8 @@ class _EffectWidgetState extends State<EffectWidget> {
   @override
   void didUpdateWidget(covariant EffectWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    start= widget.start ?? widget.end;
     if (oldWidget.end != widget.end &&
         oldWidget.end.runtimeType == widget.end.runtimeType &&
         start.runtimeType == end.runtimeType) {
@@ -96,8 +99,16 @@ class _EffectWidgetState extends State<EffectWidget> {
       if (widget.start == null && effectQuery?.resetValues == true) {
         effectiveStart = start.idle();
       }
+
       final Effect newEffect = effectiveStart.lerp(end, animationValue);
       return newEffect.apply(context, child);
     }
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Effect>('start', start));
+    properties.add(DiagnosticsProperty<Effect>('end', end));
   }
 }

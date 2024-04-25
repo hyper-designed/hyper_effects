@@ -45,13 +45,17 @@ extension AnimatedEffectExt on Widget? {
   ///
   /// The [delay] parameter is used to set a delay before the animation starts.
   ///
+  /// The [startImmediately] parameter is used to determine whether the
+  /// animation should be triggered immediately when the widget is built,
+  /// ignoring the value of [trigger] initially.
+  ///
   /// The [playIf] parameter is used to determine whether the animation should
   /// be played or skipped. If the callback returns false, the animation will
   /// be skipped, even when it is explicitly triggered.
   ///
-  /// The [startImmediately] parameter is used to determine whether the
-  /// animation should be triggered immediately when the widget is built,
-  /// ignoring the value of [trigger] initially.
+  /// The [skipIf] parameter is used to determine whether the animation should
+  /// be skipped by setting the animation value to 1, effectively skipping the
+  /// animation to the ending values.
   Widget animate({
     required Object? trigger,
     Duration duration = const Duration(milliseconds: 350),
@@ -64,6 +68,7 @@ extension AnimatedEffectExt on Widget? {
     Duration delay = Duration.zero,
     VoidCallback? onEnd,
     BooleanCallback? playIf,
+    BooleanCallback? skipIf,
   }) {
     return AnimatedEffect(
       triggerType: AnimationTriggerType.trigger,
@@ -78,6 +83,7 @@ extension AnimatedEffectExt on Widget? {
       delay: delay,
       onEnd: onEnd,
       playIf: playIf,
+      skipIf: skipIf,
       child: this,
     );
   }
@@ -112,27 +118,25 @@ extension AnimatedEffectExt on Widget? {
   /// When false, the animation will animate from the previous effect state
   /// towards the current state.
   ///
-  /// The [waitForLastAnimation] parameter is used to determine whether the
-  /// animation should be reset on subsequent triggers. If this animation is
-  /// re-triggered, it will reset the current active animation and re-drive
-  /// from the beginning. Setting this to true will force the animation to
-  /// wait for the last animation in the chain to finish before starting.
-  ///
   /// The [delay] parameter is used to set a delay before the animation starts.
   ///
   /// The [playIf] parameter is used to determine whether the animation should
   /// be played or skipped. If the callback returns false, the animation will
   /// be skipped, even when it is explicitly triggered.
+  ///
+  /// The [skipIf] parameter is used to determine whether the animation should
+  /// be skipped by setting the animation value to 1, effectively skipping the
+  /// animation to the ending values.
   Widget animateAfter({
     Duration duration = const Duration(milliseconds: 350),
     Curve curve = appleEaseInOut,
     int repeat = 0,
     bool reverse = false,
     bool resetValues = false,
-    bool waitForLastAnimation = false,
     Duration delay = Duration.zero,
     VoidCallback? onEnd,
     BooleanCallback? playIf,
+    BooleanCallback? skipIf,
   }) {
     return AnimatedEffect(
       triggerType: AnimationTriggerType.afterLast,
@@ -142,10 +146,11 @@ extension AnimatedEffectExt on Widget? {
       repeat: repeat,
       reverse: reverse,
       resetValues: resetValues,
-      waitForLastAnimation: waitForLastAnimation,
+      waitForLastAnimation: false,
       delay: delay,
       onEnd: onEnd,
       playIf: playIf,
+      skipIf: skipIf,
       child: this,
     );
   }
@@ -187,6 +192,9 @@ extension AnimatedEffectExt on Widget? {
   /// be played or skipped. If the callback returns false, the animation will
   /// be skipped, even when it is explicitly triggered.
   ///
+  /// The [skipIf] parameter is used to determine whether the animation should
+  /// be skipped by setting the animation value to 1, effectively skipping the
+  /// animation to the ending values.
   AnimatedEffect oneShot({
     Key? key,
     Duration duration = const Duration(milliseconds: 350),
@@ -198,6 +206,7 @@ extension AnimatedEffectExt on Widget? {
     Duration delay = Duration.zero,
     VoidCallback? onEnd,
     BooleanCallback? playIf,
+    BooleanCallback? skipIf,
   }) {
     return AnimatedEffect(
       key: key,
@@ -211,6 +220,7 @@ extension AnimatedEffectExt on Widget? {
       waitForLastAnimation: waitForLastAnimation,
       delay: delay,
       playIf: playIf,
+      skipIf: skipIf,
       child: this,
     );
   }
@@ -274,6 +284,11 @@ class AnimatedEffect extends StatefulWidget {
   /// be skipped, even when it is explicitly triggered.
   final BooleanCallback? playIf;
 
+  /// A callback that determines whether the animation should be skipped by
+  /// setting the animation value to 1, effectively skipping the animation to
+  /// the ending values.
+  final BooleanCallback? skipIf;
+
   /// Creates [AnimatedEffect] widget.
   const AnimatedEffect({
     super.key,
@@ -290,6 +305,7 @@ class AnimatedEffect extends StatefulWidget {
     this.waitForLastAnimation = false,
     this.delay = Duration.zero,
     this.playIf,
+    this.skipIf,
   });
 
   @override
@@ -311,10 +327,14 @@ class AnimatedEffectState extends State<AnimatedEffect>
   /// on the [playIf] callback.
   bool get shouldPlay => widget.playIf?.call() ?? true;
 
+  /// Returns whether the animation should be skipped based on the [skipIf]
+  /// callback.
+  bool get shouldSkip => widget.skipIf?.call() ?? false;
+
   /// The animation controller that drives the animation.
   late final AnimationController controller = AnimationController(
     vsync: this,
-    value: 0,
+    value: shouldSkip ? 1 : 0,
     duration: widget.duration,
   );
 
@@ -405,14 +425,14 @@ class AnimatedEffectState extends State<AnimatedEffect>
         // tree for the next [AnimatedEffect] and trigger it manually if the
         // ancestor's [AnimationTriggerType] is
         // [AnimationTriggerType.afterLast].
-        final parentState =
+        final AnimatedEffectState? parentState =
             context.findAncestorStateOfType<AnimatedEffectState>();
-        if (parentState != null) {
-          final triggerType = parentState.widget.triggerType;
-          if (triggerType == AnimationTriggerType.afterLast) {
-            // Trigger the next animation.
-            await parentState.drive();
-          }
+        final AnimationTriggerType? triggerType =
+            parentState?.widget.triggerType;
+        if (parentState != null &&
+            triggerType == AnimationTriggerType.afterLast) {
+          // Trigger the next animation.
+          await parentState.drive();
         }
         // If instead of an [AnimatedEffect] we find  a
         // [ResetAllAnimationsEffect], reset all animations in the chain.
@@ -441,6 +461,10 @@ class AnimatedEffectState extends State<AnimatedEffect>
     return driveFuture = ensureDelay(() async {
       if (!mounted) return;
       if (!shouldPlay) return;
+      if (shouldSkip) {
+        controller.value = 1;
+        return;
+      }
       if (widget.reverse && shouldReverse) {
         shouldReverse = false;
         await controller.reverse().catchError((err) {

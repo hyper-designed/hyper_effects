@@ -176,7 +176,8 @@ class _RollingEffectWidgetState extends State<RollingEffectWidget> {
       child: oldChild,
     );
 
-    late final double reverseQueryTime = 1 - (query?.curvedValue ?? 1).clamp(0, 1);
+    late final double reverseQueryTime =
+        1 - (query?.curvedValue ?? 1).clamp(0, 1);
 
     return AnimatedSize(
       duration: query?.duration ?? Duration.zero,
@@ -194,7 +195,9 @@ class _RollingEffectWidgetState extends State<RollingEffectWidget> {
                     child: oldRoll,
                   )
                 : Positioned.fill(
-                    child: OverflowBox(
+                    child: Align(
+                      heightFactor: 0,
+                      widthFactor: 0,
                       child: FittedBox(
                         fit: BoxFit.none,
                         child: oldRoll,

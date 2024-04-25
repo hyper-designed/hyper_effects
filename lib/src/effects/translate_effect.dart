@@ -136,6 +136,50 @@ extension TranslateEffectExt on Widget {
   }
 
   /// Applies a [TranslateEffect] to a [Widget] with a default animation
+  /// to slide this widget in.
+  Widget slideInVertically(
+    double y, {
+    bool fractional = false,
+    bool transformHitTests = false,
+  }) {
+    return EffectWidget(
+      start: TranslateEffect(
+        offset: Offset(0, y),
+        fractional: fractional,
+        transformHitTests: transformHitTests,
+      ),
+      end: TranslateEffect(
+        offset: Offset.zero,
+        fractional: fractional,
+        transformHitTests: transformHitTests,
+      ),
+      child: this,
+    );
+  }
+
+  /// Applies a [TranslateEffect] to a [Widget] with a default animation
+  /// to slide this widget in.
+  Widget slideInHorizontally(
+    double x, {
+    bool fractional = false,
+    bool transformHitTests = false,
+  }) {
+    return EffectWidget(
+      start: TranslateEffect(
+        offset: Offset(x, 0),
+        fractional: fractional,
+        transformHitTests: transformHitTests,
+      ),
+      end: TranslateEffect(
+        offset: Offset.zero,
+        fractional: fractional,
+        transformHitTests: transformHitTests,
+      ),
+      child: this,
+    );
+  }
+
+  /// Applies a [TranslateEffect] to a [Widget] with a default animation
   /// to slide this widget out.
   Widget slideOut(
     Offset offset, {
@@ -150,6 +194,50 @@ extension TranslateEffectExt on Widget {
       ),
       end: TranslateEffect(
         offset: offset,
+        fractional: fractional,
+        transformHitTests: transformHitTests,
+      ),
+      child: this,
+    );
+  }
+
+  /// Applies a [TranslateEffect] to a [Widget] with a default animation
+  /// to slide this widget out.
+  Widget slideOutVertically(
+    double y, {
+    bool fractional = false,
+    bool transformHitTests = false,
+  }) {
+    return EffectWidget(
+      start: TranslateEffect(
+        offset: Offset.zero,
+        fractional: fractional,
+        transformHitTests: transformHitTests,
+      ),
+      end: TranslateEffect(
+        offset: Offset(0, y),
+        fractional: fractional,
+        transformHitTests: transformHitTests,
+      ),
+      child: this,
+    );
+  }
+
+  /// Applies a [TranslateEffect] to a [Widget] with a default animation
+  /// to slide this widget out.
+  Widget slideOutHorizontally(
+    double x, {
+    bool fractional = false,
+    bool transformHitTests = false,
+  }) {
+    return EffectWidget(
+      start: TranslateEffect(
+        offset: Offset.zero,
+        fractional: fractional,
+        transformHitTests: transformHitTests,
+      ),
+      end: TranslateEffect(
+        offset: Offset(x, 0),
         fractional: fractional,
         transformHitTests: transformHitTests,
       ),
@@ -316,5 +404,5 @@ class TranslateEffect extends Effect {
       );
 
   @override
-  List<Object?> get props => [offset, fractional];
+  List<Object?> get props => [offset, fractional, transformHitTests];
 }

@@ -2,8 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 
-import '../effect_widget.dart';
-import 'effect.dart';
+import '../../hyper_effects.dart';
 
 /// Provides a extension method to apply an [AlignEffect] to a [Widget].
 extension AlignEffectExt on Widget {
@@ -71,8 +70,10 @@ class AlignEffect extends Effect {
   /// The alignment by which the [Widget] is aligned.
   final AlignmentGeometry alignment;
 
+  /// Sets its width to the child's width multiplied by this factor.
   final double widthFactor;
 
+  /// Sets its height to the child's height multiplied by this factor.
   final double heightFactor;
 
   /// Creates a [AlignEffect] with the given [alignment] and [fractional].
@@ -87,8 +88,10 @@ class AlignEffect extends Effect {
     return AlignEffect(
       alignment: AlignmentGeometry.lerp(alignment, other.alignment, value) ??
           AlignmentDirectional.topStart,
-      widthFactor: lerpDouble(widthFactor, other.widthFactor, value) ?? 1,
-      heightFactor: lerpDouble(heightFactor, other.heightFactor, value) ?? 1,
+      widthFactor: (lerpDouble(widthFactor, other.widthFactor, value) ?? 1)
+          .clampUnderZero,
+      heightFactor: (lerpDouble(heightFactor, other.heightFactor, value) ?? 1)
+          .clampUnderZero,
     );
   }
 
