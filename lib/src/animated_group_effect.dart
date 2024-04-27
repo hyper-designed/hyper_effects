@@ -52,6 +52,7 @@ Widget _defaultRemovedChildBuilder(BuildContext context, Widget child) => child
     .align(
       Alignment.center,
       heightFactor: 0,
+      widthFactor: 0,
       fromHeightFactor: 1,
       fromWidthFactor: 1,
     )

@@ -9,6 +9,7 @@ import 'package:hyper_effects_demo/stories/color_filter_scroll_transition.dart';
 import 'package:hyper_effects_demo/stories/counter_app.dart';
 import 'package:hyper_effects_demo/stories/group_animation.dart';
 import 'package:hyper_effects_demo/stories/one_shot_reset_animation.dart';
+import 'package:hyper_effects_demo/stories/rolling_app_bar_animation.dart';
 import 'package:hyper_effects_demo/stories/rolling_widget_animation.dart';
 import 'package:hyper_effects_demo/stories/scroll_phase_transition.dart';
 import 'package:hyper_effects_demo/stories/scroll_wheel_blur.dart';
@@ -103,8 +104,12 @@ class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
       child: SpringAnimation(),
     ),
     const Story(
-      title: 'Rolling Animation',
+      title: 'Rolling Pictures Animation',
       child: RollingWidgetAnimation(),
+    ),
+    const Story(
+      title: 'Rolling App Bar Animation',
+      child: RollingAppBarAnimation(),
     ),
   ];
   final List<Story> transitionStories = [
