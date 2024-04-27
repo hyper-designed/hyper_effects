@@ -63,8 +63,8 @@ Widget _defaultRemovedChildBuilder(BuildContext context, Widget child) => child
 
 Widget _defaultAddedChildBuilder(
         BuildContext context, Widget child, BooleanCallback skipIf) =>
-    child.slideInFromTop().fadeIn().oneShot(
-          duration: const Duration(milliseconds: 500),
+    child.slideInFromTop(value: -50).fadeIn().oneShot(
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOutQuart,
           skipIf: skipIf,
         );
@@ -73,9 +73,9 @@ Widget _defaultSwappedChildBuilder(
   BuildContext context,
   Widget child,
 ) =>
-    child.roll(multiplier: 2).animate(
+    child.roll(multiplier: 2).clip(0).animate(
           trigger: child.key,
-          duration: const Duration(milliseconds: 500),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOutQuart,
         );
 
@@ -105,8 +105,8 @@ class AnimatedGroup extends StatefulWidget {
   /// Whether to trigger the addition of the children immediately when the
   /// widget is built for the first time, or only for subsequent insertions
   /// of children. For example, you may want a row of widgets
-  /// to appear as normal without animating when your screen renders for the first
-  /// time, but subsequent insertions should animate.
+  /// to appear as normal without animating when your screen renders for the
+  /// first time, but subsequent insertions should animate.
   final bool triggerAddImmediately;
 
   /// Whether to use the swap animation when possible. If set to `false`, the
@@ -221,6 +221,7 @@ class _AnimatedChildState extends State<AnimatedChild> {
   final SnapshotController controller =
       SnapshotController(allowSnapshotting: true);
   Widget? prevChild;
+  GlobalKey removedKey = GlobalKey();
 
   @override
   void dispose() {
@@ -233,6 +234,7 @@ class _AnimatedChildState extends State<AnimatedChild> {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.child != widget.child) {
+      removedKey = GlobalKey();
       if (widget.useSnapshots) {
         prevChild = oldWidget.child == null
             ? null
@@ -256,7 +258,7 @@ class _AnimatedChildState extends State<AnimatedChild> {
         if (widget.child == null)
           if (prevChild case Widget prev)
             KeyedSubtree(
-              key: UniqueKey(),
+              key: removedKey,
               child: widget.removeBuilder(context, prev),
             ),
         if (widget.child case Widget child)
