@@ -63,6 +63,7 @@ extension AnimatedEffectExt on Widget? {
     int repeat = 0,
     bool reverse = false,
     bool startImmediately = false,
+    bool skipFirstTime = false,
     bool resetValues = false,
     bool waitForLastAnimation = false,
     Duration delay = Duration.zero,
@@ -78,6 +79,7 @@ extension AnimatedEffectExt on Widget? {
       repeat: repeat,
       reverse: reverse,
       startImmediately: startImmediately,
+      skipFirstTime: skipFirstTime,
       resetValues: resetValues,
       waitForLastAnimation: waitForLastAnimation,
       delay: delay,
@@ -261,6 +263,8 @@ class AnimatedEffect extends StatefulWidget {
   /// built, ignoring the value of [trigger] initially.
   final bool startImmediately;
 
+  final bool skipFirstTime;
+
   /// Normally, an effect represents the current state of the widget and this
   /// animate effect is only in charge of lerping between states of those
   /// effect values.
@@ -301,6 +305,7 @@ class AnimatedEffect extends StatefulWidget {
     this.repeat = 0,
     this.reverse = false,
     this.startImmediately = false,
+    this.skipFirstTime = false,
     this.resetValues = false,
     this.waitForLastAnimation = false,
     this.delay = Duration.zero,
@@ -334,7 +339,7 @@ class AnimatedEffectState extends State<AnimatedEffect>
   /// The animation controller that drives the animation.
   late final AnimationController controller = AnimationController(
     vsync: this,
-    value: shouldSkip ? 1 : 0,
+    value: widget.skipFirstTime || shouldSkip ? 1 : 0,
     duration: widget.duration,
   );
 
@@ -426,7 +431,7 @@ class AnimatedEffectState extends State<AnimatedEffect>
         // ancestor's [AnimationTriggerType] is
         // [AnimationTriggerType.afterLast].
         final AnimatedEffectState? parentState =
-            context.findAncestorStateOfType<AnimatedEffectState>();
+        context.findAncestorStateOfType<AnimatedEffectState>();
         final AnimationTriggerType? triggerType =
             parentState?.widget.triggerType;
         if (parentState != null &&
@@ -438,7 +443,7 @@ class AnimatedEffectState extends State<AnimatedEffect>
         // [ResetAllAnimationsEffect], reset all animations in the chain.
         else {
           final resetState =
-              context.findAncestorStateOfType<ResetAllAnimationsEffectState>();
+          context.findAncestorStateOfType<ResetAllAnimationsEffectState>();
           resetState?.reset();
         }
       }
@@ -495,15 +500,16 @@ class AnimatedEffectState extends State<AnimatedEffect>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder: (context, child) => EffectQuery(
-        linearValue: controller.value,
-        curvedValue: widget.curve.transform(controller.value),
-        isTransition: false,
-        resetValues: widget.resetValues,
-        duration: widget.duration,
-        curve: widget.curve,
-        child: child!,
-      ),
+      builder: (context, child) =>
+          EffectQuery(
+            linearValue: controller.value,
+            curvedValue: widget.curve.transform(controller.value),
+            isTransition: false,
+            resetValues: widget.resetValues,
+            duration: widget.duration,
+            curve: widget.curve,
+            child: child!,
+          ),
       child: widget.child,
     );
   }

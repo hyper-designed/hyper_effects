@@ -109,11 +109,7 @@ class AnimatedGroup extends StatefulWidget {
   /// first time, but subsequent insertions should animate.
   final bool triggerAddImmediately;
 
-  /// Whether to use the swap animation when possible. If set to `false`, the
-  /// swap animation will be skipped and the new child will have the
-  /// [addBuilder] applied to it and the old child will have the
-  /// [removeBuilder] applied to it.
-  final bool useSwapWhenPossible;
+  final bool noSwapping;
 
   /// Creates an [AnimatedGroup] with the given parameters.
   const AnimatedGroup({
@@ -124,7 +120,7 @@ class AnimatedGroup extends StatefulWidget {
     this.addBuilder = _defaultAddedChildBuilder,
     this.swapBuilder = _defaultSwappedChildBuilder,
     this.triggerAddImmediately = false,
-    this.useSwapWhenPossible = true,
+    this.noSwapping = false,
   });
 
   @override
@@ -162,6 +158,7 @@ class _AnimatedGroupState extends State<AnimatedGroup> {
             removeBuilder: widget.removeBuilder,
             addBuilder: widget.addBuilder,
             swapBuilder: widget.swapBuilder,
+            noSwapping: widget.noSwapping,
             child:
                 widget.children.length > index ? widget.children[index] : null,
           );
@@ -190,6 +187,8 @@ class AnimatedChild extends StatefulWidget {
   /// child.
   final bool useSnapshots;
 
+  final bool noSwapping;
+
   /// The builder that wraps the given [child] in a widget that animates the
   /// removal of the child out of the widget tree.
   final RemovedChildBuilder removeBuilder;
@@ -208,6 +207,7 @@ class AnimatedChild extends StatefulWidget {
     required this.child,
     this.triggerAdd = true,
     this.useSnapshots = true,
+    this.noSwapping = false,
     this.removeBuilder = _defaultRemovedChildBuilder,
     this.addBuilder = _defaultAddedChildBuilder,
     this.swapBuilder = _defaultSwappedChildBuilder,
@@ -255,7 +255,7 @@ class _AnimatedChildState extends State<AnimatedChild> {
       alignment: Alignment.center,
       clipBehavior: Clip.none,
       children: [
-        if (widget.child == null)
+        if (widget.noSwapping || widget.child == null)
           if (prevChild case Widget prev)
             KeyedSubtree(
               key: removedKey,
@@ -264,10 +264,12 @@ class _AnimatedChildState extends State<AnimatedChild> {
         if (widget.child case Widget child)
           widget.addBuilder(
             context,
-            widget.swapBuilder(
-              context,
-              child,
-            ),
+            widget.noSwapping
+                ? child
+                : widget.swapBuilder(
+                    context,
+                    child,
+                  ),
             () => !widget.triggerAdd,
           ),
       ],
