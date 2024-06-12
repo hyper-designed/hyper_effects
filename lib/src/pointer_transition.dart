@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 
 import 'apple_curves.dart';
 import 'effect_query.dart';
-import 'post_frame_widget.dart';
 
 /// Represents the pointer event for [PointerTransition].
 class PointerTransitionEvent {
@@ -57,8 +56,10 @@ extension PointerTransitionExt on Widget {
     bool resetOnExitBounds = true,
     Curve curve = appleEaseInOut,
     Duration duration = const Duration(milliseconds: 125),
+    Key? key,
   }) {
     return PointerTransition(
+      key: key,
       builder: builder,
       origin: origin,
       useGlobalPointer: useGlobalPointer,
@@ -393,21 +394,19 @@ class _PointerTransitionState extends State<PointerTransition>
       );
     }
 
-    return PostFrame(
-      child: AnimatedBuilder(
-        animation: _animation,
-        builder: (context, child) => EffectQuery(
-          curvedValue: currentValue,
-          linearValue: currentValue,
-          isTransition: true,
-          lerpValues: false,
-          child: KeyedSubtree(
-            key: _key,
-            child: child!,
-          ),
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) => EffectQuery(
+        curvedValue: currentValue,
+        linearValue: currentValue,
+        isTransition: true,
+        lerpValues: false,
+        child: KeyedSubtree(
+          key: _key,
+          child: child!,
         ),
-        child: child,
       ),
+      child: child,
     );
   }
 }
