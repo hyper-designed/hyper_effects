@@ -68,7 +68,11 @@ class _EffectWidgetState extends State<EffectWidget> {
   void didUpdateWidget(covariant EffectWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    start= widget.start ?? widget.end;
+    // TODO: This was introduced in 7th commit of update pack v2 for some reason
+    // but it breaks the scroll transitions. So we've disabled it for now. So if
+    // something breaks in the future, this is the first place to look!
+    // start= widget.start ?? widget.end;
+
     if (oldWidget.end != widget.end &&
         oldWidget.end.runtimeType == widget.end.runtimeType &&
         start.runtimeType == end.runtimeType) {
