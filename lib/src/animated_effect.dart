@@ -45,9 +45,11 @@ extension AnimatedEffectExt on Widget? {
   ///
   /// The [delay] parameter is used to set a delay before the animation starts.
   ///
-  /// The [startImmediately] parameter is used to determine whether the
-  /// animation should be triggered immediately when the widget is built,
-  /// ignoring the value of [trigger] initially.
+  /// The [resetValues] parameter is used to determine whether the animation
+  /// should start from idle values or from the current state of the widget.
+  ///
+  /// The [startState] parameter is used to determine the behavior of the
+  /// animation as soon as it is added to the widget tree.
   ///
   /// The [playIf] parameter is used to determine whether the animation should
   /// be played or skipped. If the callback returns false, the animation will
@@ -62,11 +64,10 @@ extension AnimatedEffectExt on Widget? {
     Curve curve = appleEaseInOut,
     int repeat = 0,
     bool reverse = false,
-    bool startImmediately = false,
-    bool skipFirstTime = false,
     bool resetValues = false,
     bool waitForLastAnimation = false,
     Duration delay = Duration.zero,
+    AnimationStartState startState = AnimationStartState.idle,
     VoidCallback? onEnd,
     BooleanCallback? playIf,
     BooleanCallback? skipIf,
@@ -78,11 +79,10 @@ extension AnimatedEffectExt on Widget? {
       curve: curve,
       repeat: repeat,
       reverse: reverse,
-      startImmediately: startImmediately,
-      skipFirstTime: skipFirstTime,
       resetValues: resetValues,
       waitForLastAnimation: waitForLastAnimation,
       delay: delay,
+      startState: startState,
       onEnd: onEnd,
       playIf: playIf,
       skipIf: skipIf,
@@ -232,6 +232,26 @@ extension AnimatedEffectExt on Widget? {
   Widget resetAll() => ResetAllAnimationsEffect(child: this);
 }
 
+/// Determines the behavior of the [AnimatedEffect] as soon as it is added
+/// to the widget tree.
+enum AnimationStartState {
+  /// As soon as the animation is inserted into the widget tree, it will
+  /// start playing the animation from the beginning to the end. Before
+  /// the trigger Object changes.
+  playImmediately,
+
+  /// The animation will be inserted into the widget tree but will not
+  /// start playing. It will instead trigger the effects in the chain
+  /// to their ending values as soon as it is inserted.
+  /// The "current" values of the effect chain are used
+  /// immediately as initial values.
+  useCurrentValues,
+
+  /// As soon as the animation is inserted into the widget tree, none of
+  /// the effects will be triggered in any state.
+  idle;
+}
+
 /// A widget that animates the effects applied to it's child.
 class AnimatedEffect extends StatefulWidget {
   /// The widget below this widget in the tree.
@@ -243,6 +263,10 @@ class AnimatedEffect extends StatefulWidget {
 
   /// Defines how the animation is fired.
   final AnimationTriggerType triggerType;
+
+  /// Determines the behavior of this [AnimatedEffect] as soon as it is added
+  /// to the widget tree.
+  final AnimationStartState startState;
 
   /// The duration of the animation.
   final Duration duration;
@@ -258,12 +282,6 @@ class AnimatedEffect extends StatefulWidget {
 
   /// Whether the animation should be reversed after each repetition.
   final bool reverse;
-
-  /// Whether the animation should be triggered immediately when the widget is
-  /// built, ignoring the value of [trigger] initially.
-  final bool startImmediately;
-
-  final bool skipFirstTime;
 
   /// Normally, an effect represents the current state of the widget and this
   /// animate effect is only in charge of lerping between states of those
@@ -299,13 +317,12 @@ class AnimatedEffect extends StatefulWidget {
     required this.child,
     required this.duration,
     required this.triggerType,
+    this.startState = AnimationStartState.idle,
     this.trigger,
     this.curve = appleEaseInOut,
     this.onEnd,
     this.repeat = 0,
     this.reverse = false,
-    this.startImmediately = false,
-    this.skipFirstTime = false,
     this.resetValues = false,
     this.waitForLastAnimation = false,
     this.delay = Duration.zero,
@@ -339,7 +356,10 @@ class AnimatedEffectState extends State<AnimatedEffect>
   /// The animation controller that drives the animation.
   late final AnimationController controller = AnimationController(
     vsync: this,
-    value: widget.skipFirstTime || shouldSkip ? 1 : 0,
+    value:
+        widget.startState == AnimationStartState.useCurrentValues || shouldSkip
+            ? 1
+            : 0,
     duration: widget.duration,
   );
 
@@ -359,21 +379,21 @@ class AnimatedEffectState extends State<AnimatedEffect>
     if (didPlay) return;
 
     if (widget.key case Key key) {
-      final persister = AnimatedEffectStateRetainer.maybeOf(context);
-      final alreadyPlayed = persister?.didPlay(key) ?? false;
+      final retainer = AnimatedEffectStateRetainer.maybeOf(context);
+      final alreadyPlayed = retainer?.didPlay(key) ?? false;
       if (alreadyPlayed) {
         // If the animation has already played, end it immediately.
         controller.value = 1;
         return;
       }
 
-      persister?.markAsPlayed(key);
+      retainer?.markAsPlayed(key);
     }
 
     // If the trigger type is one shot or trigger immediately is true,
     // drive the animation.
     if (widget.triggerType == AnimationTriggerType.oneShot ||
-        widget.startImmediately) {
+        widget.startState == AnimationStartState.playImmediately) {
       drive();
       didPlay = false;
     }
@@ -431,7 +451,7 @@ class AnimatedEffectState extends State<AnimatedEffect>
         // ancestor's [AnimationTriggerType] is
         // [AnimationTriggerType.afterLast].
         final AnimatedEffectState? parentState =
-        context.findAncestorStateOfType<AnimatedEffectState>();
+            context.findAncestorStateOfType<AnimatedEffectState>();
         final AnimationTriggerType? triggerType =
             parentState?.widget.triggerType;
         if (parentState != null &&
@@ -443,7 +463,7 @@ class AnimatedEffectState extends State<AnimatedEffect>
         // [ResetAllAnimationsEffect], reset all animations in the chain.
         else {
           final resetState =
-          context.findAncestorStateOfType<ResetAllAnimationsEffectState>();
+              context.findAncestorStateOfType<ResetAllAnimationsEffectState>();
           resetState?.reset();
         }
       }
@@ -500,16 +520,15 @@ class AnimatedEffectState extends State<AnimatedEffect>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder: (context, child) =>
-          EffectQuery(
-            linearValue: controller.value,
-            curvedValue: widget.curve.transform(controller.value),
-            isTransition: false,
-            resetValues: widget.resetValues,
-            duration: widget.duration,
-            curve: widget.curve,
-            child: child!,
-          ),
+      builder: (context, child) => EffectQuery(
+        linearValue: controller.value,
+        curvedValue: widget.curve.transform(controller.value),
+        isTransition: false,
+        resetValues: widget.resetValues,
+        duration: widget.duration,
+        curve: widget.curve,
+        child: child!,
+      ),
       child: widget.child,
     );
   }

@@ -15,6 +15,7 @@ import 'package:hyper_effects_demo/stories/scroll_phase_transition.dart';
 import 'package:hyper_effects_demo/stories/scroll_wheel_blur.dart';
 import 'package:hyper_effects_demo/stories/scroll_wheel_transition.dart';
 import 'package:hyper_effects_demo/stories/shake_and_spring_animation.dart';
+import 'package:hyper_effects_demo/stories/success_card_animation.dart';
 import 'package:hyper_effects_demo/stories/text_animation.dart';
 import 'package:hyper_effects_demo/stories/windows_settings_transition.dart';
 
@@ -83,6 +84,10 @@ class Storyboard extends StatefulWidget {
 
 class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
   final List<Story> animationStories = [
+    const Story(
+      title: 'Success Card Animation',
+      child: SuccessCardAnimation()
+    ),
     const Story(
       title: 'Group Animation',
       child: GroupAnimation(),
