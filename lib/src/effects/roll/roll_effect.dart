@@ -235,7 +235,7 @@ class _RollingEffectWidgetState extends State<RollingEffectWidget> {
             widget.child!,
           );
 
-    late final oldRoll = FractionalTranslation(
+    final oldRoll = FractionalTranslation(
       transformHitTests: false,
       translation: slideOutOffset * widget.multiplier,
       child: oldChild == null

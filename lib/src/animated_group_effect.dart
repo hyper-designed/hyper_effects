@@ -109,6 +109,8 @@ class AnimatedGroup extends StatefulWidget {
   /// first time, but subsequent insertions should animate.
   final bool triggerAddImmediately;
 
+  /// Whether to disable swapping animations for the children when the order
+  /// of the children changes.
   final bool noSwapping;
 
   /// Creates an [AnimatedGroup] with the given parameters.
@@ -187,6 +189,8 @@ class AnimatedChild extends StatefulWidget {
   /// child.
   final bool useSnapshots;
 
+  /// Whether to disable swapping animations for the child when the order of
+  /// the children changes.
   final bool noSwapping;
 
   /// The builder that wraps the given [child] in a widget that animates the

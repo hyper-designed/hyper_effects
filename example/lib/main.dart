@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           brightness: Brightness.light,
           seedColor: Colors.blue,
-          background: const Color(0xFFF0F0F0),
+          surface: const Color(0xFFF0F0F0),
         ),
         inputDecorationTheme: InputDecorationTheme(
           isDense: true,
@@ -52,7 +52,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           brightness: Brightness.dark,
           seedColor: Colors.blue,
-          background: const Color(0xFF0F0F0F),
+          surface: const Color(0xFF0F0F0F),
         ),
         inputDecorationTheme: InputDecorationTheme(
           isDense: true,
