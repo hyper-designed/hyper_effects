@@ -5,6 +5,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hyper_effects/hyper_effects.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:unicode_emojis/unicode_emojis.dart';
 
 class TextAnimation extends StatefulWidget {
   const TextAnimation({super.key});
@@ -78,6 +79,18 @@ class IPhone extends StatelessWidget {
   }
 }
 
+final String _allEmojis =
+    UnicodeEmojis.allEmojis.map((emoji) => emoji.emoji).join('');
+
+class EmojiTapeBuilder extends CharacterTapeBuilder {
+  @override
+  String get characters => _allEmojis;
+
+  @override
+  bool compare(String a, String b) =>
+      _allEmojis.contains(a) && _allEmojis.contains(b);
+}
+
 class EmojiLine extends StatefulWidget {
   const EmojiLine({super.key});
 
@@ -111,7 +124,10 @@ class _EmojiLineState extends State<EmojiLine> {
           ),
         )
             .roll(
-              tapeStrategy: const ConsistentSymbolTapeStrategy(4),
+              tapeStrategy:
+                  ConsistentSymbolTapeStrategy(4, characterTapeBuilders: {
+                EmojiTapeBuilder(),
+              }),
               tapeSlideDirection: TextTapeSlideDirection.alternating,
               staggerTapes: true,
               tapeCurve: Curves.easeInOutBack,
@@ -395,7 +411,9 @@ class _LikeButtonState extends State<LikeButton> {
                         .copyWith(color: Colors.white, fontSize: 16),
                   )
                       .roll(
-                        tapeStrategy: const AllSymbolsTapeStrategy(false),
+                        tapeStrategy: const AllSymbolsTapeStrategy(
+                          repeatCharacters: false,
+                        ),
                         symbolDistanceMultiplier: 2,
                         clipBehavior: Clip.none,
                         tapeCurve: Curves.easeOutQuart,
@@ -452,8 +470,8 @@ class _LikeButtonState extends State<LikeButton> {
                         .copyWith(color: Colors.white, fontSize: 16),
                   )
                       .roll(
-                        tapeStrategy:
-                            const ConsistentSymbolTapeStrategy(0, true),
+                        tapeStrategy: const ConsistentSymbolTapeStrategy(0,
+                            repeatCharacters: true),
                         symbolDistanceMultiplier: 2,
                         clipBehavior: Clip.none,
                         tapeCurve:
@@ -505,8 +523,8 @@ class _LikeButtonState extends State<LikeButton> {
                         .copyWith(color: Colors.white, fontSize: 16),
                   )
                       .roll(
-                        tapeStrategy:
-                            const ConsistentSymbolTapeStrategy(0, false),
+                        tapeStrategy: const ConsistentSymbolTapeStrategy(0,
+                            repeatCharacters: false),
                         symbolDistanceMultiplier: 2,
                         clipBehavior: Clip.none,
                         tapeCurve: Curves.easeOutBack,

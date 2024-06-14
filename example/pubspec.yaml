@@ -15,6 +15,7 @@ dependencies:
   hyper_effects:
     path: ../
   google_fonts: ^6.2.1
+  unicode_emojis: ^0.4.0
   smooth_page_indicator: ^1.1.0
 
 dev_dependencies:
