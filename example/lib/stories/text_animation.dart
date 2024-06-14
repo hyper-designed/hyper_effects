@@ -179,7 +179,7 @@ class _TagLineState extends State<TagLine> {
         Text(
           'We help you',
           style: GoogleFonts.robotoMono().copyWith(
-            color: Theme.of(context).colorScheme.onBackground,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 48,
           ),
           strutStyle: const StrutStyle(
@@ -334,7 +334,7 @@ class _TranslationState extends State<Translation> {
         Text(
           ', Stranger',
           style: GoogleFonts.sacramento().copyWith(
-            color: Theme.of(context).colorScheme.onBackground,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 56,
           ),
           strutStyle: const StrutStyle(

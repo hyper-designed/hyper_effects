@@ -25,30 +25,9 @@ extension ScrollPositionExt on ScrollPosition {
   bool get atEnd => pixels == maxScrollExtent;
 }
 
+/// Extension methods for [double].
 extension DoubleHelper on double? {
+
+  /// Clamps the value to be at least 0.
   double get clampUnderZero => this == null ? 0 : this! < 0 ? 0 : this!;
-
-  bool get zeroIsFalse => this == null ? false : this! <= 0;
-
-  bool get oneIsTrue => this == null ? true : this! >= 1;
-
-  bool get middlePointBool => this == null ? false : this! >= 0.5;
-
-  double get magnetize => this == null
-      ? 0
-      : this! < 0.5
-          ? 0
-          : 1;
-
-  double get magnetizeReverse => this == null
-      ? 1
-      : this! < 0.5
-          ? 1
-          : 0;
-
-  bool get isZero => this == null ? false : this! == 0;
-
-  bool get isOne => this == null ? false : this! == 1;
-
-  bool get isMiddlePoint => this == null ? false : this! == 0.5;
 }
