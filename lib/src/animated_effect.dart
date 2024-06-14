@@ -48,6 +48,11 @@ extension AnimatedEffectExt on Widget? {
   /// The [resetValues] parameter is used to determine whether the animation
   /// should start from idle values or from the current state of the widget.
   ///
+  /// The [interruptable] parameter is used to determine whether the animation
+  /// should be reset on subsequent triggers. If this animation is re-triggered,
+  /// it will reset the current active animation and re-drive from the
+  /// beginning.
+  ///
   /// The [startState] parameter is used to determine the behavior of the
   /// animation as soon as it is added to the widget tree.
   ///
@@ -65,7 +70,7 @@ extension AnimatedEffectExt on Widget? {
     int repeat = 0,
     bool reverse = false,
     bool resetValues = false,
-    bool waitForLastAnimation = false,
+    bool interruptable = true,
     Duration delay = Duration.zero,
     AnimationStartState startState = AnimationStartState.idle,
     VoidCallback? onEnd,
@@ -80,7 +85,7 @@ extension AnimatedEffectExt on Widget? {
       repeat: repeat,
       reverse: reverse,
       resetValues: resetValues,
-      waitForLastAnimation: waitForLastAnimation,
+      interruptable: interruptable,
       delay: delay,
       startState: startState,
       onEnd: onEnd,
@@ -120,6 +125,11 @@ extension AnimatedEffectExt on Widget? {
   /// When false, the animation will animate from the previous effect state
   /// towards the current state.
   ///
+  /// The [interruptable] parameter is used to determine whether the animation
+  /// should be reset on subsequent triggers. If this animation is re-triggered,
+  /// it will reset the current active animation and re-drive from the
+  /// beginning.
+  ///
   /// The [delay] parameter is used to set a delay before the animation starts.
   ///
   /// The [playIf] parameter is used to determine whether the animation should
@@ -136,6 +146,7 @@ extension AnimatedEffectExt on Widget? {
     bool reverse = false,
     bool resetValues = false,
     Duration delay = Duration.zero,
+    AnimationStartState startState = AnimationStartState.idle,
     VoidCallback? onEnd,
     BooleanCallback? playIf,
     BooleanCallback? skipIf,
@@ -148,7 +159,7 @@ extension AnimatedEffectExt on Widget? {
       repeat: repeat,
       reverse: reverse,
       resetValues: resetValues,
-      waitForLastAnimation: false,
+      interruptable: true,
       delay: delay,
       onEnd: onEnd,
       playIf: playIf,
@@ -182,11 +193,10 @@ extension AnimatedEffectExt on Widget? {
   /// When false, the animation will animate from the previous effect state
   /// towards the current state.
   ///
-  /// The [waitForLastAnimation] parameter is used to determine whether the
-  /// animation should be reset on subsequent triggers. If this animation is
-  /// re-triggered, it will reset the current active animation and re-drive
-  /// from the beginning. Setting this to true will force the animation to
-  /// wait for the last animation in the chain to finish before starting.
+  /// The [interruptable] parameter is used to determine whether the animation
+  /// should be reset on subsequent triggers. If this animation is re-triggered,
+  /// it will reset the current active animation and re-drive from the
+  /// beginning.
   ///
   /// The [delay] parameter is used to set a delay before the animation starts.
   ///
@@ -204,7 +214,7 @@ extension AnimatedEffectExt on Widget? {
     int repeat = 0,
     bool reverse = false,
     bool resetValues = false,
-    bool waitForLastAnimation = false,
+    bool interruptable = true,
     Duration delay = Duration.zero,
     VoidCallback? onEnd,
     BooleanCallback? playIf,
@@ -219,7 +229,7 @@ extension AnimatedEffectExt on Widget? {
       repeat: repeat,
       reverse: reverse,
       resetValues: resetValues,
-      waitForLastAnimation: waitForLastAnimation,
+      interruptable: interruptable,
       delay: delay,
       playIf: playIf,
       skipIf: skipIf,
@@ -296,7 +306,7 @@ class AnimatedEffect extends StatefulWidget {
   /// and re-drive from the beginning.
   /// Setting this to true will force the animation to wait for the last
   /// animation in the chain to finish before starting.
-  final bool waitForLastAnimation;
+  final bool interruptable;
 
   /// A delay before the animation starts.
   final Duration delay;
@@ -324,7 +334,7 @@ class AnimatedEffect extends StatefulWidget {
     this.repeat = 0,
     this.reverse = false,
     this.resetValues = false,
-    this.waitForLastAnimation = false,
+    this.interruptable = true,
     this.delay = Duration.zero,
     this.playIf,
     this.skipIf,
@@ -479,7 +489,7 @@ class AnimatedEffectState extends State<AnimatedEffect>
 
   /// Drives the animation.
   Future<void> drive() async {
-    if (widget.waitForLastAnimation && driveFuture != null) {
+    if (!widget.interruptable && driveFuture != null) {
       await driveFuture;
     }
 
