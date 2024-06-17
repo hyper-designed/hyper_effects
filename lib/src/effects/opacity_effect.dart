@@ -9,7 +9,6 @@ extension OpacityEffectExtension on Widget {
   /// Applies an [OpacityEffect] to a [Widget].
   Widget opacity(double opacity, {double? from}) {
     return EffectWidget(
-      key: ObjectKey(key),
       start: from == null ? null : OpacityEffect(opacity: from),
       end: OpacityEffect(opacity: opacity),
       child: this,
@@ -19,7 +18,6 @@ extension OpacityEffectExtension on Widget {
   /// Alias to [opacity].
   Widget fade(double opacity, {double? from}) {
     return EffectWidget(
-      key: ObjectKey(key),
       start: from == null ? null : OpacityEffect(opacity: from),
       end: OpacityEffect(opacity: opacity),
       child: this,
@@ -30,7 +28,6 @@ extension OpacityEffectExtension on Widget {
   /// animation.
   Widget fadeIn({double start = 0, double end = 1}) {
     return EffectWidget(
-      key: ObjectKey(key),
       start: OpacityEffect(opacity: start),
       end: OpacityEffect(opacity: end),
       child: this,
@@ -41,7 +38,6 @@ extension OpacityEffectExtension on Widget {
   /// animation.
   Widget fadeOut({double start = 1, double end = 0}) {
     return EffectWidget(
-      key: ObjectKey(key),
       start: OpacityEffect(opacity: start),
       end: OpacityEffect(opacity: end),
       child: this,

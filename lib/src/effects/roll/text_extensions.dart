@@ -56,11 +56,6 @@ extension TextEffectExt on Text {
   /// the final height of the entire widget is fontSize * lineHeightMultiplier.
   /// The default multiplier is 1.
   ///
-  /// The [interpolateWidthPerSymbol] parameter is used to determine whether
-  /// the width of each tape should be interpolated between the width of the
-  /// old and new text as the symbols roll or if the width should interpolate
-  /// directly between the starting and ending texts.
-  ///
   /// The [fixedTapeWidth] parameter can be optionally used to set a fixed width
   /// for each tape.
   /// If null, the width of each tape will be the width of the active character
