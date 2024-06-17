@@ -39,6 +39,10 @@ class _RollingAppBarAnimationState extends State<RollingAppBarAnimation> {
                   showSearchView = true;
                   setState(() {});
                 },
+                onTapOutside: (event) {
+                  showSearchView = false;
+                  setState(() {});
+                },
               ),
             ),
             KeyedSubtree(
@@ -59,8 +63,6 @@ class _RollingAppBarAnimationState extends State<RollingAppBarAnimation> {
                       showSearchView ? AxisDirection.right : AxisDirection.left,
                   slideOutDirection:
                       showSearchView ? AxisDirection.right : AxisDirection.left,
-                  rollInBuilder: (context, child) => child.fadeIn(),
-                  rollOutBuilder: (context, child) => child.fadeOut(),
                 )
                 .clip(0)
                 .animate(

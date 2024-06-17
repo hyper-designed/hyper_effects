@@ -8,10 +8,6 @@ typedef RollBuilder = Widget Function(
   Widget child,
 );
 
-Widget _defaultRollInBuilder(BuildContext context, Widget child) => child;
-
-Widget _defaultRollOutBuilder(BuildContext context, Widget child) => child;
-
 /// Provides a extension method to apply an [RollEffect] to a [Widget].
 extension RollEffectExtension on Widget? {
   /// Applies an [RollEffect] to a [Widget] with the given [slideInDirection],
@@ -20,10 +16,7 @@ extension RollEffectExtension on Widget? {
     AxisDirection slideInDirection = AxisDirection.up,
     AxisDirection slideOutDirection = AxisDirection.up,
     double multiplier = 1,
-    bool useSnapshots = true,
-    bool rollInitially = false,
-    RollBuilder? rollInBuilder,
-    RollBuilder? rollOutBuilder,
+    bool useSnapshots = false,
   }) =>
       EffectWidget(
         end: RollEffect(
@@ -32,9 +25,6 @@ extension RollEffectExtension on Widget? {
           slideOutDirection: slideOutDirection,
           multiplier: multiplier,
           useSnapshots: useSnapshots,
-          rollInitially: rollInitially,
-          rollInBuilder: rollInBuilder ?? _defaultRollInBuilder,
-          rollOutBuilder: rollOutBuilder ?? _defaultRollOutBuilder,
         ),
         child: this,
       );
@@ -63,28 +53,13 @@ class RollEffect extends Effect {
   /// may be sensitive.
   final bool useSnapshots;
 
-  /// Determines whether this effect starts from no widget and immediately rolls
-  /// in the passed [child] immediately once triggered, or if this roll effect
-  /// should only trigger if the [child] passed has changed from its initial
-  /// or last state.
-  final bool rollInitially;
-
-  /// The builder to use when rolling in the [Widget].
-  final RollBuilder rollInBuilder;
-
-  /// The builder to use when rolling out the [Widget].
-  final RollBuilder rollOutBuilder;
-
   /// Creates a [RollEffect] with the given parameters.
   const RollEffect({
     required this.child,
     this.slideInDirection = AxisDirection.up,
     this.slideOutDirection = AxisDirection.up,
     this.multiplier = 1,
-    this.useSnapshots = true,
-    this.rollInitially = false,
-    this.rollInBuilder = _defaultRollInBuilder,
-    this.rollOutBuilder = _defaultRollOutBuilder,
+    this.useSnapshots = false,
   });
 
   @override
@@ -96,9 +71,6 @@ class RollEffect extends Effect {
         slideOutDirection: slideOutDirection,
         multiplier: multiplier,
         useSnapshots: useSnapshots,
-        rollInitially: rollInitially,
-        rollInBuilder: rollInBuilder,
-        rollOutBuilder: rollOutBuilder,
         child: child,
       );
 
@@ -109,9 +81,6 @@ class RollEffect extends Effect {
         slideOutDirection,
         multiplier,
         useSnapshots,
-        rollInitially,
-        rollInBuilder,
-        rollOutBuilder,
       ];
 }
 
@@ -137,18 +106,6 @@ class RollingEffectWidget extends StatefulWidget {
   /// may be sensitive.
   final bool useSnapshots;
 
-  /// Determines whether this effect starts from no widget and immediately rolls
-  /// in the passed [child] once triggered, or if this roll effect
-  /// should only trigger if the [child] passed has changed from its initial
-  /// or last state.
-  final bool rollInitially;
-
-  /// The builder to use when rolling in the [Widget].
-  final RollBuilder rollInBuilder;
-
-  /// The builder to use when rolling out the [Widget].
-  final RollBuilder rollOutBuilder;
-
   /// Creates a [RollingEffectWidget] with the given parameters.
   const RollingEffectWidget({
     super.key,
@@ -157,9 +114,6 @@ class RollingEffectWidget extends StatefulWidget {
     this.slideOutDirection = AxisDirection.up,
     this.multiplier = 1,
     this.useSnapshots = false,
-    this.rollInitially = false,
-    this.rollInBuilder = _defaultRollInBuilder,
-    this.rollOutBuilder = _defaultRollOutBuilder,
   });
 
   @override
@@ -173,16 +127,14 @@ class _RollingEffectWidgetState extends State<RollingEffectWidget> {
   int retainedWidgets = 0;
   Widget? oldChild;
 
-  late bool isInitialRoll = widget.rollInitially;
-
-  bool get canRoll => isInitialRoll || oldChild != null;
+  bool canRoll = false;
 
   @override
   void didUpdateWidget(covariant RollingEffectWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.child?.key != widget.child?.key) {
-      isInitialRoll = false;
+      canRoll = true;
       if (widget.useSnapshots) {
         oldChild = SnapshotWidget(
           key: ValueKey(retainedWidgets++),
@@ -228,26 +180,18 @@ class _RollingEffectWidgetState extends State<RollingEffectWidget> {
       AxisDirection.left || AxisDirection.right => Offset(slideOutTime, 0),
     };
 
-    final child = widget.child == null
+    final Widget? child = widget.child;
+
+    late final Widget? oldRoll = oldChild == null
         ? null
-        : widget.rollInBuilder(
-            context,
-            widget.child!,
+        : FractionalTranslation(
+            transformHitTests: false,
+            translation: slideOutOffset * widget.multiplier,
+            child: oldChild,
           );
 
-    final oldRoll = FractionalTranslation(
-      transformHitTests: false,
-      translation: slideOutOffset * widget.multiplier,
-      child: oldChild == null
-          ? null
-          : widget.rollOutBuilder(
-              context,
-              oldChild!,
-            ),
-    );
-
-    late final double clampedTime = timeValue.clamp(0, 1);
-    late final double reverseClampedTime = 1 - clampedTime;
+    final double clampedTime = timeValue.clamp(0, 1);
+    final double reverseClampedTime = 1 - clampedTime;
 
     return AnimatedSize(
       duration: query?.duration ?? Duration.zero,
@@ -257,23 +201,35 @@ class _RollingEffectWidgetState extends State<RollingEffectWidget> {
         clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
-          if (oldChild != null)
-            child == null
-                ? Align(
-                    heightFactor: reverseClampedTime,
-                    widthFactor: reverseClampedTime,
+          if (oldRoll != null)
+            // If the main child is null, then we can't use a Positioned.fill
+            // widget to fill the entire space with the old roll because a stack
+            // must have at least one non-positioned child. Use an Align widget
+            // instead. The stack's size will be determined by the size of the
+            // old rolling widget.
+            if (child == null)
+              Align(
+                heightFactor: reverseClampedTime,
+                widthFactor: reverseClampedTime,
+                child: oldRoll,
+              )
+            else
+              // If the main child is not null, then we can use a
+              // Positioned.fill widget to fill the entire space with the old
+              // roll. The stack's size will be determined by the size of the
+              // main child, while this old roll is de-transitioned.
+              // The FittedBox ensures that the oldRoll is laid out as if it
+              // were the main child, unaffected by the main child's size.
+              Positioned.fill(
+                child: Align(
+                  heightFactor: reverseClampedTime,
+                  widthFactor: reverseClampedTime,
+                  child: FittedBox(
+                    fit: BoxFit.none,
                     child: oldRoll,
-                  )
-                : Positioned.fill(
-                    child: Align(
-                      heightFactor: reverseClampedTime,
-                      widthFactor: reverseClampedTime,
-                      child: FittedBox(
-                        fit: BoxFit.none,
-                        child: oldRoll,
-                      ),
-                    ),
                   ),
+                ),
+              ),
           if (child != null)
             FractionalTranslation(
               transformHitTests: false,
