@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:meta/meta.dart';
 
 import '../hyper_effects.dart';
 
@@ -24,6 +25,7 @@ import '../hyper_effects.dart';
 ///    },
 ///  ),
 /// ```
+@experimental
 class AnimatedEffectStateRetainer extends StatefulWidget {
   /// A subtree of widgets that contain [AnimatedEffect] widgets.
   final Widget child;
@@ -83,6 +85,7 @@ typedef DidPlayCallback = bool Function(Key key);
 
 /// An [InheritedWidget] that delegates callbacks to the
 /// [AnimatedEffectStateRetainer] parent widget.
+@experimental
 class AnimatedEffectStateRetainerInheritedWidget extends InheritedWidget {
   /// A callback that marks an [AnimatedEffect] widget with the given [Key]
   /// as played.

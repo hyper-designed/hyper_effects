@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   adaptive_theme: ^3.6.0
-  flutter_box_transform: ^0.4.2
+  flutter_box_transform: ^0.4.3
   hyper_effects:
     path: ../
   google_fonts: ^6.2.1
@@ -22,7 +22,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   web: ^0.5.1
-  flutter_lints: ^3.0.2
+  flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true

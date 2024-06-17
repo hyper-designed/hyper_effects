@@ -588,6 +588,8 @@ class ResetAllAnimationsEffectState extends State<ResetAllAnimationsEffect> {
   /// the children tree and resetting all animations.
   void reset() {
     final state = findLeafAnimatedEffectState(context);
+
+    // Once resetting is complete, re-trigger oneShot animations.
     if (state?.widget.triggerType == AnimationTriggerType.oneShot) {
       state?.drive();
     }
