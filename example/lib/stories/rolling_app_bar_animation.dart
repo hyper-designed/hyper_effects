@@ -25,7 +25,7 @@ class _RollingAppBarAnimationState extends State<RollingAppBarAnimation> {
         padding: const EdgeInsets.all(8),
         margin: const EdgeInsets.all(32),
         decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(8),
         ),
         clipBehavior: Clip.hardEdge,
