@@ -602,14 +602,26 @@ In a scroll transition, the `phase` is a `ScrollPhase` enum that determines the 
 - `ScrollPhase.bottomTrailing` is when the widget is partially viewable from the bottom/right, IE: It's leaving the
   bottom or right of the scroll view.
 
-In addition to the ScrollPhase, the `event` also provides `screenOffsetFraction` which is a double value between -1, 0
-and 1 that represents the progress the scroll view is moving away from the center of the scroll view.
+Other properties of the scroll transition:
 
-- If the widget is near the center of the scroll view, the value tends towards 0.
-- As the widget moves towards the ceiling of the scroll view, the value tends towards 1. It clamps to 1 when the item is
-  fully out of the scroll view.
-- As the item moves towards the floor of the scroll view, the value tends towards -1. It clamps to -1 when the item is
-  fully out of the scroll view.
+- phaseOffsetFraction: The current progress an element's phase is going through. If `phase` is identity this value is 1.
+  If `phase` is topLeading, it goes from 0 towards 1 as it leaves the screen. If `phase` is bottomTrailing, it goes from
+  0 towards 1 as it enters the screen.
+- phaseOffsetFraction: The current progress an element is going through the scrolling viewport. If the item is near
+  the center of the scroll view, the value tends towards 0. As the item moves towards the ceiling of the scroll view,
+  the value tends towards 1. It clamps to 1 when the item is fully out of the scroll view. As the item moves towards the
+  floor of the scroll view, the value tends towards -1. It clamps to -1 when the item is fully out of the scroll view.
+  final double screenOffsetFraction;
+- scrollPixels: The number of pixels scrolled inside of the parent scroll view.
+- viewportSize: The height or width of the parent scroll view.
+- scrollDelta: The change in scroll position since the last update.
+- scrollDirection: The direction the scroll view is being scrolled to.
+- pointerPosition: The position of the pointer device in the global coordinate space.
+- distanceFromPointer: The distance from the pointer device to the center of this widget.
+- visualIndex: The visual index is the index in which the item is displayed in the scroll view. For example, instead of
+  the regular index of a list, if you scroll down, the first item that is visible inside the scroll view will have some
+  arbitrary index, but the visual index would be 0 as it is the index that is perceived by the user.
+- reverseVisualIndex: The `visualIndex` calculated in the opposite direction.
 
 #### Caution
 
@@ -707,18 +719,22 @@ When using the pointer transition, you can provide multiple parameters to contro
 in the `event` provided to the builder.
 
 ```dart
-  Widget pointerTransition(PointerTransitionBuilder builder, {
+Widget pointerTransition(PointerTransitionBuilder builder, {
   Alignment origin = Alignment.center,
   bool useGlobalPointer = false,
+  bool usePointerRouter = true,
   bool transitionBetweenBounds = true,
   bool resetOnExitBounds = true,
   Curve curve = appleEaseInOut,
   Duration duration = const Duration(milliseconds: 125),
+  Key? key,
 }) {
   return PointerTransition(
+    key: key,
     builder: builder,
     origin: origin,
     useGlobalPointer: useGlobalPointer,
+    usePointerRouter: usePointerRouter,
     transitionBetweenBounds: transitionBetweenBounds,
     resetOnExitBounds: resetOnExitBounds,
     curve: curve,
