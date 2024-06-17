@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
+import 'package:meta/meta.dart';
 
 import '../hyper_effects.dart';
 
@@ -81,6 +82,7 @@ Widget _defaultSwappedChildBuilder(
 
 /// A widget that animates the addition, removal, or swapping of a group of
 /// widgets automatically.
+@experimental
 class AnimatedGroup extends StatefulWidget {
   /// The list of children to animate.
   final List<Widget> children;
@@ -172,6 +174,7 @@ class _AnimatedGroupState extends State<AnimatedGroup> {
 
 /// A widget that animates the addition, removal, or swapping of a single child
 /// widget automatically.
+@experimental
 class AnimatedChild extends StatefulWidget {
   /// The child widget to animate.
   final Widget? child;
