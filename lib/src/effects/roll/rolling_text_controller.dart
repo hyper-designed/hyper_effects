@@ -116,14 +116,14 @@ class RollingTextController with ChangeNotifier {
   /// A list containing strings that represent a tape of characters
   /// to roll through for each character index between the old and
   /// new text.
-  late final List<String> tapes = [];
+  final List<String> tapes = [];
 
   /// A list containing painters that represent each tape of characters
   /// from [tapes].
-  late final List<TextPainter> tapePainters = [];
+  final List<TextPainter> tapePainters = [];
 
   /// A cached map of tape heights for each tape painter.
-  late final Map<int, double> tapeHeights = {};
+  final Map<int, double> tapeHeights = {};
 
   /// Returns the height of a tape at the given index.
   double getTapeHeight(int tapeIndex) => tapeHeights[tapeIndex] ?? 0;
@@ -237,7 +237,8 @@ class RollingTextController with ChangeNotifier {
 
       tapes.add(switch (tapeSlideDirection) {
         TextTapeSlideDirection.up => tape,
-        TextTapeSlideDirection.down => tape.characters.toList().reversed.join(''),
+        TextTapeSlideDirection.down =>
+          tape.characters.toList().reversed.join(''),
         TextTapeSlideDirection.alternating =>
           i % 2 == 1 ? tape : tape.characters.toList().reversed.join(''),
         TextTapeSlideDirection.random => Random('$i'.hashCode).nextBool()
