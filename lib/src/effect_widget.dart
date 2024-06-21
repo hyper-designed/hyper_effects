@@ -47,7 +47,7 @@ class _EffectWidgetState extends State<EffectWidget> {
   /// caches the previous animation value to use in didUpdateWidget
   /// to calculate the begin value. This is used to create a smooth transition
   /// between two [Effect]s when the [Effect] changes mid animation.
-  late double previousAnimationValue = 0;
+  double previousAnimationValue = 0;
 
   @override
   void initState() {
