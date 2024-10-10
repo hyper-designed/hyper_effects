@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/widgets.dart';
-import 'package:unicode_emojis/unicode_emojis.dart';
 
 const String _kLowerAlphabet = 'abcdefghijklmnopqrstuvwxyz ';
 const String _kUpperAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -9,8 +8,6 @@ const String _kNumbers = '0123456789';
 const String _kSymbols = '`~!@#\$%^&*()-_=+[{]}\\|;:\'",<.>/?';
 const String _kSpace = ' ';
 const String _kZeroWidth = '​';
-final String _allEmojis =
-    UnicodeEmojis.allEmojis.map((emoji) => emoji.emoji).join('');
 
 extension _StringHelper on String {
   bool isSymbol() => _kSymbols.contains(this);
@@ -24,8 +21,18 @@ extension _StringHelper on String {
   bool isLowerAlphabet() => _kLowerAlphabet.contains(this);
 
   bool isUpperAlphabet() => _kUpperAlphabet.contains(this);
+}
 
-  bool isEmoji() => _allEmojis.contains(this);
+/// A builder that constructs a tape of characters tailored for a specific
+/// condition of characters such as emojis.
+abstract class CharacterTapeBuilder {
+  /// The characters that are used to build the tape of characters. For example,
+  /// an entire emoji set.
+  String get characters;
+
+  /// Compares two strings to determine if the builder should be used to
+  /// insert the [characters] into the main tape.
+  bool compare(String a, String b);
 }
 
 /// Defines the strategy to create the tape of character symbols
@@ -38,9 +45,17 @@ sealed class SymbolTapeStrategy {
   ///     be rendered and animated to roll twice instead of just once.
   final bool repeatCharacters;
 
+  /// A set of [CharacterTapeBuilder]s that can be used to build the tape
+  /// of characters to interpolate to and from for a specific set of characters,
+  /// like emojis.
+  final Set<CharacterTapeBuilder> characterTapeBuilders;
+
   /// Creates a new [SymbolTapeStrategy] with the given [repeatCharacters]
   /// property.
-  const SymbolTapeStrategy([this.repeatCharacters = true]);
+  const SymbolTapeStrategy({
+    this.repeatCharacters = true,
+    this.characterTapeBuilders = const {},
+  });
 
   /// Builds the tape of characters to interpolate to and from.
   String build(String a, String b) =>
@@ -68,8 +83,10 @@ sealed class SymbolTapeStrategy {
       if (a.isNumber() || b.isNumber()) {
         charKitBuffer.write(_kNumbers);
       }
-      if (a.isEmoji() || b.isEmoji()) {
-        charKitBuffer.write(_allEmojis);
+      for (final CharacterTapeBuilder builder in characterTapeBuilders) {
+        if (builder.compare(a, b)) {
+          charKitBuffer.write(builder.characters);
+        }
       }
     }
 
@@ -107,8 +124,10 @@ sealed class SymbolTapeStrategy {
       if (a.isNumber() || b.isNumber()) {
         charKitBuffer.write(_kNumbers);
       }
-      if (a.isEmoji() || b.isEmoji()) {
-        charKitBuffer.write(_allEmojis);
+      for (final CharacterTapeBuilder builder in characterTapeBuilders) {
+        if (builder.compare(a, b)) {
+          charKitBuffer.write(builder.characters);
+        }
       }
     }
 
@@ -137,7 +156,7 @@ sealed class SymbolTapeStrategy {
 class AllSymbolsTapeStrategy extends SymbolTapeStrategy {
   /// Creates a new [AllSymbolsTapeStrategy] with the given [repeatCharacters]
   /// property.
-  const AllSymbolsTapeStrategy([super.repeatCharacters = true]);
+  const AllSymbolsTapeStrategy({super.repeatCharacters = true});
 }
 
 /// Constructs symbol tapes that contain all the characters
@@ -167,9 +186,11 @@ class ConsistentSymbolTapeStrategy extends SymbolTapeStrategy {
 
   /// Creates a new [ConsistentSymbolTapeStrategy] with the given [distance]
   /// and [repeatCharacters] properties.
-  const ConsistentSymbolTapeStrategy(this.distance,
-      [super.repeatCharacters = true])
-      : assert(
+  const ConsistentSymbolTapeStrategy(
+    this.distance, {
+    super.repeatCharacters = true,
+    Set<CharacterTapeBuilder> characterTapeBuilders = const {},
+  }) : assert(
           distance >= 0,
           'Distance must be >= 0.',
         );

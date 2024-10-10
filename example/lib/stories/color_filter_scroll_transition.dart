@@ -26,17 +26,18 @@ class _FashionScrollTransitionState extends State<FashionScrollTransition> {
       itemExtent: 300,
       cacheExtent: 300,
       itemBuilder: (context, index) {
-        return Padding(
+        return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          alignment: Alignment.center,
           child: Container(
-            width: 350,
+            width: 500,
             height: 300,
             alignment: Alignment.center,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/fashion/fashion_${index % 8}.jpg'),
-                fit: BoxFit.cover,
+                fit: BoxFit.fitWidth,
               ),
               borderRadius: BorderRadius.circular(16),
             ),

@@ -24,7 +24,7 @@ class _SpringAnimationState extends State<SpringAnimation> {
             .shake()
             .animate(
               trigger: trigger,
-              startImmediately: true,
+              startState: AnimationStartState.playImmediately,
               delay: const Duration(seconds: 1),
               repeat: -1,
               playIf: () => !trigger,

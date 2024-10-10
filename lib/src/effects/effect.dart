@@ -20,6 +20,10 @@ abstract class Effect with EquatableMixin {
   /// Creates an [Effect].
   const Effect();
 
+  /// Returns a copy of this [Effect] but with default values that produce
+  /// no visual change to the widget.
+  Effect idle() => this;
+
   /// Linearly interpolates between two [Effect]s. This is used to animate
   /// between two [Effect]s. The [value] argument is a fraction that
   /// determines the position of this effect between [this] and [other].
@@ -55,5 +59,5 @@ abstract class Effect with EquatableMixin {
   ///
   /// Check out [ScaleEffect.apply] for an example of how to implement this
   /// method.
-  Widget apply(BuildContext context, Widget child);
+  Widget apply(BuildContext context, Widget? child);
 }

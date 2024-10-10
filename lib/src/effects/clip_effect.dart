@@ -136,8 +136,8 @@ class ClipEffect extends Effect {
   }
 
   @override
-  Widget apply(BuildContext context, Widget child) {
-    if (clip == Clip.none) return child;
+  Widget apply(BuildContext context, Widget? child) {
+    if (clip == Clip.none) return child ?? const SizedBox.shrink();
     if (borderRadius == BorderRadius.zero) {
       return ClipRect(
         clipBehavior: clip,
@@ -150,6 +150,9 @@ class ClipEffect extends Effect {
       child: child,
     );
   }
+
+  @override
+  ClipEffect idle() => ClipEffect(clip: clip, borderRadius: BorderRadius.zero);
 
   @override
   List<Object?> get props => [clip, borderRadius];

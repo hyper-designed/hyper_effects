@@ -27,11 +27,47 @@ class ScrollTransitionEvent {
   /// towards -1. It clamps to -1 when the item is fully out of the scroll view.
   final double screenOffsetFraction;
 
+  /// The number of pixels scrolled inside of the parent scroll view.
+  final double? scrollPixels;
+
+  /// The height or width of the parent scroll view.
+  final double? viewportSize;
+
+  /// The change in scroll position since the last update.
+  final double scrollDelta;
+
+  /// The direction the scroll view is being scrolled to.
+  final AxisDirection scrollDirection;
+
+  /// The position of the pointer device in the global coordinate space.
+  final Offset pointerPosition;
+
+  /// The distance from the pointer device to the center of this widget.
+  final Offset distanceFromPointer;
+
+  /// The visual index is the index in which the item is displayed in the
+  /// scroll view. For example, instead of the regular index of a list,
+  /// if you scroll down, the first item that is visible inside the scroll view
+  /// will have some arbitrary index, but the visual index would be 0 as it is
+  /// the index that is perceived by the user.
+  final int visualIndex;
+
+  /// The [visualIndex] calculated in the opposite direction.
+  final int reverseVisualIndex;
+
   /// Creates a [ScrollTransitionEvent].
   ScrollTransitionEvent({
     required this.phase,
     required this.phaseOffsetFraction,
     required this.screenOffsetFraction,
+    required this.scrollPixels,
+    required this.viewportSize,
+    required this.scrollDelta,
+    required this.scrollDirection,
+    required this.pointerPosition,
+    required this.distanceFromPointer,
+    required this.visualIndex,
+    required this.reverseVisualIndex,
   });
 }
 
@@ -64,11 +100,23 @@ class ScrollTransition extends StatefulWidget {
   /// The child widget to apply the effects to.
   final Widget child;
 
+  /// Whether this transition should rely on
+  /// [WidgetsBinding.instance.pointerRouter.addGlobalRoute] to read
+  /// the pointer device's position, which is useful for reading cursor
+  /// events that may not be read properly via [MouseRegion]s like if the
+  /// cursor is outside the bounds of the physical window or applies some
+  /// unusual gesture that may not be normally detected.
+  ///
+  /// If set to false, a traditional [MouseRegion] is used to read
+  /// the pointer device's position.
+  final bool usePointerRouter;
+
   /// Creates a new [ScrollTransition] with the given [builder] and [child].
   const ScrollTransition({
     super.key,
     required this.child,
     this.builder,
+    this.usePointerRouter = true,
   });
 
   @override
@@ -93,6 +141,38 @@ class _ScrollTransitionState extends State<ScrollTransition> {
   /// animation through the parent viewport.
   double screenOffsetFraction = 0;
 
+  /// Keeps track of the last scroll position in pixels.
+  /// This is used to calculate the [_scrollDelta].
+  double? _lastScrollPixels;
+
+  /// The change in scroll position since the last update.
+  double _scrollDelta = 0;
+
+  /// The position of the pointer device in the global coordinate space.
+  Offset _pointerPosition = Offset.zero;
+
+  /// The distance from the pointer device that was used to trigger the
+  /// scroll transition effect to the center of this widget.
+  Offset _distanceFromPointer = Offset.zero;
+
+  /// The visual index is the index in which the item is displayed in the
+  /// scroll view. For example, instead of the regular index of a list,
+  /// if you scroll down, the first item that is visible inside the scroll view
+  /// will have some arbitrary index, but the visual index would be 0 as it is
+  /// the index that is perceived by the user.
+  int _visualIndex = 0;
+
+  /// The visual index calculated in the opposite direction.
+  int _reverseVisualIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.usePointerRouter) {
+      WidgetsBinding.instance.pointerRouter.addGlobalRoute(updateState);
+    }
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -105,11 +185,33 @@ class _ScrollTransitionState extends State<ScrollTransition> {
   }
 
   @override
+  void didUpdateWidget(covariant ScrollTransition oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.usePointerRouter != widget.usePointerRouter) {
+      if (widget.usePointerRouter) {
+        WidgetsBinding.instance.pointerRouter.addGlobalRoute(updateState);
+      } else {
+        WidgetsBinding.instance.pointerRouter.removeGlobalRoute(updateState);
+      }
+    }
+  }
+
+  @override
   void dispose() {
     scrollPosition?.removeListener(onScrollChanged);
     scrollPosition = null;
     scrollable = null;
+
+    if (widget.usePointerRouter) {
+      WidgetsBinding.instance.pointerRouter.removeGlobalRoute(updateState);
+    }
+
     super.dispose();
+  }
+
+  void updateState(PointerEvent event) {
+    _pointerPosition = event.position;
   }
 
   /// Calculates the current phase of the scroll animation.
@@ -192,11 +294,34 @@ class _ScrollTransitionState extends State<ScrollTransition> {
   /// If the [onChanged] callback is provided, it is called if the phase or
   /// value has changed.
   void updateCurrentState() {
+    if (!mounted) return;
+
     final (:phase, :phaseOffsetFraction, :screenOffsetFraction) =
         calculatePhase();
     this.phase = phase;
     this.phaseOffsetFraction = phaseOffsetFraction;
     this.screenOffsetFraction = screenOffsetFraction;
+    final double currentPixels =
+        scrollPosition?.hasPixels == true ? scrollPosition!.pixels : 0.0;
+    _scrollDelta =
+        _lastScrollPixels != null ? currentPixels - _lastScrollPixels! : 0;
+    _lastScrollPixels = currentPixels;
+    _distanceFromPointer = _pointerPosition - context.globalPaintBounds!.center;
+
+    final distanceToTopOfView = context.globalPaintBounds!.top -
+        scrollable!.context.globalPaintBounds!.top;
+    final distanceToBottomOfView = context.globalPaintBounds!.bottom -
+        scrollable!.context.globalPaintBounds!.bottom;
+    final visualIndex =
+        (distanceToTopOfView / context.globalPaintBounds!.height).ceil();
+    final reverseVisualIndex =
+        (distanceToBottomOfView / context.globalPaintBounds!.height).ceil();
+    if (visualIndex != _visualIndex) {
+      _visualIndex = visualIndex;
+    }
+    if (reverseVisualIndex != _reverseVisualIndex) {
+      _reverseVisualIndex = reverseVisualIndex;
+    }
 
     if (mounted) setState(() {});
   }
@@ -220,6 +345,19 @@ class _ScrollTransitionState extends State<ScrollTransition> {
                 phase: phase,
                 phaseOffsetFraction: phaseOffsetFraction,
                 screenOffsetFraction: screenOffsetFraction,
+                scrollPixels: scrollPosition?.hasPixels == true
+                    ? scrollPosition!.pixels
+                    : null,
+                viewportSize: scrollPosition?.hasViewportDimension == true
+                    ? scrollPosition!.viewportDimension
+                    : null,
+                scrollDelta: _scrollDelta,
+                scrollDirection:
+                    scrollPosition?.axisDirection ?? AxisDirection.down,
+                pointerPosition: _pointerPosition,
+                distanceFromPointer: _distanceFromPointer,
+                visualIndex: _visualIndex,
+                reverseVisualIndex: _reverseVisualIndex,
               )) ??
           widget.child;
     } else {

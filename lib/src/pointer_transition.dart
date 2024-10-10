@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'post_frame_widget.dart';
 
 import 'apple_curves.dart';
 import 'effect_query.dart';
@@ -52,15 +51,19 @@ extension PointerTransitionExt on Widget {
     PointerTransitionBuilder builder, {
     Alignment origin = Alignment.center,
     bool useGlobalPointer = false,
+    bool usePointerRouter = true,
     bool transitionBetweenBounds = true,
     bool resetOnExitBounds = true,
     Curve curve = appleEaseInOut,
     Duration duration = const Duration(milliseconds: 125),
+    Key? key,
   }) {
     return PointerTransition(
+      key: key,
       builder: builder,
       origin: origin,
       useGlobalPointer: useGlobalPointer,
+      usePointerRouter: usePointerRouter,
       transitionBetweenBounds: transitionBetweenBounds,
       resetOnExitBounds: resetOnExitBounds,
       curve: curve,
@@ -87,7 +90,7 @@ class PointerTransition extends StatefulWidget {
 
   /// Decides whether this transition calculates the value based on the global
   /// position of the pointer device or the local position of the pointer
-  /// device.
+  /// device relative to the widget's box.
   final bool useGlobalPointer;
 
   /// Decides whether this transition should transition between when the pointer
@@ -98,6 +101,17 @@ class PointerTransition extends StatefulWidget {
   /// back to a value of zero when the pointer device is outside the bounds of
   /// the widget.
   final bool resetOnExitBounds;
+
+  /// Whether this transition should rely on
+  /// [WidgetsBinding.instance.pointerRouter.addGlobalRoute] to read
+  /// the pointer device's position, which is useful for reading cursor
+  /// events that may not be read properly via [MouseRegion]s like if the
+  /// cursor is outside the bounds of the physical window or applies some
+  /// unusual gesture that may not be normally detected.
+  ///
+  /// If set to false, a traditional [MouseRegion] is used to read
+  /// the pointer device's position.
+  final bool usePointerRouter;
 
   /// The child widget to apply the effects to.
   final Widget child;
@@ -119,6 +133,7 @@ class PointerTransition extends StatefulWidget {
     this.useGlobalPointer = false,
     this.transitionBetweenBounds = true,
     this.resetOnExitBounds = true,
+    this.usePointerRouter = true,
     this.builder,
     this.curve = appleEaseInOut,
     this.duration = const Duration(milliseconds: 125),
@@ -135,7 +150,7 @@ class _PointerTransitionState extends State<PointerTransition>
     duration: widget.duration,
   );
 
-  late Animation<double> _animation = CurvedAnimation(
+  late CurvedAnimation _animation = CurvedAnimation(
     parent: _controller,
     curve: widget.curve,
   );
@@ -174,7 +189,10 @@ class _PointerTransitionState extends State<PointerTransition>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.pointerRouter.addGlobalRoute(updateState);
+    if (widget.usePointerRouter) {
+      WidgetsBinding.instance.pointerRouter.addGlobalRoute(updateState);
+    }
+
     _controller.addListener(animationListener);
   }
 
@@ -187,10 +205,19 @@ class _PointerTransitionState extends State<PointerTransition>
     }
 
     if (widget.curve != oldWidget.curve) {
+      _animation.dispose();
       _animation = CurvedAnimation(
         parent: _controller,
         curve: widget.curve,
       );
+    }
+
+    if (oldWidget.usePointerRouter != widget.usePointerRouter) {
+      if (widget.usePointerRouter) {
+        WidgetsBinding.instance.pointerRouter.addGlobalRoute(updateState);
+      } else {
+        WidgetsBinding.instance.pointerRouter.removeGlobalRoute(updateState);
+      }
     }
   }
 
@@ -206,9 +233,13 @@ class _PointerTransitionState extends State<PointerTransition>
 
   @override
   void dispose() {
+    _animation.dispose();
     _controller.removeListener(animationListener);
     _controller.dispose();
-    WidgetsBinding.instance.pointerRouter.removeGlobalRoute(updateState);
+
+    if (widget.usePointerRouter) {
+      WidgetsBinding.instance.pointerRouter.removeGlobalRoute(updateState);
+    }
     super.dispose();
   }
 
@@ -343,7 +374,7 @@ class _PointerTransitionState extends State<PointerTransition>
 
   @override
   Widget build(BuildContext context) {
-    final Widget child = widget.builder?.call(
+    Widget child = widget.builder?.call(
           context,
           widget.child,
           PointerTransitionEvent(
@@ -355,21 +386,27 @@ class _PointerTransitionState extends State<PointerTransition>
         ) ??
         widget.child;
 
-    return PostFrame(
-      child: AnimatedBuilder(
-        animation: _animation,
-        builder: (context, child) => EffectQuery(
-          curvedValue: currentValue,
-          linearValue: currentValue,
-          isTransition: true,
-          lerpValues: false,
-          child: KeyedSubtree(
-            key: _key,
-            child: child!,
-          ),
-        ),
+    if (!widget.usePointerRouter) {
+      child = MouseRegion(
+        onHover: (event) => updateState(event),
+        onExit: (event) => resetValue(),
         child: child,
+      );
+    }
+
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) => EffectQuery(
+        curvedValue: currentValue,
+        linearValue: currentValue,
+        isTransition: true,
+        lerpValues: false,
+        child: KeyedSubtree(
+          key: _key,
+          child: child!,
+        ),
       ),
+      child: child,
     );
   }
 }

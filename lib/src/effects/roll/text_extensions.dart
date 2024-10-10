@@ -56,11 +56,6 @@ extension TextEffectExt on Text {
   /// the final height of the entire widget is fontSize * lineHeightMultiplier.
   /// The default multiplier is 1.
   ///
-  /// The [interpolateWidthPerSymbol] parameter is used to determine whether
-  /// the width of each tape should be interpolated between the width of the
-  /// old and new text as the symbols roll or if the width should interpolate
-  /// directly between the starting and ending texts.
-  ///
   /// The [fixedTapeWidth] parameter can be optionally used to set a fixed width
   /// for each tape.
   /// If null, the width of each tape will be the width of the active character
@@ -78,14 +73,14 @@ extension TextEffectExt on Text {
   /// width animation of each tape.
   /// If null, the same curve is used as the one provided to the [animate]
   /// function.
-  Widget roll(
-    String newText, {
+  Widget roll({
     EdgeInsets padding = EdgeInsets.zero,
     SymbolTapeStrategy tapeStrategy = const ConsistentSymbolTapeStrategy(0),
     Curve? tapeCurve,
-    TapeSlideDirection tapeSlideDirection = TapeSlideDirection.up,
-    bool staggerTapes = true,
+    TextTapeSlideDirection tapeSlideDirection = TextTapeSlideDirection.up,
     int staggerSoftness = 10,
+    double strutHeight = 1,
+    bool staggerTapes = true,
     bool reverseStaggerDirection = false,
     Clip clipBehavior = Clip.hardEdge,
     double symbolDistanceMultiplier = 1,
@@ -102,7 +97,7 @@ extension TextEffectExt on Text {
       'staggerSoftness must be greater than 0.',
     );
     assert(
-      !(data ?? '').contains('\n') && !newText.contains('\n'),
+      !(data ?? '').contains('\n'),
       'Rolling text effect does not support multiline text.',
     );
 
@@ -114,8 +109,7 @@ extension TextEffectExt on Text {
 
       return EffectWidget(
         end: RollingTextEffect(
-          oldText: data ?? '',
-          newText: newText,
+          text: data ?? '',
           padding: padding,
           tapeStrategy: tapeStrategy,
           tapeCurve: tapeCurve,
@@ -130,7 +124,7 @@ extension TextEffectExt on Text {
           widthCurve: widthCurve,
           strutStyle: StrutStyle(
             fontSize: effectiveStyle.fontSize,
-            height: 1,
+            height: strutHeight,
             forceStrutHeight: true,
             leading: symbolDistanceMultiplier - 1,
           ),

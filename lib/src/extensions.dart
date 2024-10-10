@@ -24,3 +24,10 @@ extension ScrollPositionExt on ScrollPosition {
   /// Returns true if the scroll position is at the end of the scroll view.
   bool get atEnd => pixels == maxScrollExtent;
 }
+
+/// Extension methods for [double].
+extension DoubleHelper on double? {
+
+  /// Clamps the value to be at least 0.
+  double get clampUnderZero => this == null ? 0 : this! < 0 ? 0 : this!;
+}

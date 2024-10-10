@@ -94,15 +94,15 @@ class BlurEffect extends Effect {
   @override
   BlurEffect lerp(covariant BlurEffect other, double value) {
     final effect = BlurEffect(
-      blur: blur != null ? (lerpDouble(blur, other.blur, value) ?? 1) : null,
-      blurX: blur == null ? (lerpDouble(blurX, other.blurX, value) ?? 1) : null,
-      blurY: blur == null ? (lerpDouble(blurY, other.blurY, value) ?? 1) : null,
+      blur: blur != null ? (lerpDouble(blur, other.blur, value) ?? 0) : null,
+      blurX: blur == null ? (lerpDouble(blurX, other.blurX, value) ?? 0) : null,
+      blurY: blur == null ? (lerpDouble(blurY, other.blurY, value) ?? 0) : null,
     );
     return effect;
   }
 
   @override
-  Widget apply(BuildContext context, Widget child) {
+  Widget apply(BuildContext context, Widget? child) {
     return ImageFiltered(
       imageFilter: ImageFilter.blur(
         sigmaX: blurX ?? blur ?? 0,
@@ -112,6 +112,9 @@ class BlurEffect extends Effect {
       child: child,
     );
   }
+
+  @override
+  BlurEffect idle() => BlurEffect(blur: 0);
 
   @override
   List<Object?> get props => [blur, blurX, blurY];

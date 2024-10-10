@@ -38,8 +38,10 @@
         serviceWorker: {
           serviceWorkerVersion: serviceWorkerVersion,
         },
-        onEntrypointLoaded: function(engineInitializer) {
-          engineInitializer.initializeEngine().then(function(appRunner) {
+        onEntrypointLoaded: function (engineInitializer) {
+          engineInitializer.initializeEngine({
+            useColorEmoji: true,
+          }).then(function (appRunner) {
             appRunner.runApp();
           });
         }

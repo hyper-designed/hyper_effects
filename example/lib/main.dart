@@ -7,11 +7,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_box_transform/flutter_box_transform.dart';
 import 'package:hyper_effects_demo/stories/color_filter_scroll_transition.dart';
 import 'package:hyper_effects_demo/stories/counter_app.dart';
+import 'package:hyper_effects_demo/stories/group_animation.dart';
 import 'package:hyper_effects_demo/stories/one_shot_reset_animation.dart';
-import 'package:hyper_effects_demo/stories/scroll_phase_transition.dart';
-import 'package:hyper_effects_demo/stories/scroll_wheel_blur.dart';
+import 'package:hyper_effects_demo/stories/rolling_app_bar_animation.dart';
+import 'package:hyper_effects_demo/stories/rolling_pictures_animation.dart';
+import 'package:hyper_effects_demo/stories/scroll_phase_slide.dart';
+import 'package:hyper_effects_demo/stories/scroll_phase_blur.dart';
 import 'package:hyper_effects_demo/stories/scroll_wheel_transition.dart';
 import 'package:hyper_effects_demo/stories/shake_and_spring_animation.dart';
+import 'package:hyper_effects_demo/stories/success_card_animation.dart';
 import 'package:hyper_effects_demo/stories/text_animation.dart';
 import 'package:hyper_effects_demo/stories/windows_settings_transition.dart';
 
@@ -32,7 +36,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           brightness: Brightness.light,
           seedColor: Colors.blue,
-          background: const Color(0xFFF0F0F0),
+          surface: const Color(0xFFF0F0F0),
         ),
         inputDecorationTheme: InputDecorationTheme(
           isDense: true,
@@ -48,7 +52,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           brightness: Brightness.dark,
           seedColor: Colors.blue,
-          background: const Color(0xFF0F0F0F),
+          surface: const Color(0xFF0F0F0F),
         ),
         inputDecorationTheme: InputDecorationTheme(
           isDense: true,
@@ -81,6 +85,14 @@ class Storyboard extends StatefulWidget {
 class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
   final List<Story> animationStories = [
     const Story(
+      title: 'Success Card Animation',
+      child: SuccessCardAnimation()
+    ),
+    const Story(
+      title: 'Group Animation',
+      child: GroupAnimation(),
+    ),
+    const Story(
       title: 'Text Rolling Animations',
       child: TextAnimation(),
     ),
@@ -95,6 +107,14 @@ class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
     const Story(
       title: 'Spring Animation',
       child: SpringAnimation(),
+    ),
+    const Story(
+      title: 'Rolling Pictures Animation',
+      child: RollingWidgetAnimation(),
+    ),
+    const Story(
+      title: 'Rolling App Bar Animation',
+      child: RollingAppBarAnimation(),
     ),
   ];
   final List<Story> transitionStories = [

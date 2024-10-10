@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+
 import '../../hyper_effects.dart';
 
 /// Provides a extension method to apply a [ShakeEffect] to a [Widget].
@@ -57,7 +58,7 @@ class ShakeEffect extends Effect {
   }
 
   @override
-  Widget apply(BuildContext context, Widget child) {
+  Widget apply(BuildContext context, Widget? child) {
     final effectQuery = EffectQuery.maybeOf(context);
     final value = effectQuery?.curvedValue ?? 1;
     final duration = effectQuery?.duration ?? Duration.zero;
@@ -73,6 +74,9 @@ class ShakeEffect extends Effect {
       child: child,
     );
   }
+
+  @override
+  ShakeEffect idle() => const ShakeEffect();
 
   @override
   List<Object?> get props => [frequency, offset, rotation];

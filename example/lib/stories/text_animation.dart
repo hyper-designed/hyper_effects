@@ -5,6 +5,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hyper_effects/hyper_effects.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:unicode_emojis/unicode_emojis.dart';
 
 class TextAnimation extends StatefulWidget {
   const TextAnimation({super.key});
@@ -78,6 +79,18 @@ class IPhone extends StatelessWidget {
   }
 }
 
+final String _allEmojis =
+    UnicodeEmojis.allEmojis.map((emoji) => emoji.emoji).join('');
+
+class EmojiTapeBuilder extends CharacterTapeBuilder {
+  @override
+  String get characters => _allEmojis;
+
+  @override
+  bool compare(String a, String b) =>
+      _allEmojis.contains(a) && _allEmojis.contains(b);
+}
+
 class EmojiLine extends StatefulWidget {
   const EmojiLine({super.key});
 
@@ -103,24 +116,29 @@ class _EmojiLineState extends State<EmojiLine> {
           borderRadius: BorderRadius.circular(32),
         ),
         child: Text(
-          'Hello 😀😃😄😁😆😅😂🤣🥲🥹️😊😇🙂🙃😉😌 Sexy',
+          trigger
+              ? 'World 🧳🌂☂️🧵🪡🪢🪭🧶👓🕶🥽🥼🦺👔👖🧣 Effect'
+              : 'Hello 😀😃😄😁😆😅😂🤣🥲🥹️😊😇🙂🙃😉😌 Sexy',
           style: TextStyle(
             color: Theme.of(context).colorScheme.onPrimaryContainer,
           ),
         )
             .roll(
-              'World 🧳🌂☂️🧵🪡🪢🪭🧶👓🕶🥽🥼🦺👔👖🧣 Effect',
-              tapeStrategy: const ConsistentSymbolTapeStrategy(4),
-              tapeSlideDirection: TapeSlideDirection.alternating,
-              staggerTapes: false,
+              tapeStrategy:
+                  ConsistentSymbolTapeStrategy(4, characterTapeBuilders: {
+                EmojiTapeBuilder(),
+              }),
+              tapeSlideDirection: TextTapeSlideDirection.alternating,
+              staggerTapes: true,
               tapeCurve: Curves.easeInOutBack,
               widthCurve: Curves.easeOutQuart,
               symbolDistanceMultiplier: 2,
+              staggerSoftness: 30,
+              // clipBehavior: Clip.none,
             )
             .animate(
               trigger: trigger,
-              reverse: true,
-              duration: const Duration(milliseconds: 1500),
+              duration: const Duration(milliseconds: 2000),
             ),
       ),
     );
@@ -148,7 +166,6 @@ class _TagLineState extends State<TagLine> {
     'Build',
     'Code',
   ];
-  int lastTagLine = 0;
   int tagLine = 0;
 
   late Timer timer;
@@ -159,7 +176,6 @@ class _TagLineState extends State<TagLine> {
     timer = Timer.periodic(
         Duration(milliseconds: (1800 * timeDilation).toInt()), (timer) {
       setState(() {
-        lastTagLine = tagLine;
         tagLine = (tagLine + 1) % tagLines.length;
       });
     });
@@ -179,7 +195,7 @@ class _TagLineState extends State<TagLine> {
         Text(
           'We help you',
           style: GoogleFonts.robotoMono().copyWith(
-            color: Theme.of(context).colorScheme.onBackground,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 48,
           ),
           strutStyle: const StrutStyle(
@@ -212,7 +228,7 @@ class _TagLineState extends State<TagLine> {
               ],
             ).createShader(rect),
             child: Text(
-              tagLines[lastTagLine],
+              tagLines[tagLine],
               style: GoogleFonts.gloriaHallelujah().copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -220,9 +236,8 @@ class _TagLineState extends State<TagLine> {
               ),
             )
                 .roll(
-                  tagLines[tagLine],
                   symbolDistanceMultiplier: 2,
-                  tapeSlideDirection: TapeSlideDirection.down,
+                  tapeSlideDirection: TextTapeSlideDirection.down,
                   tapeCurve: Curves.easeInOutCubic,
                   widthCurve: Curves.easeOutCubic,
                   widthDuration: const Duration(milliseconds: 1000),
@@ -263,7 +278,6 @@ class _TranslationState extends State<Translation> {
     'Namaste',
     'Salaam',
   ];
-  int lastTranslation = 0;
   int translation = 0;
 
   late Timer timer;
@@ -275,7 +289,6 @@ class _TranslationState extends State<Translation> {
     timer = Timer.periodic(
         Duration(milliseconds: (2000 * timeDilation).toInt()), (timer) {
       setState(() {
-        lastTranslation = translation;
         translation = (translation + 1) % translations.length;
       });
     });
@@ -315,7 +328,7 @@ class _TranslationState extends State<Translation> {
               ],
             ).createShader(rect),
             child: Text(
-              translations[lastTranslation],
+              translations[translation],
               style: GoogleFonts.sacramento().copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -323,7 +336,6 @@ class _TranslationState extends State<Translation> {
               ),
             )
                 .roll(
-                  translations[translation],
                   symbolDistanceMultiplier: 2,
                   tapeCurve: Curves.easeInOutBack,
                   widthCurve: Curves.easeInOutQuart,
@@ -338,7 +350,7 @@ class _TranslationState extends State<Translation> {
         Text(
           ', Stranger',
           style: GoogleFonts.sacramento().copyWith(
-            color: Theme.of(context).colorScheme.onBackground,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 56,
           ),
           strutStyle: const StrutStyle(
@@ -361,7 +373,6 @@ class LikeButton extends StatefulWidget {
 }
 
 class _LikeButtonState extends State<LikeButton> {
-  int lastCounter = 19;
   int counter = 19;
   bool triggerShare = false;
   int downloadIteration = 1;
@@ -378,7 +389,6 @@ class _LikeButtonState extends State<LikeButton> {
           child: InkWell(
             onTap: () {
               setState(() {
-                lastCounter = counter;
                 counter++;
               });
             },
@@ -395,14 +405,15 @@ class _LikeButtonState extends State<LikeButton> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '${lastCounter}K',
+                    '${counter}K',
                     style: GoogleFonts.robotoTextTheme()
                         .bodyMedium!
                         .copyWith(color: Colors.white, fontSize: 16),
                   )
                       .roll(
-                        '${counter}K',
-                        tapeStrategy: const AllSymbolsTapeStrategy(false),
+                        tapeStrategy: const AllSymbolsTapeStrategy(
+                          repeatCharacters: false,
+                        ),
                         symbolDistanceMultiplier: 2,
                         clipBehavior: Clip.none,
                         tapeCurve: Curves.easeOutQuart,
@@ -453,15 +464,14 @@ class _LikeButtonState extends State<LikeButton> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Share',
+                    triggerShare ? 'Thanks!' : 'Share',
                     style: GoogleFonts.robotoTextTheme()
                         .bodyMedium!
                         .copyWith(color: Colors.white, fontSize: 16),
                   )
                       .roll(
-                        'Thanks!',
-                        tapeStrategy:
-                            const ConsistentSymbolTapeStrategy(0, true),
+                        tapeStrategy: const ConsistentSymbolTapeStrategy(0,
+                            repeatCharacters: true),
                         symbolDistanceMultiplier: 2,
                         clipBehavior: Clip.none,
                         tapeCurve:
@@ -513,13 +523,8 @@ class _LikeButtonState extends State<LikeButton> {
                         .copyWith(color: Colors.white, fontSize: 16),
                   )
                       .roll(
-                        switch (downloadIteration) {
-                          1 => 'Downloading',
-                          2 => 'Downloaded',
-                          _ => 'Download',
-                        },
-                        tapeStrategy:
-                            const ConsistentSymbolTapeStrategy(0, false),
+                        tapeStrategy: const ConsistentSymbolTapeStrategy(0,
+                            repeatCharacters: false),
                         symbolDistanceMultiplier: 2,
                         clipBehavior: Clip.none,
                         tapeCurve: Curves.easeOutBack,
@@ -642,7 +647,6 @@ class _ColorPalettePageState extends State<ColorPalettePage> {
     ]
   };
 
-  int lastPage = 0;
   int currentPage = 0;
   final PageController _pageController = PageController();
 
@@ -694,15 +698,14 @@ class _ColorPalettePageState extends State<ColorPalettePage> {
                         colors: palettes.values.elementAt(currentPage),
                       ).createShader(rect),
                       child: Text(
-                        palettes.keys.elementAt(lastPage).toUpperCase(),
+                        palettes.keys.elementAt(currentPage).toUpperCase(),
                         style: const TextStyle(
                             fontWeight: FontWeight.w700, color: Colors.white),
                       )
                           .roll(
-                            palettes.keys.elementAt(currentPage).toUpperCase(),
                             staggerSoftness: 6,
                             reverseStaggerDirection: false,
-                            tapeSlideDirection: TapeSlideDirection.down,
+                            tapeSlideDirection: TextTapeSlideDirection.down,
                             tapeCurve: Curves.easeOutBack,
                             widthCurve: Curves.easeOutQuart,
                             widthDuration: const Duration(milliseconds: 500),
@@ -731,7 +734,6 @@ class _ColorPalettePageState extends State<ColorPalettePage> {
                         itemCount: palettes.keys.length,
                         onPageChanged: (int page) {
                           setState(() {
-                            lastPage = currentPage;
                             currentPage = page;
                           });
                         },
