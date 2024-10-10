@@ -1,4 +1,4 @@
-library effects;
+library;
 
 export 'align_effect.dart';
 export 'blur_effect.dart';

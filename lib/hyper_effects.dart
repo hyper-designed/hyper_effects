@@ -1,4 +1,4 @@
-library hyper_effects;
+library;
 
 export 'src/animated_effect.dart';
 export 'src/effect_widget.dart';
