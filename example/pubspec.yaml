@@ -11,18 +11,18 @@ dependencies:
   flutter:
     sdk: flutter
   adaptive_theme: ^3.6.0
-  flutter_box_transform: ^0.4.3
+  flutter_box_transform: ^0.4.6
   hyper_effects:
     path: ../
   google_fonts: ^6.2.1
   unicode_emojis: ^0.4.0
-  smooth_page_indicator: ^1.1.0
+  smooth_page_indicator: ^1.2.0+3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  web: ^0.5.1
-  flutter_lints: ^4.0.0
+  web: ^1.1.0
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true

@@ -19,13 +19,20 @@ extension ScaleEffectExt on Widget {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
     double? from,
+    bool transformHitTests = true,
   }) {
     return EffectWidget(
-      start: from == null ? null : ScaleEffect(scale: from),
+      start: from == null
+          ? null
+          : ScaleEffect(
+              scale: from,
+              transformHitTests: transformHitTests,
+            ),
       end: ScaleEffect(
         scale: scale,
         alignment: alignment,
         origin: origin,
+        transformHitTests: transformHitTests,
       ),
       child: this,
     );
@@ -43,13 +50,20 @@ extension ScaleEffectExt on Widget {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
     double? from,
+    bool transformHitTests = true,
   }) {
     return EffectWidget(
-      start: from == null ? null : ScaleEffect(scaleX: from),
+      start: from == null
+          ? null
+          : ScaleEffect(
+              scaleX: from,
+              transformHitTests: transformHitTests,
+            ),
       end: ScaleEffect(
         scaleX: scaleX,
         alignment: alignment,
         origin: origin,
+        transformHitTests: transformHitTests,
       ),
       child: this,
     );
@@ -67,13 +81,20 @@ extension ScaleEffectExt on Widget {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
     double? from,
+    bool transformHitTests = true,
   }) {
     return EffectWidget(
-      start: from == null ? null : ScaleEffect(scaleY: from),
+      start: from == null
+          ? null
+          : ScaleEffect(
+              scaleY: from,
+              transformHitTests: transformHitTests,
+            ),
       end: ScaleEffect(
         scaleY: scaleY,
         alignment: alignment,
         origin: origin,
+        transformHitTests: transformHitTests,
       ),
       child: this,
     );
@@ -93,15 +114,22 @@ extension ScaleEffectExt on Widget {
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
     Offset? from,
+    bool transformHitTests = true,
   }) {
     return EffectWidget(
-      start:
-          from == null ? null : ScaleEffect(scaleX: from.dx, scaleY: from.dy),
+      start: from == null
+          ? null
+          : ScaleEffect(
+              scaleX: from.dx,
+              scaleY: from.dy,
+              transformHitTests: transformHitTests,
+            ),
       end: ScaleEffect(
         scaleX: scaleX,
         scaleY: scaleY,
         alignment: alignment,
         origin: origin,
+        transformHitTests: transformHitTests,
       ),
       child: this,
     );
@@ -114,11 +142,21 @@ extension ScaleEffectExt on Widget {
     double? end,
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
+    bool transformHitTests = true,
   }) {
     return EffectWidget(
-      start:
-          ScaleEffect(scale: start ?? 0, alignment: alignment, origin: origin),
-      end: ScaleEffect(scale: end ?? 1, alignment: alignment, origin: origin),
+      start: ScaleEffect(
+        scale: start ?? 0,
+        alignment: alignment,
+        origin: origin,
+        transformHitTests: transformHitTests,
+      ),
+      end: ScaleEffect(
+        scale: end ?? 1,
+        alignment: alignment,
+        origin: origin,
+        transformHitTests: transformHitTests,
+      ),
       child: this,
     );
   }
@@ -130,11 +168,21 @@ extension ScaleEffectExt on Widget {
     double? end,
     AlignmentGeometry alignment = Alignment.center,
     Offset origin = Offset.zero,
+    bool transformHitTests = true,
   }) {
     return EffectWidget(
-      start:
-          ScaleEffect(scale: start ?? 1, alignment: alignment, origin: origin),
-      end: ScaleEffect(scale: end ?? 0, alignment: alignment, origin: origin),
+      start: ScaleEffect(
+        scale: start ?? 1,
+        alignment: alignment,
+        origin: origin,
+        transformHitTests: transformHitTests,
+      ),
+      end: ScaleEffect(
+        scale: end ?? 0,
+        alignment: alignment,
+        origin: origin,
+        transformHitTests: transformHitTests,
+      ),
       child: this,
     );
   }
@@ -163,6 +211,9 @@ class ScaleEffect extends Effect {
   /// (relative to the upper left corner of this render object)
   final Offset origin;
 
+  /// Whether to apply the transformation when performing hit tests.
+  final bool transformHitTests;
+
   /// Creates a [ScaleEffect].
   ScaleEffect({
     this.scale,
@@ -170,6 +221,7 @@ class ScaleEffect extends Effect {
     this.scaleY,
     this.alignment = Alignment.center,
     this.origin = Offset.zero,
+    this.transformHitTests = true,
   }) : assert(scale != null || scaleX != null || scaleY != null,
             'At least one of scale, scaleX, or scaleY must be non-null');
 
@@ -187,6 +239,8 @@ class ScaleEffect extends Effect {
         scale: effectiveScale,
         alignment: effectiveAlignment,
         origin: effectiveOrigin,
+        transformHitTests:
+            value < 0.5 ? transformHitTests : other.transformHitTests,
       );
     }
 
@@ -197,6 +251,8 @@ class ScaleEffect extends Effect {
       scaleY: effectiveScaleY,
       alignment: effectiveAlignment,
       origin: effectiveOrigin,
+      transformHitTests:
+          value < 0.5 ? transformHitTests : other.transformHitTests,
     );
   }
 
@@ -207,6 +263,7 @@ class ScaleEffect extends Effect {
         scaleY: scaleY,
         alignment: alignment,
         origin: origin,
+        transformHitTests: transformHitTests,
         child: child,
       );
 
@@ -220,5 +277,6 @@ class ScaleEffect extends Effect {
         scaleY,
         alignment,
         origin,
+        transformHitTests,
       ];
 }

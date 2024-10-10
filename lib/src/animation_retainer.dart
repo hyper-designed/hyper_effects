@@ -63,9 +63,7 @@ class _AnimatedEffectStateRetainerState
     extends State<AnimatedEffectStateRetainer> {
   final Map<Key, bool> _animationStates = {};
 
-  void _markAsPlayed(Key key) {
-    _animationStates[key] = true;
-  }
+  void _markAsPlayed(Key key) => _animationStates[key] = true;
 
   bool _didPlay(Key key) => _animationStates[key] ?? false;
 
