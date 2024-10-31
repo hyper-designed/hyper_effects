@@ -76,6 +76,7 @@ extension AnimatedEffectExt on Widget? {
     VoidCallback? onEnd,
     BooleanCallback? playIf,
     BooleanCallback? skipIf,
+    AnimationBehavior? animationBehavior,
   }) {
     return AnimatedEffect(
       triggerType: AnimationTriggerType.trigger,
@@ -91,6 +92,7 @@ extension AnimatedEffectExt on Widget? {
       onEnd: onEnd,
       playIf: playIf,
       skipIf: skipIf,
+      animationBehavior: animationBehavior,
       child: this,
     );
   }
@@ -150,6 +152,7 @@ extension AnimatedEffectExt on Widget? {
     VoidCallback? onEnd,
     BooleanCallback? playIf,
     BooleanCallback? skipIf,
+    AnimationBehavior? animationBehavior,
   }) {
     return AnimatedEffect(
       triggerType: AnimationTriggerType.afterLast,
@@ -164,6 +167,7 @@ extension AnimatedEffectExt on Widget? {
       onEnd: onEnd,
       playIf: playIf,
       skipIf: skipIf,
+      animationBehavior: animationBehavior,
       child: this,
     );
   }
@@ -219,6 +223,7 @@ extension AnimatedEffectExt on Widget? {
     VoidCallback? onEnd,
     BooleanCallback? playIf,
     BooleanCallback? skipIf,
+    AnimationBehavior? animationBehavior,
   }) {
     return AnimatedEffect(
       key: key,
@@ -233,6 +238,7 @@ extension AnimatedEffectExt on Widget? {
       delay: delay,
       playIf: playIf,
       skipIf: skipIf,
+      animationBehavior: animationBehavior,
       child: this,
     );
   }
@@ -321,6 +327,10 @@ class AnimatedEffect extends StatefulWidget {
   /// the ending values.
   final BooleanCallback? skipIf;
 
+  /// The behavior of the controller when
+  /// [AccessibilityFeatures.disableAnimations] is true.
+  final AnimationBehavior? animationBehavior;
+
   /// Creates [AnimatedEffect] widget.
   const AnimatedEffect({
     super.key,
@@ -338,6 +348,7 @@ class AnimatedEffect extends StatefulWidget {
     this.delay = Duration.zero,
     this.playIf,
     this.skipIf,
+    this.animationBehavior,
   });
 
   @override
@@ -371,6 +382,9 @@ class AnimatedEffectState extends State<AnimatedEffect>
             ? 1
             : 0,
     duration: widget.duration,
+    animationBehavior: widget.animationBehavior ??
+        HyperEffectsAnimationConfig.maybeOf(context)?.animationBehavior ??
+        AnimationBehavior.normal,
   );
 
   /// The number of times the animation should be repeated.
