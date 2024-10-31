@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import 'apple_curves.dart';
-import 'effect_query.dart';
+import '../hyper_effects.dart';
 
 /// Represents the pointer event for [PointerTransition].
 class PointerTransitionEvent {
@@ -57,6 +56,7 @@ extension PointerTransitionExt on Widget {
     Curve curve = appleEaseInOut,
     Duration duration = const Duration(milliseconds: 125),
     Key? key,
+    AnimationBehavior? animationBehavior,
   }) {
     return PointerTransition(
       key: key,
@@ -69,6 +69,7 @@ extension PointerTransitionExt on Widget {
       curve: curve,
       duration: duration,
       child: this,
+      animationBehavior: animationBehavior,
     );
   }
 }
@@ -124,6 +125,10 @@ class PointerTransition extends StatefulWidget {
   /// about to reset.
   final Duration duration;
 
+  /// The behavior of the controller when
+  /// [AccessibilityFeatures.disableAnimations] is true.
+  final AnimationBehavior? animationBehavior;
+
   /// Creates a new [PointerTransition] with the given [builder], [origin],
   /// [useGlobalPointer], [child], [curve], and [duration].
   const PointerTransition({
@@ -137,6 +142,7 @@ class PointerTransition extends StatefulWidget {
     this.builder,
     this.curve = appleEaseInOut,
     this.duration = const Duration(milliseconds: 125),
+    this.animationBehavior,
   });
 
   @override
@@ -148,6 +154,9 @@ class _PointerTransitionState extends State<PointerTransition>
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: widget.duration,
+    animationBehavior: widget.animationBehavior ??
+        HyperEffectsAnimationConfig.maybeOf(context)?.animationBehavior ??
+        AnimationBehavior.normal,
   );
 
   late CurvedAnimation _animation = CurvedAnimation(
