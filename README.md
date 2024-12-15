@@ -299,7 +299,7 @@ This is what the Widget tree looks like internally when you use this library.
 * delay: A delay before the animation starts.
 * playIf: A callback that returns whether the animation should be played or skipped. If the callback returns false, the
   animation will be skipped, even when it is explicitly triggered.
-* resetValues:  Normally, an effect represents the current state of the widget and this
+* resetValues: Normally, an effect represents the current state of the widget and this
   animate effect is only in charge of lerping between states of those effect values.
   If this is set to true, instead of treating effects as current states to animate between, it will always animate from
   an initial default state towards the current state.
@@ -307,6 +307,8 @@ This is what the Widget tree looks like internally when you use this library.
   will reset the current active animation and re-drive from the beginning.
   Setting this to true will force the animation to wait for the last animation in the chain to finish before starting.
 * startState: Determines the behavior of the animation as soon as it is added to the widget tree.
+* skipIf: A callback that determines whether the animation should be skipped. If the callback returns true, the animation
+  will be skipped entirely.
 
 ### One Shot Animations
 
@@ -466,6 +468,23 @@ Widget build(BuildContext context) {
 In this example, the text will roll from 'Hello' to 'World'. Each character in 'Hello' will roll until it changes to the
 corresponding character in 'World'.
 
+For non-text widgets, you can use the roll effect similarly:
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return Container(
+    width: 100,
+    height: 100,
+    color: Colors.blue,
+  ).roll(
+    from: const Offset(0, 0),
+    to: const Offset(0, 100),
+    axis: Axis.vertical,
+  );
+}
+```
+
 #### Customization
 
 The Rolling Text feature provides several options for customization:
@@ -487,6 +506,14 @@ The Rolling Text feature provides several options for customization:
   provided to the `animate` function.
 - widthCurve: Determines the curve of the width animation of each tape. If null, the same curve is used as the one
   provided to the `animate` function.
+- characterTapeBuilders: Custom builders for individual character tapes, allowing for fine-grained control over how each
+  character is displayed and animated.
+
+For the general roll effect, additional options include:
+- axis: The axis along which the rolling animation occurs (horizontal or vertical).
+- from: The starting offset or state.
+- to: The ending offset or state.
+- transformHits: Whether hit testing should be transformed with the roll animation.
 
 Here's an example of how to use these options:
 

@@ -8,7 +8,12 @@ class HyperEffectsAnimationConfig extends InheritedWidget {
   /// Returns the [HyperEffectsAnimationConfig] from the closest instance of
   /// this class that encloses the given context.
   static HyperEffectsAnimationConfig of(BuildContext context) {
-    return maybeOf(context)!;
+    final result = maybeOf(context);
+    assert(
+      result != null,
+      'No HyperEffectsAnimationConfig found in provided context.',
+    );
+    return result!;
   }
 
   /// Returns the [HyperEffectsAnimationConfig] from the closest instance of
