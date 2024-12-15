@@ -11,8 +11,8 @@ import 'package:hyper_effects_demo/stories/group_animation.dart';
 import 'package:hyper_effects_demo/stories/one_shot_reset_animation.dart';
 import 'package:hyper_effects_demo/stories/rolling_app_bar_animation.dart';
 import 'package:hyper_effects_demo/stories/rolling_pictures_animation.dart';
-import 'package:hyper_effects_demo/stories/scroll_phase_slide.dart';
 import 'package:hyper_effects_demo/stories/scroll_phase_blur.dart';
+import 'package:hyper_effects_demo/stories/scroll_phase_slide.dart';
 import 'package:hyper_effects_demo/stories/scroll_wheel_transition.dart';
 import 'package:hyper_effects_demo/stories/shake_and_spring_animation.dart';
 import 'package:hyper_effects_demo/stories/success_card_animation.dart';
@@ -84,10 +84,7 @@ class Storyboard extends StatefulWidget {
 
 class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
   final List<Story> animationStories = [
-    const Story(
-      title: 'Success Card Animation',
-      child: SuccessCardAnimation()
-    ),
+    const Story(title: 'Success Card Animation', child: SuccessCardAnimation()),
     const Story(
       title: 'Group Animation',
       child: GroupAnimation(),

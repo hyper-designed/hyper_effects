@@ -1,58 +1,108 @@
-## 0.3.0
+# Changelog
 
-- Added Padding effect & a global roll effect.
-- BREAKING: Effect apply function's child parameter is now nullable.
-- BREAKING: Text rolling API has been changed to be more in-line with other effects.
-- BREAKING: `startImmediately` has been replaced with `startState`.
-- Fixed default state of blur effect was in a blur state instead of an unblurred state.
-- Added more variables to the scroll transition's events.
-- Added `usePointerRouter` to pointer transition to determine whether to use the Flutter global pointer router or a
-  GestureDetector.
-- Add `resetValues`, `interruptable`, `skipIf`, and `startState` properties to AnimatedEffect.
-- Add `transformHits` property to translate effect.
-- Add `rotateIn` and `rotateOut` to the rotate effect.
-- Add width & height factor to align effect.
-- Add characterTapeBuilders to `SymbolTapeStrategy` class for custom tape builders.
+All notable changes to the Hyper Effects package are documented in this file.
 
-## 0.2.3
+## [0.3.0] - Dec 15, 2024
 
-- Fix dart analysis issues.
+### Added
+- **New Effects**
+  - Padding effect for dynamic padding adjustments.
+  - Global roll effect for universal rolling animations.
+  - Width & height factor support in align effect.
+- **Scroll Transition Enhancements**
+  - Additional event variables for finer control.
+  - Improved transition state management.
+- **Pointer Transition Features**
+  - `usePointerRouter` option for flexible pointer event handling.
+  - Enhanced pointer position tracking.
+- **New AnimatedEffect Properties**
+  - `resetValues` - Controls value reset behavior.
+  - `interruptable` - Manages animation interruption.
+  - `skipIf` - Conditional animation execution.
+  - `startState` - Initial animation state control.
+  - `transformHits` property for translate effect.
+  - `rotateIn` and `rotateOut` methods for rotate effect.
+- **Added New Examples**
+  - group_animation.dart
+  - rolling_app_bar_animation.dart
+  - rolling_pictures_animation.dart
+  - scroll_phase_slide.dart
+  - scroll_phase_blur.dart
+  - success_card_animation.dart
 
-## 0.2.2
+### Changed
+- **Breaking Changes**
+  - Effect apply function's child parameter is now nullable.
+  - Text rolling API redesigned for consistency with other effects.
+    - New unified interface matching other animation effects.
+    - Previous text rolling methods have been deprecated.
+  - `startImmediately` replaced with more flexible `startState`.
+  - Removed unnecessary PostFrame callbacks from pointer transition logic.
+- **Improvements**
+  - Default blur effect state now starts un-blurred.
+  - Added `characterTapeBuilders` to `SymbolTapeStrategy` for customization.
+  - Fixed issues with scroll transitions to provide smoother and more consistent user experience.
 
-- Clamp `OpacityEffect`, `ClipEffect`, and `ColorFilterEffect` values to 0.0 - 1.0 to prevent exceptions with
-  curves that go outside of this range.
-- Add new `startImmediately` boolean to .animate() to allow for animations to start immediately without waiting for an
-  initial change in the `trigger` object.
-- Improve documentation of `AnimatedEffect`.
+## [0.2.3] - Feb 2, 2024
 
-## 0.2.1
+### Fixed
+- Resolved Dart analysis issues for better code quality
 
-- Fix exceptions being thrown when animation controller state is changed before completion.
+## [0.2.2] - Feb 2, 2024
 
-## 0.2.0
+### Added
+- New `startImmediately` boolean in .animate()
+- Improved documentation for `AnimatedEffect`
 
-- [BREAKING] Renamed `toggle` to `trigger` in .animate() to better reflect its purpose.
-- [BREAKING] Renamed `AnimatedEffect` to `EffectWidget` to better reflect its purpose.
-- [BREAKING] Renamed `EffectAnimationValue` to `EffectQuery` to better reflect its purpose.
-- [BREAKING] Replace `value` in `EffectQuery` with `linearValue` and `curvedValue` to allow more refined control over
-  animations.
-- [BREAKING] Renamed `PostFrameWidget` to `PostFrame`.
-- Add new Rolling Text effect.
-- Add new shake effect.
-- Add new align effect.
-- Update all effect extension functions to add more functionality of the `from` state.
-- Add new extension functions that have default from states like slideIn/Out() and fadeIn/Out().
-- Add new `oneShot`, `animateAfter`, `resetAll` functions to allow for more control over animations.
-- Add new `repeat` parameter to animation functions to allow for repeating animations.
-- Add new `delay` parameter to animation functions to allow for delaying animations.
-- Add new `playIf` parameter to animation functions to allow for conditional animations.
+### Fixed
+- Value clamping for:
+  - `OpacityEffect` (0.0 - 1.0)
+  - `ClipEffect` (0.0 - 1.0)
+  - `ColorFilterEffect` (0.0 - 1.0)
+- Prevents exceptions with out-of-range curves
 
-## 0.1.1
+## [0.2.1] - Dec 28, 2023
 
-- Minor doc updates.
-- Add example GIFs in readme.
+### Fixed
+- Animation controller state change exception handling
 
-## 0.1.0
+## [0.2.0] - Dec 24, 2023
 
-- Initial Release.
+### Added
+- **New Effects**
+  - Rolling Text effect for text animations
+  - Shake effect for vibration animations
+  - Align effect for alignment control
+- **Animation Control**
+  - `oneShot` function for immediate animations
+  - `animateAfter` for sequential animations
+  - `resetAll` for animation state reset
+  - Repeat parameter for cyclic animations
+  - Delay parameter for timed starts
+  - `playIf` for conditional execution
+
+### Changed
+- **Breaking Changes**
+  - Renamed:
+    - `toggle` → `trigger` in .animate()
+    - `AnimatedEffect` → `EffectWidget`
+    - `EffectAnimationValue` → `EffectQuery`
+    - `PostFrameWidget` → `PostFrame`
+  - Enhanced `EffectQuery` with `linearValue` and `curvedValue`
+- **Improvements**
+  - Updated effect extensions with `from` state support
+  - Added convenience methods (slideIn/Out, fadeIn/Out)
+
+## [0.1.1] - Oct 26, 2023
+
+### Changed
+- Documentation improvements
+- Added example GIFs in README
+
+## [0.1.0] - Oct 25, 2023
+
+### Added
+- Initial release of Hyper Effects
+- Core animation and effect system
+- Basic effect implementations
+- Documentation and examples

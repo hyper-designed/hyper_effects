@@ -68,8 +68,8 @@ extension PointerTransitionExt on Widget {
       resetOnExitBounds: resetOnExitBounds,
       curve: curve,
       duration: duration,
-      child: this,
       animationBehavior: animationBehavior,
+      child: this,
     );
   }
 }

@@ -521,7 +521,9 @@ class _RollingTextState extends State<RollingText> {
         oldWidget.textHeightBehavior == widget.textHeightBehavior &&
         oldWidget.maxLines == widget.maxLines &&
         oldWidget.semanticsLabel == widget.semanticsLabel &&
-        oldWidget.selectionColor == widget.selectionColor) return;
+        oldWidget.selectionColor == widget.selectionColor) {
+      return;
+    }
 
     rollingTextPainter.dispose();
     rollingTextPainter = createRollingTextController();
