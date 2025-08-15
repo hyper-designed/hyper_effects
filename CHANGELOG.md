@@ -2,6 +2,10 @@
 
 All notable changes to the Hyper Effects package are documented in this file.
 
+## [0.3.0+1] - Aug 15, 2025
+
+- Loosen dependency constraints for equatable to `>=2.0.5 <3.0.0`.
+
 ## [0.3.0] - Dec 15, 2024
 
 ### Added
