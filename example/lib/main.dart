@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_box_transform/flutter_box_transform.dart';
+import 'package:hyper_effects_demo/stories/blur_reveal_animation.dart';
 import 'package:hyper_effects_demo/stories/color_filter_scroll_transition.dart';
 import 'package:hyper_effects_demo/stories/counter_app.dart';
 import 'package:hyper_effects_demo/stories/group_animation.dart';
@@ -85,6 +86,10 @@ class Storyboard extends StatefulWidget {
 class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
   final List<Story> animationStories = [
     const Story(title: 'Success Card Animation', child: SuccessCardAnimation()),
+    const Story(
+      title: 'Blur Reveal Animation',
+      child: BlurRevealStory(),
+    ),
     const Story(
       title: 'Group Animation',
       child: GroupAnimation(),
@@ -300,18 +305,25 @@ class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
           // const VerticalDivider(width: 2),
           Expanded(
             flex: 3,
-            child: ContentView(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: selectedAnimation != null
-                    ? animationStories[selectedAnimation!].child
-                    : selectedTransition != null
-                        ? transitionStories[selectedTransition!].child
-                        : const Center(
-                            child: Text('Select a story to view.'),
+            child: selectedTransition != null
+                ? ContentView(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: transitionStories[selectedTransition!].child,
+                    ),
+                  )
+                : selectedAnimation != null
+                    ? Center(
+                        child: ClipRect(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: animationStories[selectedAnimation!].child,
                           ),
-              ),
-            ),
+                        ),
+                      )
+                    : const Center(
+                        child: Text('Select a story to view.'),
+                      ),
           ),
         ],
       ),
@@ -474,7 +486,7 @@ class _CustomExpansionTileState extends State<CustomExpansionTile> {
               color: Theme.of(context)
                   .colorScheme
                   .primaryContainer
-                  .withOpacity(0.05),
+                  .withValues(alpha: 0.05),
               child: Column(
                 children: widget.children,
               ),

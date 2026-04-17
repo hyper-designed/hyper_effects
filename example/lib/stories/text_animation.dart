@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,21 +16,144 @@ class TextAnimation extends StatefulWidget {
 }
 
 class _TextAnimationState extends State<TextAnimation> {
+  TextRenderMode _mode = TextRenderMode.contextualCharacters;
+
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return HyperEffectsScope(
+      renderMode: _mode,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+          // Render mode toggle — lets the user compare legacy vs shaped path.
+          SegmentedButton<TextRenderMode>(
+            segments: const [
+              ButtonSegment(
+                // ignore: deprecated_member_use
+                value: TextRenderMode.independentCharacters,
+                label: Text('Legacy — deprecated'),
+              ),
+              ButtonSegment(
+                value: TextRenderMode.contextualCharacters,
+                label: Text('Shaped (default)'),
+              ),
+            ],
+            selected: {_mode},
+            onSelectionChanged: (s) => setState(() => _mode = s.first),
+          ),
+          const SizedBox(height: 16),
+          const Translation(),
+          const SizedBox(height: 16),
+          const TagLine(),
+          const SizedBox(height: 16),
+          const EmojiLine(),
+          const SizedBox(height: 16),
+          // Side-by-side comparison: legacy vs shaped.
+          const _CompareLabel(text: 'Same string, two render paths'),
+          const SizedBox(height: 12),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _ComparePane(
+                label: 'LEGACY',
+                // ignore: deprecated_member_use
+                mode: TextRenderMode.independentCharacters,
+              ),
+              SizedBox(width: 48),
+              _ComparePane(
+                label: 'SHAPED',
+                mode: TextRenderMode.contextualCharacters,
+              ),
+            ],
+          ),
+          const SizedBox(height: 48),
+          // Arabic demo — shows BROKEN isolated forms in independent mode,
+          // correct cursive joining in contextual mode.
+          const ArabicRollingDemo(),
+          const SizedBox(height: 48),
+          const _CompareLabel(text: 'Japanese'),
+          const SizedBox(height: 12),
+          _PhraseDemo(
+            phrases: const ['こんにちは', 'ありがとう', 'おはよう'],
+            direction: TextDirection.ltr,
+            font: GoogleFonts.notoSansJp(fontSize: 48),
+          ),
+          const SizedBox(height: 48),
+          const _CompareLabel(text: 'Devanagari'),
+          const SizedBox(height: 12),
+          _PhraseDemo(
+            phrases: const ['नमस्ते', 'शुभ', 'धन्यवाद'],
+            direction: TextDirection.ltr,
+            font: GoogleFonts.notoSansDevanagari(fontSize: 48),
+          ),
+          const SizedBox(height: 32),
+          const LikeButton(),
+          const SizedBox(height: 32),
+          const IPhone(),
+          const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Showcases Arabic rolling between phrases.
+///
+/// In `TextRenderMode.independentCharacters` (legacy) mode the Arabic letters
+/// render as BROKEN isolated forms.  Switch to
+/// `TextRenderMode.contextualCharacters` to see correct cursive joining —
+/// this is the selling point of the shaped-text path.
+class ArabicRollingDemo extends StatefulWidget {
+  const ArabicRollingDemo({super.key});
+
+  @override
+  State<ArabicRollingDemo> createState() => _ArabicRollingDemoState();
+}
+
+class _ArabicRollingDemoState extends State<ArabicRollingDemo> {
+  static const _phrases = ['مرحبا', 'شكرا', 'سلام'];
+  int _phraseIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Translation(),
-        SizedBox(height: 16),
-        TagLine(),
-        SizedBox(height: 16),
-        EmojiLine(),
-        SizedBox(height: 32),
-        LikeButton(),
-        SizedBox(height: 32),
-        Flexible(flex: 10, child: IPhone()),
+        Text(
+          'Arabic demo (toggle mode above to compare)',
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+        const SizedBox(height: 8),
+        Directionality(
+          textDirection: TextDirection.rtl,
+          child: Text(
+            _phrases[_phraseIndex],
+            style: GoogleFonts.notoNaskhArabic(
+              fontSize: 48,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          )
+              .roll(
+                tapeSlideDirection: TextTapeSlideDirection.down,
+                tapeCurve: Curves.easeInOutCubic,
+                widthCurve: Curves.easeOutCubic,
+              )
+              .animate(
+                trigger: _phraseIndex,
+                duration: const Duration(milliseconds: 800),
+              ),
+        ),
+        const SizedBox(height: 8),
+        ElevatedButton(
+          onPressed: () =>
+              setState(() => _phraseIndex = (_phraseIndex + 1) % _phrases.length),
+          child: const Text('Next phrase'),
+        ),
       ],
     );
   }
@@ -40,7 +164,7 @@ class IPhone extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return ClipRect(
       child: SizedBox(
         width: 512,
         height: 512,
@@ -191,6 +315,14 @@ class _TagLineState extends State<TagLine> {
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
+      // Baseline alignment between the static "We help you" and the
+      // rolled tagline. RenderShapedRolledRow exposes its row
+      // baseline via `computeDistanceToActualBaseline`; ShaderMask
+      // (and its `RenderProxyBox` base) forwards that through, so
+      // the rolled child can baseline-anchor against the sibling
+      // even through the gradient stack.
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
       children: [
         Text(
           'We help you',
@@ -198,24 +330,18 @@ class _TagLineState extends State<TagLine> {
             color: Theme.of(context).colorScheme.onSurface,
             fontSize: 48,
           ),
-          strutStyle: const StrutStyle(
-            fontSize: 56,
-            height: 1,
-            forceStrutHeight: true,
-            leading: 1,
-          ),
         ),
         ShaderMask(
           shaderCallback: (rect) => LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.white.withOpacity(0),
+              Colors.white.withValues(alpha: 0),
               Colors.white,
               Colors.white,
               Colors.white,
               Colors.white,
-              Colors.white.withOpacity(0),
+              Colors.white.withValues(alpha: 0),
               // Colors.white,
             ],
           ).createShader(rect),
@@ -304,27 +430,32 @@ class _TranslationState extends State<Translation> {
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
+      // Baseline alignment so the rolled translation lines up with
+      // ", Stranger" against the typographic baseline (not the box
+      // centre). ShaderMask forwards baseline queries from its
+      // child, so this works even with the gradient stack wrapping
+      // the rolled widget.
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
       children: [
         ShaderMask(
           shaderCallback: (rect) => LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.white.withOpacity(0),
+              Colors.white.withValues(alpha: 0),
               Colors.white,
               Colors.white,
               Colors.white,
               Colors.white,
-              Colors.white.withOpacity(0),
-              // Colors.white,
+              Colors.white.withValues(alpha: 0),
             ],
           ).createShader(rect),
           child: ShaderMask(
             shaderCallback: (rect) => const LinearGradient(
               colors: [
                 Color(0xFFD4145A),
-                Color(0xFFFBB03B)
-                // Colors.white,
+                Color(0xFFFBB03B),
               ],
             ).createShader(rect),
             child: Text(
@@ -340,6 +471,16 @@ class _TranslationState extends State<Translation> {
                   tapeCurve: Curves.easeInOutBack,
                   widthCurve: Curves.easeInOutQuart,
                   padding: const EdgeInsets.only(right: 3),
+                  // Sacramento's capitals and terminal letters carry
+                  // entry/exit swashes that extend past the glyph
+                  // advance box. The renderer's outer-pad gating
+                  // restores them at settled state and the seam-
+                  // overlap blend keeps them whole at every interior
+                  // join.
+                  slotClipPadding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 4,
+                  ),
                 )
                 .animate(
                   trigger: translation,
@@ -352,12 +493,6 @@ class _TranslationState extends State<Translation> {
           style: GoogleFonts.sacramento().copyWith(
             color: Theme.of(context).colorScheme.onSurface,
             fontSize: 56,
-          ),
-          strutStyle: const StrutStyle(
-            fontSize: 56,
-            height: 1,
-            forceStrutHeight: true,
-            leading: 1,
           ),
         ),
       ],
@@ -426,7 +561,7 @@ class _LikeButtonState extends State<LikeButton> {
                     color: Theme.of(context)
                         .colorScheme
                         .onPrimaryContainer
-                        .withOpacity(0.5),
+                        .withValues(alpha: 0.5),
                     indent: 4,
                     endIndent: 4,
                   ),
@@ -669,7 +804,10 @@ class _ColorPalettePageState extends State<ColorPalettePage> {
         padding: const EdgeInsets.only(left: 16, right: 16, top: 64),
         child: Builder(builder: (context) {
           return Scaffold(
+            backgroundColor: Colors.white,
             appBar: AppBar(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.transparent,
               title: Text(
                 'Look And Feel',
                 style: GoogleFonts.notoSerif().copyWith(fontSize: 28),
@@ -728,29 +866,51 @@ class _ColorPalettePageState extends State<ColorPalettePage> {
                         borderRadius: BorderRadius.circular(24),
                       ),
                       clipBehavior: Clip.antiAlias,
-                      child: PageView.builder(
-                        controller: _pageController,
-                        scrollDirection: Axis.horizontal,
-                        itemCount: palettes.keys.length,
-                        onPageChanged: (int page) {
-                          setState(() {
-                            currentPage = page;
-                          });
-                        },
-                        itemBuilder: (context, index) {
-                          final paletteName = palettes.keys.elementAt(index);
-                          final paletteColors = palettes[paletteName]!;
+                      child: ScrollConfiguration(
+                        behavior:
+                            ScrollConfiguration.of(context).copyWith(
+                          dragDevices: const {
+                            PointerDeviceKind.touch,
+                            PointerDeviceKind.mouse,
+                            PointerDeviceKind.trackpad,
+                            PointerDeviceKind.stylus,
+                          },
+                          scrollbars: false,
+                        ),
+                        child: Listener(
+                          onPointerSignal: (event) {
+                            if (event is PointerScrollEvent &&
+                                _pageController.hasClients) {
+                              _pageController.position
+                                  .pointerScroll(event.scrollDelta.dy);
+                            }
+                          },
+                          child: PageView.builder(
+                            controller: _pageController,
+                            scrollDirection: Axis.horizontal,
+                            itemCount: palettes.keys.length,
+                            onPageChanged: (int page) {
+                              setState(() {
+                                currentPage = page;
+                              });
+                            },
+                            itemBuilder: (context, index) {
+                              final paletteName =
+                                  palettes.keys.elementAt(index);
+                              final paletteColors = palettes[paletteName]!;
 
-                          return Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              for (final color in paletteColors)
-                                Expanded(
-                                  child: ColoredBox(color: color),
-                                )
-                            ],
-                          );
-                        },
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  for (final color in paletteColors)
+                                    Expanded(
+                                      child: ColoredBox(color: color),
+                                    )
+                                ],
+                              );
+                            },
+                          ),
+                        ),
                       ),
                     ),
                     Padding(
@@ -765,7 +925,7 @@ class _ColorPalettePageState extends State<ColorPalettePage> {
                           spacing: 6,
                           radius: 12,
                           activeDotColor: Colors.white,
-                          dotColor: Colors.white.withOpacity(0.25),
+                          dotColor: Colors.white.withValues(alpha: 0.25),
                         ),
                       ),
                     ),
@@ -777,6 +937,112 @@ class _ColorPalettePageState extends State<ColorPalettePage> {
           );
         }),
       ),
+    );
+  }
+}
+
+class _CompareLabel extends StatelessWidget {
+  const _CompareLabel({required this.text});
+  final String text;
+  @override
+  Widget build(BuildContext context) => Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          letterSpacing: 1.2,
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+        ),
+      );
+}
+
+class _ComparePane extends StatefulWidget {
+  const _ComparePane({required this.label, required this.mode});
+  final String label;
+  final TextRenderMode mode;
+
+  @override
+  State<_ComparePane> createState() => _ComparePaneState();
+}
+
+class _ComparePaneState extends State<_ComparePane> {
+  static const _phrases = <String>['مرحبا', 'شكرا', 'سلام', 'أهلا'];
+  int _index = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(widget.label,
+            style: TextStyle(
+              fontSize: 10,
+              letterSpacing: 2,
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.5),
+            )),
+        const SizedBox(height: 8),
+        Directionality(
+          textDirection: TextDirection.rtl,
+          child: Text(
+            _phrases[_index],
+            style: GoogleFonts.notoNaskhArabic(fontSize: 48),
+          )
+              .roll(renderMode: widget.mode)
+              .animate(
+                trigger: _index,
+                duration: const Duration(milliseconds: 700),
+              ),
+        ),
+        const SizedBox(height: 12),
+        TextButton(
+          onPressed: () =>
+              setState(() => _index = (_index + 1) % _phrases.length),
+          child: const Text('Next'),
+        ),
+      ],
+    );
+  }
+}
+
+class _PhraseDemo extends StatefulWidget {
+  const _PhraseDemo({
+    required this.phrases,
+    required this.direction,
+    required this.font,
+  });
+  final List<String> phrases;
+  final TextDirection direction;
+  final TextStyle font;
+
+  @override
+  State<_PhraseDemo> createState() => _PhraseDemoState();
+}
+
+class _PhraseDemoState extends State<_PhraseDemo> {
+  int _index = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Directionality(
+          textDirection: widget.direction,
+          child: Text(widget.phrases[_index], style: widget.font)
+              .roll()
+              .animate(
+                trigger: _index,
+                duration: const Duration(milliseconds: 700),
+              ),
+        ),
+        const SizedBox(height: 12),
+        TextButton(
+          onPressed: () =>
+              setState(() => _index = (_index + 1) % widget.phrases.length),
+          child: const Text('Next'),
+        ),
+      ],
     );
   }
 }

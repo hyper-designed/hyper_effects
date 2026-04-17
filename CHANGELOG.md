@@ -2,6 +2,28 @@
 
 All notable changes to the Hyper Effects package are documented in this file.
 
+## Unreleased
+
+- **BREAKING**: The default `TextRenderMode` fallback is now `contextualCharacters` (was `independentCharacters`). For Latin text, visual output is pixel-stable; for RTL / complex scripts (Arabic, Hebrew, Devanagari, Thai), rolling text now renders correctly with proper shaping. See `docs/migration/v0.3-to-v0.4.md` for details and opt-out instructions.
+- Deprecated `TextRenderMode.independentCharacters`. Will be removed in v0.5.0.
+- Added `docs/migration/v0.3-to-v0.4.md` migration guide.
+- Storyboard: default mode flipped to contextual; added a side-by-side legacy-vs-shaped Arabic comparison and Hebrew / Devanagari phrase-cycler demos.
+- Added `TextRenderMode` enum (`independentCharacters` / `contextualCharacters`), `HyperEffectsScope` `InheritedWidget`, `HyperEffects.defaultTextRenderMode` global, and `resolveTextRenderMode` helper.
+- Added the `contextualCharacters` render path for `RollingTextEffect`. Correctly renders Arabic / Hebrew / Devanagari / ZWJ emoji by pre-shaping each tape frame as a full-word paragraph and animating per-cluster rects. Opt-in via `.roll(renderMode: TextRenderMode.contextualCharacters)` or `HyperEffectsScope`.
+- Added `TapeShapingContext` enum with three options: `oldWord`, `newWord`, and `endpointsCorrect` (default).
+- Added `RollingTextEffect.prewarm(...)` static for pre-populating the shaped-text cache off the critical path.
+- Relocated legacy rolling code to `lib/src/effects/roll/legacy/`. No behavior change to the legacy path.
+- Added goldens under `test/golden/effects/roll/shaped/` proving correct shaping for Latin, Arabic, Hebrew, and Devanagari.
+- Storyboard: added a `TextRenderMode` toggle to the rolling-text story.
+- Added `BlurRevealEffect` + `Text.blurReveal()` extension. Reveals text one grapheme cluster at a time with staggered blur + opacity + optional rise-from translate. Ligature-safe and RTL-aware via the `ShapedText` primitive: Arabic renders with correct cursive joining, Hebrew reveals right-to-left, ZWJ emoji stay intact.
+- Added 2 new goldens verifying blur-reveal progression across Latin, Arabic, Devanagari, and per-speed variations.
+- Added a storyboard entry in the example app demonstrating three `BlurReveal` presets (default, fast/no-rise, slow/deep-blur).
+- Added `ShapedText` primitive (`lib/src/text/shaped_text.dart`) — one-paragraph, ligature-safe per-cluster rect enumeration via `Paragraph.getGlyphInfoAt`. Module-level LRU cache with `paragraph.dispose()` on eviction. Not exported yet; will power `BlurRevealEffect` (Phase 3) and the new rolling render path (Phase 4).
+- Added `ShapedCluster`, `ClusterEffect`, and `ClusterPainter` (also under `lib/src/text/`). `ClusterPainter.paintWithClusters` batches identity clusters into a single `drawParagraph` and applies per-cluster effects (transform / opacity / blur / color filter / visibility) via `saveLayer`.
+- Added 2 new goldens verifying ligature-safety (`shaped_text_cluster_rects_goldens.png`) and per-cluster effect correctness (`cluster_painter_effects_goldens.png`).
+- Added a comprehensive baseline test suite (unit, widget, and alchemist-normalized golden tiers with ~0.5% pixel tolerance for AA/hinting drift) pinning current behavior for `RollingTextEffect`. Goldens for Arabic, Hebrew, Devanagari, and mixed bidi text capture current (known-broken) shaping as baselines to replace in later phases.
+- Added `tool/download_test_fonts.dart` for test font management (Noto Sans / Naskh Arabic / Hebrew / Devanagari / Color Emoji). Fonts are gitignored; run `dart run tool/download_test_fonts.dart` before `flutter test`.
+
 ## [0.3.0+1] - Aug 15, 2025
 
 - Loosen dependency constraints for equatable to `>=2.0.5 <3.0.0`.

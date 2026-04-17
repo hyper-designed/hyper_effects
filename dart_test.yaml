@@ -1,0 +1,3 @@
+tags:
+  golden:
+    description: "Alchemist golden tests — require fonts downloaded to test/fonts/.cache/"

@@ -3,12 +3,12 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
-import '../../../hyper_effects.dart';
+import '../../../../hyper_effects.dart';
 
 const String _kZeroWidth = '​';
 
-/// A controller for [RollingText] widgets.
-class RollingTextController with ChangeNotifier {
+/// A controller for [LegacyRollingText] widgets.
+class LegacyRollingTextController with ChangeNotifier {
   /// The text to display interpolating away from.
   final String oldText;
 
@@ -43,10 +43,10 @@ class RollingTextController with ChangeNotifier {
   /// [TextAlign.end] are interpreted.
   ///
   /// This is also used to disambiguate how to render bidirectional text. For
-  /// example, if the [data] is an English phrase followed by a Hebrew phrase,
+  /// example, if the [data] is an English phrase followed by an Arabic phrase,
   /// in a [TextDirection.ltr] context the English phrase will be on the left
-  /// and the Hebrew phrase to its right, while in a [TextDirection.rtl]
-  /// context, the English phrase will be on the right and the Hebrew phrase on
+  /// and the Arabic phrase to its right, while in a [TextDirection.rtl]
+  /// context, the English phrase will be on the right and the Arabic phrase on
   /// its left.
   ///
   /// Defaults to the ambient [Directionality], if any.
@@ -94,8 +94,8 @@ class RollingTextController with ChangeNotifier {
   /// {@macro dart.ui.textHeightBehavior}
   final ui.TextHeightBehavior? textHeightBehavior;
 
-  /// Creates a new [RollingTextController] with the given parameters.
-  RollingTextController({
+  /// Creates a new [LegacyRollingTextController] with the given parameters.
+  LegacyRollingTextController({
     required this.oldText,
     required this.newText,
     required this.tapeStrategy,

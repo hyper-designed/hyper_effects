@@ -1,13 +1,17 @@
 library;
 
+export '../hyper_effects_scope.dart';
+export '../text_render_mode.dart';
 export 'align_effect.dart';
 export 'blur_effect.dart';
+export 'blur_reveal/blur_reveal_extensions.dart';
 export 'clip_effect.dart';
 export 'color_filter_effect.dart';
 export 'effect.dart';
 export 'opacity_effect.dart';
 export 'padding_effect.dart';
 export 'roll/roll_effect.dart';
+export 'roll/tape_shaping_context.dart';
 export 'roll/text_extensions.dart';
 export 'rotation_effect.dart';
 export 'scale_effect.dart';

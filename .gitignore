@@ -30,3 +30,6 @@ migrate_working_dir/
 build/
 
 **/*.lock
+
+# Test fonts downloaded by tool/download_test_fonts.dart
+test/fonts/.cache/

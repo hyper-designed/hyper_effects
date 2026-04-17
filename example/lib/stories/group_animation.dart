@@ -96,8 +96,8 @@ class _TagChipState extends State<TagChip> {
     return Container(
       decoration: BoxDecoration(
         color: widget.selected
-            ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
-            : Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
+            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
       ),
       clipBehavior: Clip.none,

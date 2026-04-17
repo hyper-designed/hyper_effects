@@ -85,8 +85,11 @@ extension TextEffectExt on Text {
     Clip clipBehavior = Clip.hardEdge,
     double symbolDistanceMultiplier = 1,
     double? fixedTapeWidth,
+    EdgeInsets slotClipPadding = EdgeInsets.zero,
     Duration? widthDuration,
     Curve? widthCurve,
+    TextRenderMode? renderMode,
+    TapeShapingContext tapeShapingContext = TapeShapingContext.endpointsCorrect,
   }) {
     assert(
       symbolDistanceMultiplier > 0,
@@ -120,6 +123,7 @@ extension TextEffectExt on Text {
           clipBehavior: clipBehavior,
           style: effectiveStyle,
           fixedTapeWidth: fixedTapeWidth,
+          slotClipPadding: slotClipPadding,
           widthDuration: widthDuration,
           widthCurve: widthCurve,
           strutStyle: StrutStyle(
@@ -139,6 +143,8 @@ extension TextEffectExt on Text {
           textWidthBasis: textWidthBasis,
           textHeightBehavior: textHeightBehavior,
           selectionColor: selectionColor,
+          renderMode: renderMode,
+          tapeShapingContext: tapeShapingContext,
         ),
         child: this,
       );
