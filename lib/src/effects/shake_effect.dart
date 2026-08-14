@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../hyper_effects.dart';
 
@@ -80,5 +80,23 @@ class ShakeEffect extends Effect {
   ShakeEffect idle() => const ShakeEffect();
 
   @override
-  List<Object?> get props => [frequency, offset, rotation];
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is ShakeEffect &&
+        other.runtimeType == runtimeType &&
+        other.frequency == frequency &&
+        other.offset == offset &&
+        other.rotation == rotation;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        frequency,
+        offset,
+        rotation,
+      );
+
+  @override
+  String toString() =>
+      'ShakeEffect(frequency: $frequency, offset: $offset, rotation: $rotation)';
 }

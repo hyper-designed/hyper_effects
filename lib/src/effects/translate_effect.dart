@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../effect_widget.dart';
 import 'effect.dart';
+import 'vector_effect.dart';
 
 const double _kDefaultSlideOffset = 100.0;
 
@@ -351,7 +352,8 @@ extension TranslateEffectExt on Widget {
 }
 
 /// An effect that translates a [Widget] by a given [offset].
-class TranslateEffect extends Effect {
+class TranslateEffect extends Effect
+    with VectorEffect<TranslateEffect> {
   /// The offset by which the [Widget] is translated.
   final Offset offset;
 
@@ -404,5 +406,47 @@ class TranslateEffect extends Effect {
       );
 
   @override
-  List<Object?> get props => [offset, fractional, transformHitTests];
+  TranslateEffect operator +(TranslateEffect other) => TranslateEffect(
+        offset: offset + other.offset,
+        fractional: fractional,
+        transformHitTests: transformHitTests,
+      );
+
+  @override
+  TranslateEffect operator -(TranslateEffect other) => TranslateEffect(
+        offset: offset - other.offset,
+        fractional: fractional,
+        transformHitTests: transformHitTests,
+      );
+
+  @override
+  TranslateEffect operator *(double factor) => TranslateEffect(
+        offset: offset * factor,
+        fractional: fractional,
+        transformHitTests: transformHitTests,
+      );
+
+  @override
+  double get magnitudeSquared => offset.distanceSquared;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is TranslateEffect &&
+        other.runtimeType == runtimeType &&
+        other.offset == offset &&
+        other.fractional == fractional &&
+        other.transformHitTests == transformHitTests;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        offset,
+        fractional,
+        transformHitTests,
+      );
+
+  @override
+  String toString() =>
+      'TranslateEffect(offset: $offset, fractional: $fractional, transformHitTests: $transformHitTests)';
 }

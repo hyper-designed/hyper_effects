@@ -109,5 +109,23 @@ class AlignEffect extends Effect {
   AlignEffect idle() => AlignEffect();
 
   @override
-  List<Object?> get props => [alignment, widthFactor, heightFactor];
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is AlignEffect &&
+        other.runtimeType == runtimeType &&
+        other.alignment == alignment &&
+        other.widthFactor == widthFactor &&
+        other.heightFactor == heightFactor;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        alignment,
+        widthFactor,
+        heightFactor,
+      );
+
+  @override
+  String toString() =>
+      'AlignEffect(alignment: $alignment, widthFactor: $widthFactor, heightFactor: $heightFactor)';
 }

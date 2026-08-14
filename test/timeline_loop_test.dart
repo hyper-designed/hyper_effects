@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hyper_effects/hyper_effects.dart';
 
@@ -39,7 +39,8 @@ Widget host({
     );
 
 void main() {
-  testWidgets('#immediate plays on mount without any trigger change', (tester) async {
+  testWidgets('#immediate plays on mount without any trigger change',
+      (tester) async {
     await tester.pumpWidget(host());
     await tester.pump(const Duration(milliseconds: 150));
     expect(compositeScaleOf(tester, key), closeTo(0.5, 1e-6),
@@ -64,9 +65,11 @@ void main() {
   testWidgets('finite repeat plays N+1 cycles then rests; onEnd fires once',
       (tester) async {
     var ends = 0;
-    await tester.pumpWidget(host(repeat: 2, onEnd: () {
-      ends++;
-    }));
+    await tester.pumpWidget(host(
+        repeat: 2,
+        onEnd: () {
+          ends++;
+        }));
     // A cycle completes on the first tick strictly past its duration, and
     // the next cycle's clock starts at that boundary-crossing frame.
     await tester.pump(const Duration(milliseconds: 300));

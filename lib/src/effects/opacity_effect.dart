@@ -46,7 +46,7 @@ extension OpacityEffectExtension on Widget {
 }
 
 /// An [Effect] that applies an opacity to a [Widget].
-class OpacityEffect extends Effect {
+class OpacityEffect extends Effect with VectorEffect<OpacityEffect> {
   /// The opacity to apply to the [Widget]. Defaults to 1.
   final double opacity;
 
@@ -62,7 +62,7 @@ class OpacityEffect extends Effect {
 
   @override
   Widget apply(BuildContext context, Widget? child) =>
-      Opacity(opacity: opacity, child: child);
+      Opacity(opacity: opacity.clamp(0.0, 1.0), child: child);
 
   @override
   OpacityEffect idle() => OpacityEffect(
@@ -70,5 +70,31 @@ class OpacityEffect extends Effect {
       );
 
   @override
-  List<Object?> get props => [opacity];
+  OpacityEffect operator +(OpacityEffect other) =>
+      OpacityEffect(opacity: opacity + other.opacity);
+
+  @override
+  OpacityEffect operator -(OpacityEffect other) =>
+      OpacityEffect(opacity: opacity - other.opacity);
+
+  @override
+  OpacityEffect operator *(double factor) =>
+      OpacityEffect(opacity: opacity * factor);
+
+  @override
+  double get magnitudeSquared => opacity * opacity;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is OpacityEffect &&
+        other.runtimeType == runtimeType &&
+        other.opacity == opacity;
+  }
+
+  @override
+  int get hashCode => opacity.hashCode;
+
+  @override
+  String toString() => 'OpacityEffect(opacity: $opacity)';
 }

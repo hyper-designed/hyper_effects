@@ -184,5 +184,16 @@ class PaddingEffect extends Effect {
   PaddingEffect idle() => PaddingEffect();
 
   @override
-  List<Object?> get props => [padding];
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is PaddingEffect &&
+        other.runtimeType == runtimeType &&
+        other.padding == padding;
+  }
+
+  @override
+  int get hashCode => padding.hashCode;
+
+  @override
+  String toString() => 'PaddingEffect(padding: $padding)';
 }

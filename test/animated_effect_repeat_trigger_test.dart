@@ -44,9 +44,7 @@ class _TriggerHarnessState extends State<_TriggerHarness> {
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.ltr,
-      child: const SizedBox()
-          .scale(1.3, from: 1)
-          .animate(
+      child: const SizedBox().scale(1.3, from: 1).animate(
             trigger: triggerValue,
             duration: const Duration(milliseconds: 200),
             curve: Curves.linear,

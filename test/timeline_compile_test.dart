@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hyper_effects/hyper_effects.dart';
 
@@ -28,13 +28,17 @@ void main() {
 
     expect(spec.segments, [
       const TimelineSegment(
-        duration: Duration(milliseconds: 350),
-        curve: Curves.easeOutQuart,
+        motion: CurvedMotion(
+          Duration(milliseconds: 350),
+          Curves.easeOutQuart,
+        ),
         delay: Duration.zero,
       ),
       const TimelineSegment(
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeOutBack,
+        motion: CurvedMotion(
+          Duration(milliseconds: 300),
+          Curves.easeOutBack,
+        ),
         delay: Duration(milliseconds: 150),
       ),
     ]);
@@ -59,8 +63,7 @@ void main() {
     expect(spec.child, same(content));
   });
 
-  test('a type missing from a keyframe carries the previous value forward',
-      () {
+  test('a type missing from a keyframe carries the previous value forward', () {
     const content = SizedBox.square(dimension: 74);
     final chain = content
         .scale(0.5)

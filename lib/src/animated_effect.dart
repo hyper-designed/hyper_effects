@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../hyper_effects.dart';
+import 'utils.dart';
 
 /// A callback that returns whether an animation should be allowed
 /// to follow through with its animation or be skipped completely,
@@ -59,8 +60,9 @@ extension AnimatedEffectExt on Widget? {
   Widget animate({
     required Object? trigger,
     Key? key,
-    Duration duration = const Duration(milliseconds: 350),
-    Curve curve = appleEaseInOut,
+    Duration? duration,
+    Curve? curve,
+    Motion? motion,
     int repeat = 0,
     bool reverse = false,
     bool resetValues = false,
@@ -75,8 +77,7 @@ extension AnimatedEffectExt on Widget? {
     return AnimatedEffect(
       key: key,
       trigger: trigger,
-      duration: duration,
-      curve: curve,
+      motion: Utils.resolveMotion(motion, duration, curve),
       repeat: repeat,
       reverse: reverse,
       resetValues: resetValues,
@@ -140,8 +141,9 @@ extension AnimatedEffectExt on Widget? {
   /// animation to the ending values.
   AnimatedEffect immediate({
     Key? key,
-    Duration duration = const Duration(milliseconds: 350),
-    Curve curve = appleEaseInOut,
+    Duration? duration,
+    Curve? curve,
+    Motion? motion,
     int repeat = 0,
     bool reverse = false,
     bool resetValues = false,
@@ -155,8 +157,7 @@ extension AnimatedEffectExt on Widget? {
     return AnimatedEffect(
       key: key,
       trigger: #immediate,
-      duration: duration,
-      curve: curve,
+      motion: Utils.resolveMotion(motion, duration, curve),
       onEnd: onEnd,
       repeat: repeat,
       reverse: reverse,
@@ -218,11 +219,9 @@ class AnimatedEffect extends StatefulWidget {
   /// to the widget tree.
   final AnimationStartState startState;
 
-  /// The duration of the animation.
-  final Duration duration;
-
-  /// The curve of the animation.
-  final Curve curve;
+  /// How the animation moves: a [CurvedMotion] built from the
+  /// duration/curve sugar, or any [Motion] (springs included).
+  final Motion motion;
 
   /// A callback that is called when the animation ends.
   final VoidCallback? onEnd;
@@ -269,10 +268,10 @@ class AnimatedEffect extends StatefulWidget {
   const AnimatedEffect({
     super.key,
     required this.child,
-    required this.duration,
+    this.motion =
+        const CurvedMotion(Duration(milliseconds: 350), appleEaseInOut),
     this.startState = AnimationStartState.lazy,
     this.trigger,
-    this.curve = appleEaseInOut,
     this.onEnd,
     this.repeat = 0,
     this.reverse = false,
@@ -311,7 +310,7 @@ class AnimatedEffectState extends State<AnimatedEffect>
   late final AnimationController controller = AnimationController(
     vsync: this,
     value: widget.startState == AnimationStartState.eager || shouldSkip ? 1 : 0,
-    duration: widget.duration,
+    duration: widget.motion.effectiveDuration,
     animationBehavior: widget.animationBehavior ??
         HyperEffectsAnimationConfig.maybeOf(context)?.animationBehavior ??
         AnimationBehavior.normal,
@@ -342,7 +341,7 @@ class AnimatedEffectState extends State<AnimatedEffect>
   @override
   void didUpdateWidget(covariant AnimatedEffect oldWidget) {
     super.didUpdateWidget(oldWidget);
-    controller.duration = widget.duration;
+    controller.duration = widget.motion.effectiveDuration;
 
     // If the trigger value changed, drive the animation.
     if (widget.trigger != oldWidget.trigger) {
@@ -448,11 +447,15 @@ class AnimatedEffectState extends State<AnimatedEffect>
       animation: controller,
       builder: (context, child) => EffectQuery(
         linearValue: controller.value,
-        curvedValue: widget.curve.transform(controller.value),
+        curvedValue: widget.motion.transform(controller.value),
+        motion: widget.motion,
         isTransition: false,
         resetValues: widget.resetValues,
-        duration: widget.duration,
-        curve: widget.curve,
+        duration: widget.motion.effectiveDuration,
+        curve: switch (widget.motion) {
+          CurvedMotion(:final curve) => curve,
+          _ => Curves.linear,
+        },
         child: child!,
       ),
       child: widget.child,

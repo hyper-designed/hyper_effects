@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hyper_effects/hyper_effects.dart';
 
@@ -73,7 +73,8 @@ void main() {
     expect(compositeScaleOf(tester, key), closeTo(1.0, 1e-9));
   });
 
-  testWidgets('any trigger change restarts forward — direction is never '
+  testWidgets(
+      'any trigger change restarts forward — direction is never '
       'inferred from the trigger value', (tester) async {
     await tester.pumpWidget(stamp(false));
     await tester.pump();

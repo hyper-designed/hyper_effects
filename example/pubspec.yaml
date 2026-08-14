@@ -10,18 +10,19 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  adaptive_theme: ^3.6.0
-  flutter_box_transform: ^0.4.6
+  material_ui: ^1.0.0
+  adaptive_theme: ^3.8.0
+  flutter_box_transform: ^0.4.7
   hyper_effects:
     path: ../
-  google_fonts: ^6.2.1
-  unicode_emojis: ^0.4.0
-  smooth_page_indicator: ^1.2.0+3
+  google_fonts: ^8.2.1
+  unicode_emojis: ^0.5.1
+  smooth_page_indicator: ^2.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true

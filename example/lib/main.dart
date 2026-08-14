@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_box_transform/flutter_box_transform.dart';
@@ -13,6 +12,7 @@ import 'package:hyper_effects_demo/stories/scroll_phase_blur.dart';
 import 'package:hyper_effects_demo/stories/scroll_phase_slide.dart';
 import 'package:hyper_effects_demo/stories/scroll_wheel_transition.dart';
 import 'package:hyper_effects_demo/stories/shake_and_spring_animation.dart';
+import 'package:hyper_effects_demo/stories/spring_motion.dart';
 import 'package:hyper_effects_demo/stories/success_card_animation.dart';
 import 'package:hyper_effects_demo/stories/text_animation.dart';
 import 'package:hyper_effects_demo/stories/timeline_journey.dart';
@@ -21,6 +21,7 @@ import 'package:hyper_effects_demo/stories/timeline_pulse_button.dart';
 import 'package:hyper_effects_demo/stories/timeline_rocket_launch.dart';
 import 'package:hyper_effects_demo/stories/timeline_toast.dart';
 import 'package:hyper_effects_demo/stories/windows_settings_transition.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'story.dart';
 
@@ -129,6 +130,10 @@ class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
     const Story(
       title: 'Looping Journey (auto-play)',
       child: TimelineJourney(),
+    ),
+    const Story(
+      title: 'Spring Motion (physics)',
+      child: SpringMotionStory(),
     ),
   ];
   final List<Story> transitionStories = [

@@ -1,6 +1,7 @@
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../hyper_effects.dart';
 
@@ -38,48 +39,6 @@ extension ColorFilterEffectExtension on Widget {
               mode: mode,
               matrix: fromMatrix,
             ),
-      end: ColorFilterEffect(
-        color: color,
-        mode: mode,
-        matrix: matrix,
-      ),
-      child: this,
-    );
-  }
-
-  /// Applies an [ColorFilterEffect] to a [Widget] with a default
-  /// flash in animation.
-  Widget flashIn({
-    Color color = Colors.white,
-    BlendMode mode = BlendMode.overlay,
-    List<double> matrix = ColorFilterMatrix.identity,
-  }) {
-    return EffectWidget(
-      start: ColorFilterEffect(
-        color: color,
-        mode: mode,
-        matrix: matrix,
-      ),
-      end: ColorFilterEffect(
-        matrix: ColorFilterMatrix.identity,
-        mode: mode,
-      ),
-      child: this,
-    );
-  }
-
-  /// Applies an [ColorFilterEffect] to a [Widget] with a default
-  /// flash out animation.
-  Widget flashOut({
-    Color color = Colors.white,
-    BlendMode mode = BlendMode.overlay,
-    List<double> matrix = ColorFilterMatrix.identity,
-  }) {
-    return EffectWidget(
-      start: ColorFilterEffect(
-        matrix: ColorFilterMatrix.identity,
-        mode: mode,
-      ),
       end: ColorFilterEffect(
         color: color,
         mode: mode,
@@ -149,7 +108,25 @@ class ColorFilterEffect extends Effect {
   ColorFilterEffect idle() => ColorFilterEffect(mode: mode);
 
   @override
-  List<Object?> get props => [color, mode, matrix];
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is ColorFilterEffect &&
+        other.runtimeType == runtimeType &&
+        other.color == color &&
+        other.mode == mode &&
+        listEquals(other.matrix, matrix);
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        color,
+        mode,
+        matrix == null ? null : Object.hashAll(matrix!),
+      );
+
+  @override
+  String toString() =>
+      'ColorFilterEffect(color: $color, mode: $mode, matrix: $matrix)';
 }
 
 /// A set of predefined color filter matrices.

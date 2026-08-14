@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
 
 /// Provides a way to configure the animation behavior globally for a subtree.
 class HyperEffectsAnimationConfig extends InheritedWidget {

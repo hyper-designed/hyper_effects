@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 
 import '../effect_widget.dart';
 import 'effect.dart';
+import 'vector_effect.dart';
 
 /// Provides a extension method to apply a [ScaleEffect] to a [Widget].
 extension ScaleEffectExt on Widget {
@@ -189,7 +190,7 @@ extension ScaleEffectExt on Widget {
 }
 
 /// An [Effect] that applies a scale to a [Widget].
-class ScaleEffect extends Effect {
+class ScaleEffect extends Effect with VectorEffect<ScaleEffect> {
   /// The scale to apply to the [Widget] on both axes. This must be null if
   /// [scaleX] or [scaleY] is provided.
   final double? scale;
@@ -270,13 +271,65 @@ class ScaleEffect extends Effect {
   @override
   ScaleEffect idle() => ScaleEffect(scale: 1);
 
+  double get _effectiveX => scale ?? scaleX ?? 1;
+
+  double get _effectiveY => scale ?? scaleY ?? 1;
+
   @override
-  List<Object?> get props => [
+  ScaleEffect operator +(ScaleEffect other) => ScaleEffect(
+        scaleX: _effectiveX + other._effectiveX,
+        scaleY: _effectiveY + other._effectiveY,
+        alignment: alignment,
+        origin: origin,
+        transformHitTests: transformHitTests,
+      );
+
+  @override
+  ScaleEffect operator -(ScaleEffect other) => ScaleEffect(
+        scaleX: _effectiveX - other._effectiveX,
+        scaleY: _effectiveY - other._effectiveY,
+        alignment: alignment,
+        origin: origin,
+        transformHitTests: transformHitTests,
+      );
+
+  @override
+  ScaleEffect operator *(double factor) => ScaleEffect(
+        scaleX: _effectiveX * factor,
+        scaleY: _effectiveY * factor,
+        alignment: alignment,
+        origin: origin,
+        transformHitTests: transformHitTests,
+      );
+
+  @override
+  double get magnitudeSquared =>
+      _effectiveX * _effectiveX + _effectiveY * _effectiveY;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is ScaleEffect &&
+        other.runtimeType == runtimeType &&
+        other.scale == scale &&
+        other.scaleX == scaleX &&
+        other.scaleY == scaleY &&
+        other.alignment == alignment &&
+        other.origin == origin &&
+        other.transformHitTests == transformHitTests;
+  }
+
+  @override
+  int get hashCode => Object.hash(
         scale,
         scaleX,
         scaleY,
         alignment,
         origin,
         transformHitTests,
-      ];
+      );
+
+  @override
+  String toString() =>
+      'ScaleEffect(scale: $scale, scaleX: $scaleX, scaleY: $scaleY, alignment: $alignment, origin: $origin, transformHitTests: $transformHitTests)';
 }

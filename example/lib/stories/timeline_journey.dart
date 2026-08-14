@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:hyper_effects/hyper_effects.dart';
 
 /// The looping journey formerly built from oneShot + animateAfter chains +

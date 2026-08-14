@@ -7,9 +7,7 @@ void main() {
       (tester) async {
     Widget pulse(int trigger) => Directionality(
           textDirection: TextDirection.ltr,
-          child: const SizedBox()
-              .scale(1.3, from: 1)
-              .animate(
+          child: const SizedBox().scale(1.3, from: 1).animate(
                 trigger: trigger,
                 duration: const Duration(milliseconds: 200),
                 repeat: 1,

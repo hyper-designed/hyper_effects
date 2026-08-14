@@ -5,6 +5,7 @@ export 'blur_effect.dart';
 export 'clip_effect.dart';
 export 'color_filter_effect.dart';
 export 'effect.dart';
+export 'vector_effect.dart';
 export 'opacity_effect.dart';
 export 'padding_effect.dart';
 export 'roll/roll_effect.dart';

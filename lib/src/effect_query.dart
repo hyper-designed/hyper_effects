@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'pointer_transition.dart';
+import 'motion/motion.dart';
 
 /// An inherited widget that provides the animation value to it's descendants.
 ///
@@ -36,6 +37,11 @@ class EffectQuery extends InheritedWidget {
   /// The duration of the animation.
   final Duration duration;
 
+  /// The [Motion] driving the animation, when driven by an animator that
+  /// has one. Physics-aware descendants (spring-driven [EffectWidget]s)
+  /// read this; transitions leave it null.
+  final Motion? motion;
+
   /// The curve of the animation.
   final Curve curve;
 
@@ -50,6 +56,7 @@ class EffectQuery extends InheritedWidget {
     this.resetValues = false,
     this.duration = Duration.zero,
     this.curve = Curves.linear,
+    this.motion,
   });
 
   @override
@@ -59,7 +66,8 @@ class EffectQuery extends InheritedWidget {
         oldWidget.lerpValues != lerpValues ||
         oldWidget.resetValues != resetValues ||
         oldWidget.duration != duration ||
-        oldWidget.curve != curve;
+        oldWidget.curve != curve ||
+        oldWidget.motion != motion;
   }
 
   /// Returns the [EffectQuery] from the given [context].

@@ -32,8 +32,8 @@ void main() {
     );
 
     final transform = tester.widget<Transform>(find.byType(Transform));
-    final expected = Matrix4.rotationZ(0.2)
-        .multiplied(Matrix4.translationValues(10, 0, 0));
+    final expected =
+        Matrix4.rotationZ(0.2).multiplied(Matrix4.translationValues(10, 0, 0));
     expectMatrix(transform.transform, expected);
   });
 

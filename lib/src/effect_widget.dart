@@ -3,6 +3,9 @@ import 'package:flutter/widgets.dart';
 
 import 'effect_query.dart';
 import 'effects/effect.dart';
+import 'effects/vector_effect.dart';
+import 'motion/motion.dart';
+import 'motion/vector_spring.dart';
 
 /// A widget that applies given [Effect] to a [Widget]. This widget is hardly
 /// used directly. Instead, use the extension methods provided by the effects
@@ -49,6 +52,43 @@ class _EffectWidgetState extends State<EffectWidget> {
   /// between two [Effect]s when the [Effect] changes mid animation.
   double previousAnimationValue = 0;
 
+  /// The previous LINEAR animation value: spring physics runs on real time,
+  /// not curved progress.
+  double previousLinearValue = 0;
+
+  /// The typed velocity carried across spring retargets — an effect-shaped
+  /// "units per second", captured analytically at the interruption instant.
+  Effect? velocity;
+
+  /// Whether the current start/end pair can be driven by spring physics.
+  bool _isSpringDriven(EffectQuery? query) =>
+      query != null &&
+      !query.isTransition &&
+      query.lerpValues &&
+      query.motion is SpringMotion &&
+      start is VectorEffect &&
+      end is VectorEffect &&
+      start.runtimeType == end.runtimeType;
+
+  /// Evaluates the closed-form spring state — (position, velocity) — at
+  /// [linearValue] of the current run. The coefficients are scalars; all
+  /// arithmetic happens in effect space via [VectorEffect] operators.
+  (Effect, Effect) _springState(SpringMotion motion, double linearValue) {
+    final double seconds =
+        motion.effectiveDuration.inMicroseconds / Duration.microsecondsPerSecond;
+    final SpringCoefficients c =
+        springCoefficients(motion.description, linearValue * seconds);
+    final dynamic displacement = (start as dynamic) - end;
+    dynamic position = (end as dynamic) + displacement * c.a;
+    dynamic speed = displacement * c.da;
+    final dynamic v0 = velocity;
+    if (v0 != null) {
+      position = position + v0 * c.b;
+      speed = speed + v0 * c.db;
+    }
+    return (position as Effect, speed as Effect);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -62,6 +102,7 @@ class _EffectWidgetState extends State<EffectWidget> {
     final effectQuery = EffectQuery.maybeOf(context);
     final double animationValue = effectQuery?.curvedValue ?? 0;
     previousAnimationValue = animationValue;
+    previousLinearValue = effectQuery?.linearValue ?? 0;
   }
 
   @override
@@ -78,7 +119,20 @@ class _EffectWidgetState extends State<EffectWidget> {
         start.runtimeType == end.runtimeType) {
       final effectQuery = EffectQuery.maybeOf(context);
       if (effectQuery != null && !effectQuery.isTransition) {
-        start = start.lerp(end, previousAnimationValue);
+        if (_isSpringDriven(effectQuery)) {
+          // Capture BOTH the rendered position and the instantaneous
+          // velocity of the in-flight spring: the new run starts from the
+          // captured position with the captured momentum.
+          final (Effect position, Effect speed) = _springState(
+            effectQuery.motion! as SpringMotion,
+            previousLinearValue,
+          );
+          start = position;
+          velocity = speed;
+        } else {
+          start = start.lerp(end, previousAnimationValue);
+          velocity = null;
+        }
       }
 
       end = widget.end;
@@ -96,6 +150,20 @@ class _EffectWidgetState extends State<EffectWidget> {
     } else {
       if (start.runtimeType != end.runtimeType) {
         return child ?? const SizedBox.shrink();
+      }
+
+      if (_isSpringDriven(effectQuery)) {
+        final double linearValue = effectQuery!.linearValue;
+        // Endpoints are exact: the settling bound leaves a sub-tolerance
+        // residual which must not leak into resting keyframes.
+        if (linearValue >= 1) {
+          return end.apply(context, child);
+        }
+        final (Effect position, _) = _springState(
+          effectQuery.motion! as SpringMotion,
+          linearValue,
+        );
+        return position.apply(context, child);
       }
 
       final double animationValue = effectQuery?.curvedValue ?? 0;
