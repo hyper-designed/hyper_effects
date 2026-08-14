@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hyper_effects/hyper_effects.dart';
 
@@ -34,10 +34,10 @@ void main() {
       (spec.evaluate(t).singleWhere((e) => e is ScaleEffect) as ScaleEffect)
           .scale!;
 
-  double angleAt(double t) => (spec
-          .evaluate(t)
-          .singleWhere((e) => e is RotationEffect) as RotationEffect)
-      .angle;
+  double angleAt(double t) =>
+      (spec.evaluate(t).singleWhere((e) => e is RotationEffect)
+              as RotationEffect)
+          .angle;
 
   test('t=0 renders the first keyframe', () {
     expect(scaleAt(0), 0);

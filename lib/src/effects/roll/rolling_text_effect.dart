@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../../hyper_effects.dart';
 import 'rolling_text_controller.dart';
@@ -250,7 +250,40 @@ class RollingTextEffect extends Effect {
   }
 
   @override
-  List<Object?> get props => [
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is RollingTextEffect &&
+        other.runtimeType == runtimeType &&
+        other.text == text &&
+        other.padding == padding &&
+        other.tapeCurve == tapeCurve &&
+        other.tapeSlideDirection == tapeSlideDirection &&
+        other.staggerTapes == staggerTapes &&
+        other.staggerSoftness == staggerSoftness &&
+        other.reverseStaggerDirection == reverseStaggerDirection &&
+        other.tapeStrategy == tapeStrategy &&
+        other.fixedTapeWidth == fixedTapeWidth &&
+        other.widthDuration == widthDuration &&
+        other.widthCurve == widthCurve &&
+        other.clipBehavior == clipBehavior &&
+        other.style == style &&
+        other.strutStyle == strutStyle &&
+        other.textSpan == textSpan &&
+        other.textAlign == textAlign &&
+        other.textDirection == textDirection &&
+        other.locale == locale &&
+        other.softWrap == softWrap &&
+        other.overflow == overflow &&
+        other.textScaler == textScaler &&
+        other.maxLines == maxLines &&
+        other.semanticsLabel == semanticsLabel &&
+        other.textWidthBasis == textWidthBasis &&
+        other.textHeightBehavior == textHeightBehavior &&
+        other.selectionColor == selectionColor;
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
         text,
         padding,
         tapeCurve,
@@ -277,7 +310,11 @@ class RollingTextEffect extends Effect {
         textWidthBasis,
         textHeightBehavior,
         selectionColor,
-      ];
+      ]);
+
+  @override
+  String toString() =>
+      'RollingTextEffect(text: $text, padding: $padding, tapeCurve: $tapeCurve, tapeSlideDirection: $tapeSlideDirection, staggerTapes: $staggerTapes, staggerSoftness: $staggerSoftness, reverseStaggerDirection: $reverseStaggerDirection, tapeStrategy: $tapeStrategy, fixedTapeWidth: $fixedTapeWidth, widthDuration: $widthDuration, widthCurve: $widthCurve, clipBehavior: $clipBehavior, style: $style, strutStyle: $strutStyle, textSpan: $textSpan, textAlign: $textAlign, textDirection: $textDirection, locale: $locale, softWrap: $softWrap, overflow: $overflow, textScaler: $textScaler, maxLines: $maxLines, semanticsLabel: $semanticsLabel, textWidthBasis: $textWidthBasis, textHeightBehavior: $textHeightBehavior, selectionColor: $selectionColor)';
 }
 
 /// A StatefulWidget that provides a rolling text effect.

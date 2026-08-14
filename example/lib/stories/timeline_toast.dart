@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:hyper_effects/hyper_effects.dart';
 
 /// COMPLEX: multi-track entrance choreography (slide + fade + scale with

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 /// A widget that doesn't render first frame.
 class PostFrame extends StatefulWidget {

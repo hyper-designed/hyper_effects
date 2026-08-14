@@ -155,5 +155,20 @@ class ClipEffect extends Effect {
   ClipEffect idle() => ClipEffect(clip: clip, borderRadius: BorderRadius.zero);
 
   @override
-  List<Object?> get props => [clip, borderRadius];
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is ClipEffect &&
+        other.runtimeType == runtimeType &&
+        other.clip == clip &&
+        other.borderRadius == borderRadius;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        clip,
+        borderRadius,
+      );
+
+  @override
+  String toString() => 'ClipEffect(clip: $clip, borderRadius: $borderRadius)';
 }

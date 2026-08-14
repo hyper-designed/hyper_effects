@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../../hyper_effects.dart';
 
@@ -75,13 +75,29 @@ class RollEffect extends Effect {
       );
 
   @override
-  List<Object?> get props => [
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is RollEffect &&
+        other.runtimeType == runtimeType &&
+        other.child == child &&
+        other.slideInDirection == slideInDirection &&
+        other.slideOutDirection == slideOutDirection &&
+        other.multiplier == multiplier &&
+        other.useSnapshots == useSnapshots;
+  }
+
+  @override
+  int get hashCode => Object.hash(
         child,
         slideInDirection,
         slideOutDirection,
         multiplier,
         useSnapshots,
-      ];
+      );
+
+  @override
+  String toString() =>
+      'RollEffect(child: $child, slideInDirection: $slideInDirection, slideOutDirection: $slideOutDirection, multiplier: $multiplier, useSnapshots: $useSnapshots)';
 }
 
 /// A [StatefulWidget] that applies a roll animation to a [Widget].

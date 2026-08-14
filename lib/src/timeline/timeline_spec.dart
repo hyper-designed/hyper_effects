@@ -1,7 +1,7 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../hyper_effects.dart';
+import '../utils.dart';
 
 /// A marker widget that splits a timeline chain into segments.
 ///
@@ -14,11 +14,10 @@ import '../../hyper_effects.dart';
 /// anything itself. If left uncompiled in a tree it renders its child
 /// unchanged.
 class TimelineStep extends StatelessWidget {
-  /// How long the transition to the next keyframe takes.
-  final Duration duration;
-
-  /// The curve of the transition to the next keyframe.
-  final Curve curve;
+  /// How the timeline moves to the next keyframe: a [CurvedMotion] built
+  /// from the duration/curve sugar, or any [Motion] (springs included)
+  /// passed explicitly.
+  final Motion motion;
 
   /// A hold before this segment starts, during which the previous keyframe's
   /// values remain applied.
@@ -28,13 +27,14 @@ class TimelineStep extends StatelessWidget {
   final Widget child;
 
   /// Creates a [TimelineStep].
-  const TimelineStep({
+  TimelineStep({
     super.key,
     required this.child,
-    this.duration = const Duration(milliseconds: 350),
-    this.curve = appleEaseInOut,
+    Duration? duration,
+    Curve? curve,
+    Motion? motion,
     this.delay = Duration.zero,
-  });
+  }) : motion = Utils.resolveMotion(motion, duration, curve);
 
   @override
   Widget build(BuildContext context) => child;
@@ -49,13 +49,15 @@ extension TimelineChainExt on Widget {
   /// next. The transition between them runs for [duration] along [curve],
   /// starting after [delay] of holding the previous keyframe.
   Widget step({
-    Duration duration = const Duration(milliseconds: 350),
-    Curve curve = appleEaseInOut,
+    Duration? duration,
+    Curve? curve,
+    Motion? motion,
     Duration delay = Duration.zero,
   }) =>
       TimelineStep(
         duration: duration,
         curve: curve,
+        motion: motion,
         delay: delay,
         child: this,
       );
@@ -63,25 +65,36 @@ extension TimelineChainExt on Widget {
 
 /// One segment of a compiled timeline: the transition between two adjacent
 /// keyframes.
-class TimelineSegment with Equatable {
-  /// How long the transition takes.
-  final Duration duration;
-
-  /// The curve of the transition.
-  final Curve curve;
+class TimelineSegment {
+  /// How the transition moves.
+  final Motion motion;
 
   /// A hold before the transition starts.
   final Duration delay;
 
   /// Creates a [TimelineSegment].
   const TimelineSegment({
-    required this.duration,
-    required this.curve,
+    required this.motion,
     required this.delay,
   });
 
+  /// The length of the transition: the motion's effective duration.
+  Duration get duration => motion.effectiveDuration;
+
   @override
-  List<Object?> get props => [duration, curve, delay];
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is TimelineSegment &&
+        other.runtimeType == runtimeType &&
+        other.motion == motion &&
+        other.delay == delay;
+  }
+
+  @override
+  int get hashCode => Object.hash(motion, delay);
+
+  @override
+  String toString() => 'TimelineSegment(motion: $motion, delay: $delay)';
 }
 
 /// The keyframe values of a single effect type across an entire timeline.
@@ -157,7 +170,7 @@ class TimelineSpec {
       cursor = end;
     }
 
-    final double curved = segments[index].curve.transform(progress);
+    final double curved = segments[index].motion.transform(progress);
     return [
       for (final track in tracks)
         track.keyframes[index].lerp(track.keyframes[index + 1], curved),
@@ -193,8 +206,7 @@ class TimelineSpec {
         current = current.child;
       } else if (current is TimelineStep) {
         segments.add(TimelineSegment(
-          duration: current.duration,
-          curve: current.curve,
+          motion: current.motion,
           delay: current.delay,
         ));
         groups.add(<Type, Effect>{});

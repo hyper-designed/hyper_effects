@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 
 import '../effect_widget.dart';
 import 'effect.dart';
+import 'vector_effect.dart';
 
 /// Provides a extension method to apply a [RotationEffect] to a [Widget].
 extension RotationEffectExt on Widget {
@@ -60,7 +61,8 @@ extension RotationEffectExt on Widget {
 }
 
 /// An [Effect] that applies a rotation to a [Widget].
-class RotationEffect extends Effect {
+class RotationEffect extends Effect
+    with VectorEffect<RotationEffect> {
   /// The angle to rotate the [Widget] in radians. This directly maps to
   /// angle property in [Transform.rotate] constructor.
   final double angle;
@@ -103,5 +105,47 @@ class RotationEffect extends Effect {
   RotationEffect idle() => const RotationEffect();
 
   @override
-  List<Object?> get props => [angle, origin, alignment];
+  RotationEffect operator +(RotationEffect other) => RotationEffect(
+        angle: angle + other.angle,
+        origin: origin,
+        alignment: alignment,
+      );
+
+  @override
+  RotationEffect operator -(RotationEffect other) => RotationEffect(
+        angle: angle - other.angle,
+        origin: origin,
+        alignment: alignment,
+      );
+
+  @override
+  RotationEffect operator *(double factor) => RotationEffect(
+        angle: angle * factor,
+        origin: origin,
+        alignment: alignment,
+      );
+
+  @override
+  double get magnitudeSquared => angle * angle;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is RotationEffect &&
+        other.runtimeType == runtimeType &&
+        other.angle == angle &&
+        other.origin == origin &&
+        other.alignment == alignment;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        angle,
+        origin,
+        alignment,
+      );
+
+  @override
+  String toString() =>
+      'RotationEffect(angle: $angle, origin: $origin, alignment: $alignment)';
 }

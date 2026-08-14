@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:hyper_effects/hyper_effects.dart';
+import 'package:material_ui/material_ui.dart';
 
 class RollingAppBarAnimation extends StatefulWidget {
   const RollingAppBarAnimation({super.key});

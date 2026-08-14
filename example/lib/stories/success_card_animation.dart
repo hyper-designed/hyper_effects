@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:hyper_effects/hyper_effects.dart';
+import 'package:material_ui/material_ui.dart';
 
 class SuccessCardAnimation extends StatefulWidget {
   const SuccessCardAnimation({super.key});

@@ -156,7 +156,26 @@ class TransformEffect extends Effect {
   TransformEffect idle() => TransformEffect();
 
   @override
-  List<Object?> get props => [
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is TransformEffect &&
+        other.runtimeType == runtimeType &&
+        other.translateX == translateX &&
+        other.translateY == translateY &&
+        other.translateZ == translateZ &&
+        other.rotateX == rotateX &&
+        other.rotateY == rotateY &&
+        other.rotateZ == rotateZ &&
+        other.scaleX == scaleX &&
+        other.scaleY == scaleY &&
+        other.scaleZ == scaleZ &&
+        other.depth == depth &&
+        other.alignment == alignment &&
+        other.origin == origin;
+  }
+
+  @override
+  int get hashCode => Object.hash(
         translateX,
         translateY,
         translateZ,
@@ -169,5 +188,9 @@ class TransformEffect extends Effect {
         depth,
         alignment,
         origin,
-      ];
+      );
+
+  @override
+  String toString() =>
+      'TransformEffect(translateX: $translateX, translateY: $translateY, translateZ: $translateZ, rotateX: $rotateX, rotateY: $rotateY, rotateZ: $rotateZ, scaleX: $scaleX, scaleY: $scaleY, scaleZ: $scaleZ, depth: $depth, alignment: $alignment, origin: $origin)';
 }

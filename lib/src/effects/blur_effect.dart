@@ -117,5 +117,22 @@ class BlurEffect extends Effect {
   BlurEffect idle() => BlurEffect(blur: 0);
 
   @override
-  List<Object?> get props => [blur, blurX, blurY];
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is BlurEffect &&
+        other.runtimeType == runtimeType &&
+        other.blur == blur &&
+        other.blurX == blurX &&
+        other.blurY == blurY;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        blur,
+        blurX,
+        blurY,
+      );
+
+  @override
+  String toString() => 'BlurEffect(blur: $blur, blurX: $blurX, blurY: $blurY)';
 }

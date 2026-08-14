@@ -5,6 +5,26 @@ All notable changes to the Hyper Effects package are documented in this file.
 ## [0.4.0] - Unreleased
 
 ### Added
+- **Velocity handoff for springs** — retargeting a spring-driven
+  `.animate()` mid-flight (changing the effect's target while it moves)
+  now carries momentum: the new spring starts from the captured position
+  AND the captured velocity, so rapid re-targets whip naturally instead of
+  deadening. Built on the new `VectorEffect` mixin — SwiftUI-style vector
+  arithmetic (`+`, `-`, `*`, `magnitudeSquared`) implemented by
+  `TranslateEffect`, `ScaleEffect`, `RotationEffect`, and `OpacityEffect` —
+  and a closed-form spring solver verified against Flutter's own
+  `SpringSimulation`. Effects without the mixin (and all curved motions)
+  keep the existing behavior.
+- **Motion API** — timing is now a first-class object. Every `duration:` +
+  `curve:` pair on `.animate()`, `.immediate()`, and `.step()` is sugar for
+  `motion: CurvedMotion(duration, curve)`, and the new `motion:` parameter
+  accepts spring physics: `CupertinoMotion.bouncy()` / `.smooth()` /
+  `.snappy()` / `.interactive()`, the Material 3 `MaterialSpringMotion`
+  tokens, or a custom `SpringMotion(SpringDescription)`. Springs have no
+  fixed duration — the segment's length is a computed physical settling
+  bound (`Motion.effectiveDuration`), overshoot renders truly past the
+  target, and keyframe handoffs stay exact. Passing both `motion:` and
+  `duration:`/`curve:` throws.
 - **Timeline API** — a single-controller orchestration tier. Declare absolute
   keyframes with `.step()` boundaries and drive them with `.timeline()`:
   ```dart
@@ -64,6 +84,14 @@ All notable changes to the Hyper Effects package are documented in this file.
 ### Removed (BREAKING)
 These were removed outright, with no deprecation window. The timeline API
 replaces all of them.
+
+- The `equatable` dependency. Effects and `TimelineSegment` now implement
+  `==`, `hashCode`, and `toString` directly, with identical semantics
+  (including deep list comparison for `ColorFilterEffect.matrix`). Only
+  affects consumers who relied on hyper_effects to transitively provide
+  `equatable`.
+- The unused `collection` dependency (its only consumer was the removed
+  `AnimatedGroup`).
 
 - `AnimatedGroup` / `AnimatedChild` (experimental) — removed after review
   found removed children were never disposed (subtrees kept ticking

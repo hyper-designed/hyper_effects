@@ -196,5 +196,27 @@ class SkewEffect extends Effect {
   SkewEffect idle() => SkewEffect();
 
   @override
-  List<Object?> get props => [skew, skewX, skewY, alignment, origin];
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is SkewEffect &&
+        other.runtimeType == runtimeType &&
+        other.skew == skew &&
+        other.skewX == skewX &&
+        other.skewY == skewY &&
+        other.alignment == alignment &&
+        other.origin == origin;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        skew,
+        skewX,
+        skewY,
+        alignment,
+        origin,
+      );
+
+  @override
+  String toString() =>
+      'SkewEffect(skew: $skew, skewX: $skewX, skewY: $skewY, alignment: $alignment, origin: $origin)';
 }
