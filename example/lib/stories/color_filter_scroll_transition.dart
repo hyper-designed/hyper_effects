@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:hyper_effects/hyper_effects.dart';
 
 class FashionScrollTransition extends StatefulWidget {
@@ -24,7 +25,7 @@ class _FashionScrollTransitionState extends State<FashionScrollTransition> {
   Widget build(BuildContext context) {
     return ListView.builder(
       itemExtent: 300,
-      cacheExtent: 300,
+      scrollCacheExtent: const ScrollCacheExtent.pixels(300),
       itemBuilder: (context, index) {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

@@ -69,7 +69,8 @@ class ShakeEffect extends Effect {
     return Transform(
       transform: Matrix4.identity()
         ..rotateZ(rotation * effectiveValue)
-        ..translate(offset.dx * effectiveValue, offset.dy * effectiveValue),
+        ..translateByDouble(
+            offset.dx * effectiveValue, offset.dy * effectiveValue, 0, 1),
       alignment: Alignment.center,
       child: child,
     );

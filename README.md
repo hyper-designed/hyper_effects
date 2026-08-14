@@ -14,6 +14,7 @@ Demo: [hyper-effects-demo.web.app](https://hyper-effects-demo.web.app/)
 
 * 📏 **Compact Syntax:** Write a single line of code for a whole suite of complex effects.
 * 🔁 **Animate Everything:** No animation controllers or tweening needed. Animate any widget with a line of code.
+* 🎞️ **Timelines:** Choreograph multi-step, multi-track sequences as absolute keyframes on a single controller.
 * 🔁 **Scroll Transitions:** Control how your widgets look based on their position in a scroll view.
 * 🔁 **Pointer transitions:** No gesture detectors or state management required. Control how your widgets look based on
   pointer events.
@@ -162,9 +163,10 @@ in Flutter. With that knowledge in mind, you can get very far with Hyper Effects
 orchestration, but it's not a replacement for a full-fledged animation library like Rive, Flare, or even a good ol'
 TweenSequence from Flutter's animation framework.
 
-It's important to understand that the way Hyper Effects works is by lerping two values at any given point in time,
+It's important to understand that the way `animate` works is by lerping two values at any given point in time,
 therefore, a complex sequenced animation may not have enough context to orchestrate proper state management when
-chaining multiple animations.
+chaining multiple animations. When you need a real sequence of steps rather than a single interpolation, reach for
+[Timelines](#timelines), which compile a chain of absolute keyframes onto one controller.
 
 To understand exactly how it works and where to draw the line, read the docs and see the examples.
 
@@ -178,7 +180,7 @@ Points to keep in mind:
    to interpolate to different values you give that opacity extension.
 3. To actually get yourself a time value, you need to use the `animate` method on the widget. This method will take a
    trigger value that will trigger the animation when it changes. Alternatively, a transition can be used to provide a
-   continuous value to the widget.
+   continuous value to the widget, or a `timeline` can drive a whole sequence of keyframes from one controller.
 
 These are the core concepts of how the library works. It's important to understand these concepts to get the most out of
 Hyper Effects.
@@ -210,10 +212,9 @@ In simpler words, `trigger` takes any object. When the value of the object chang
 animate to the new value. The animation will never play if the value of the trigger is the same as the previous value.
 The internal `AnimationController` is driven based on changes to the trigger object.
 
-> Note: If you want the animation to trigger immediately when the widget is built and then allow it to be triggered
-> again later, you can change the `startState` parameter in the `animate` method to AnimationStartState.playImmediately.
-> This will start the animation immediately without waiting for an initial change in the `trigger` object. Subsequent
-> changes in the `trigger` object will still trigger the animation as normal.
+> Note: If you want the animation to play immediately when the widget is built, pass the `#immediate` sentinel as the
+> trigger: `.animate(trigger: #immediate)`. This plays the animation as soon as it is mounted, once per `State`
+> lifetime — rebuilds will not replay it. See [Immediate Animations](#immediate-animations) below.
 
 Hyper Effects takes heavy inspiration from SwiftUI in that it attempts to provide Apple-like default values for
 everything, that means that by default, animations are of 350ms duration and use Apple's custom easeInOut curve. The
@@ -233,7 +234,6 @@ Widget build(BuildContext context) {
     trigger: myCondition,
     duration: const Duration(milliseconds: 200),
     curve: Curves.easeOutQuart,
-    startImmediately: true,
   );
 }
 ```
@@ -303,21 +303,40 @@ This is what the Widget tree looks like internally when you use this library.
   animate effect is only in charge of lerping between states of those effect values.
   If this is set to true, instead of treating effects as current states to animate between, it will always animate from
   an initial default state towards the current state.
-* interruptable: Whether the animation should be reset on subsequent triggers. If this animation is re-triggered, it
-  will reset the current active animation and re-drive from the beginning.
-  Setting this to true will force the animation to wait for the last animation in the chain to finish before starting.
-* startState: Determines the behavior of the animation as soon as it is added to the widget tree.
+* interruptable: How a re-trigger is handled while an animation is still in flight. When true (the default), the
+  in-flight animation is interrupted and re-driven from the beginning right away. When false, the new run waits for the
+  in-flight one to finish before it starts.
+* startState: Determines the behavior of the animation as soon as it is added to the widget tree. `AnimationStartState`
+  has two values, and neither of them plays an animation on mount:
+  * `lazy` (default): the widget is inserted inert, with its effects held at their starting values. Nothing happens
+    until the animation is triggered at least once.
+  * `eager`: the widget is inserted with its effects already applied at their ending values, so the end state is what
+    the widget looks like from its very first frame. The next trigger interpolates from there.
+
+  To play on mount, use `#immediate` instead — see [Immediate Animations](#immediate-animations).
 * skipIf: A callback that determines whether the animation should be skipped. If the callback returns true, the animation
   will be skipped entirely.
+* key: Forwarded to the underlying `AnimatedEffect`. Useful to identify an
+  animation across `State` disposal and recreation.
 
-### One Shot Animations
+### Immediate Animations
 
-If you want to trigger an animation immediately, you can use the `oneShot` function which triggers a chain of effects
-immediately without a trigger parameter.
-This function is useful when you want to start an animation as soon as the widget is built, without waiting for a
-specific trigger to change. The animation will never play again after it ends.
+If you want an animation to play as soon as the widget is built, pass the `#immediate` sentinel as the trigger. The
+`immediate` method is a shorthand for exactly that, and takes all the normal `animate` parameters except `trigger` and
+`startState`.
 
-Here's an example of how to use the `oneShot` function:
+The animation plays once per `State` lifetime. Because the sentinel's identity never changes, rebuilds will not replay
+it. If the widget's `State` is disposed and recreated, however — inside a `ListView.builder`, for example — it will play
+again. To suppress that, keep a `Set` of played indices yourself and pass `skipIf`:
+
+```dart
+final Set<int> played = {};
+
+// In the item builder: plays the first time each index appears, skips after.
+child.fadeIn().immediate(skipIf: () => !played.add(index));
+```
+
+Here's an example of how to use the `immediate` method:
 
 ```dart
 @override
@@ -325,59 +344,115 @@ Widget build(BuildContext context) {
   return Container(
     color: Colors.blue,
   ).slideInFromBottom()
-      .oneShot(
+      .immediate(
     // All the normal parameters inside of .animate() but without the trigger and startState parameters.
   );
 }
 ```
 
-### Animate After Animations
+This is equivalent to writing the trigger out by hand:
 
-The `animateAfter` function triggers the animation after the last animation in the chain ends.
-It's useful when you want to create a simple sequence of animations where one animation starts after the previous one
-ends.
+```dart
+Container(color: Colors.blue).slideInFromBottom().animate(trigger: #immediate);
+```
 
-Here's an example of how to use the `animateAfter` function:
+### Timelines
+
+`animate` is great at interpolating a widget between two states, but a sequence of distinct steps — grow, then
+overshoot, then settle — is a different problem. That is what timelines are for.
+
+A timeline is declared as a chain of keyframes separated by `step` boundaries, and compiled into a single
+`AnimationController` by the `timeline` method:
 
 ```dart
 @override
 Widget build(BuildContext context) {
-  return Center(
-    child: GestureDetector(
-      onTap: () {
-        setState(() {
-          trigger = !trigger;
-        });
-      },
-      child: Image.asset('assets/pin_ball_256x.png', width: 150, height: 150)
-          .shake()
-          .oneShot(
-        delay: const Duration(seconds: 1),
-        repeat: -1,
-        playIf: () => !trigger,
-      )
-          .translateY(300, from: 0)
-          .animate(
-        trigger: trigger,
-        curve: Curves.easeOutQuart,
-        duration: const Duration(milliseconds: 2000),
-        playIf: () => trigger,
-      )
-          .slideOut(const Offset(0, -300))
-          .animateAfter(
-        curve: Curves.elasticOut,
-        duration: const Duration(milliseconds: 450),
-        onEnd: () => setState(() => trigger = false),
-      )
-          .resetAll(),
-    ),
-  );
+  return const Icon(Icons.check, size: 64)
+  // Keyframe 0: invisible and unrotated.
+      .scale(0)
+      .rotate(0)
+      .step(duration: const Duration(milliseconds: 350), curve: Curves.easeOutQuart)
+  // Keyframe 1: overshoot.
+      .scale(1.5)
+      .rotate(15 * pi / 180)
+      .step(duration: const Duration(milliseconds: 300), curve: Curves.easeOutBack)
+  // Keyframe 2: settle.
+      .scale(1)
+      .rotate(0)
+      .timeline(trigger: isCompleted);
 }
 ```
 
-See this example in action in the demo app: [hyper-effects-demo.web.app](https://hyper-effects-demo.web.app/)
+Unlike `animate`, keyframe values are absolute and hand off from one keyframe to the next — they never stack, so no
+reciprocals are needed to undo a previous step. A few rules to keep in mind:
+
+* The effects declared between two `step` calls make up a single keyframe. The `step` itself describes how the timeline
+  gets to the next one: over its `duration`, along its `curve`, after holding the previous keyframe for its `delay`.
+* An effect type that is absent from a keyframe carries its previous value forward.
+* Declaring the same effect type twice in one keyframe throws.
+
+`trigger` works the same way it does on `animate`, with one important difference: it is a pure identity signal. Any
+change restarts the timeline from the beginning and plays it forward — it never implies a direction. `#immediate` works
+here too, and combined with `repeat` it expresses an auto-playing loop with no imperative code at all:
+
+```dart
+myWidget.scale(1).step().scale(1.1).timeline(trigger: #immediate, repeat: -1);
+```
+
+`repeat` counts *additional* cycles: 0 (the default) plays once, 2 plays three cycles resting at the final keyframe, and
+-1 loops forever. `onEnd` fires once at the true end of a run, not once per cycle.
+
+#### Timeline Controller
+
+For directional or positional control — reversing, pausing, seeking, scrubbing — attach a `TimelineController` instead
+of, or in addition to, a trigger. A controller can be owned anywhere: a `State`, a cubit, or a service. It exposes
+`play`, `reverse`, `pause`, `seek`, `progress` and `isAttached`, and notifies its listeners as the timeline advances.
+
+```dart
+class _ToastState extends State<Toast> {
+  final TimelineController controller = TimelineController();
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Text('Changes saved')
+            .translateY(80)
+            .opacity(0)
+            .step(duration: const Duration(milliseconds: 260), curve: Curves.easeOutQuart)
+            .translateY(0)
+            .opacity(1)
+            .timeline(controller: controller),
+        FilledButton(
+          onPressed: () => controller.play(),
+          child: const Text('Show'),
+        ),
+        OutlinedButton(
+          // Dismissal is the same timeline, played backwards.
+          onPressed: () => controller.reverse(),
+          child: const Text('Dismiss'),
+        ),
+      ],
+    );
+  }
+}
+```
+
+Driving a controller that is not attached to a mounted timeline throws a `StateError`, so check `isAttached` first if
+the timeline's widget may not be in the tree.
+
+See these examples in action in the demo app: [hyper-effects-demo.web.app](https://hyper-effects-demo.web.app/)
 
 ### Reset Animations
+
+> Deprecated: `resetAll` and `ResetAllAnimationsEffect` are deprecated and will be removed in 0.5.0. Loop with
+> `.timeline(repeat: -1)` or rewind with `TimelineController.seek(0)` instead.
 
 Using `resetAll` at the end of the chain of animations will reset all the effects in the chain to their original values.
 
@@ -387,9 +462,8 @@ initial state.
 
 ### Delayed Animations
 
-The `delay` parameter is used in the `animate`, `animateAfter` and `oneShot` methods. This parameter allows you to
-specify a delay
-before the animation starts.
+The `delay` parameter is used in the `animate` and `immediate` methods. This parameter allows you to specify a delay
+before the animation starts. Timelines have a per-segment `delay` on `step` instead.
 The `delay` is specified as a `Duration`. Here's an example of how to use the `delay` parameter:
 
 ```dart
@@ -410,7 +484,7 @@ In this example, the opacity animation will start 1 second after the `myConditio
 
 ### Repeat Animations
 
-The `repeat` parameter is used in the `animate`, `animateAfter`, and `oneShot` functions.
+The `repeat` parameter is used in the `animate`, `immediate`, and `timeline` methods.
 This parameter allows you to specify how many times the animation will be repeated.
 The repeat parameter is an `integer`, where 0 (default) means the animation will only play once and not repeat.
 Any positive integer specifies the number of times the animation will repeat.
@@ -533,7 +607,7 @@ Widget build(BuildContext context) {
 }
 ```
 
-To trigger the rolling text effect, you need to call the `animate` or `oneShot` functions as normal:
+To trigger the rolling text effect, you need to call the `animate` or `immediate` methods as normal:
 
 ```dart
 @override

@@ -2,6 +2,132 @@
 
 All notable changes to the Hyper Effects package are documented in this file.
 
+## [0.4.0] - Unreleased
+
+### Added
+- **Timeline API** — a single-controller orchestration tier. Declare absolute
+  keyframes with `.step()` boundaries and drive them with `.timeline()`:
+  ```dart
+  icon
+      .scale(0).rotate(0)
+      .step(duration: const Duration(milliseconds: 350), curve: Curves.easeOutQuart)
+      .scale(1.5).rotate(15 * pi / 180)
+      .step(duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutBack, delay: const Duration(milliseconds: 150))
+      .scale(1).rotate(0)
+      .timeline(trigger: isCompleted);
+  ```
+  Keyframe values are absolute and hand off between steps — they never stack.
+  A `trigger` is a pure identity signal: any change restarts the timeline
+  forward. Effect types absent from a keyframe carry their previous value
+  forward; declaring the same effect type twice in one keyframe throws.
+- `TimelineController` — imperative `play` / `reverse` / `pause` / `seek` /
+  `progress`, attachable via `.timeline(controller:)`, ownable outside the
+  widget tree (a State, cubit, or service), with listener notifications.
+- The `#immediate` trigger sentinel — pass `trigger: #immediate` to
+  `.timeline()` OR `.animate()` to play on mount, once per State lifetime.
+  Rebuilds do not replay it. One channel now answers "when does this play"
+  for both tiers.
+- `.immediate()` on the animate extension — a shorthand that constructs
+  `trigger: #immediate`, taking every `animate` parameter except `trigger`
+  and `startState`.
+- `repeat:` on `.timeline()` — loop with `repeat: -1` (forever) or
+  `repeat: n` (n extra cycles, resting at the final keyframe; `onEnd` fires
+  once at the true end).
+- `key:` on `.animate()` — enables `AnimatedEffectStateRetainer` usage
+  directly from the standard animate entry point.
+- `AnimationStartState` overhauled to `{eager, lazy}`, with start state and
+  play-on-mount now cleanly separated concerns. Neither value plays an
+  animation on mount:
+  - `eager` inserts the widget with its effects already applied at their
+    ENDING values (the controller starts at 1). The next trigger
+    interpolates from there.
+  - `lazy` (the default) inserts the widget inert, with its effects held at
+    their STARTING values, until it is triggered at least once.
+
+  Play-on-mount is now expressed exclusively by `trigger: #immediate`.
+
+### Fixed
+- `.animate()` re-triggers now restore the `repeat`/`reverse` budget — pulse
+  animations no longer play once and rest stuck at their peak value.
+- Fresh triggers reset the reverse-leg state machine — re-triggering
+  mid-flight plays a complete new run.
+- `onEnd` fires exactly once per logical run instead of once per
+  repeat/reverse leg.
+- Resetting an `interruptable: false` animation mid-flight no longer bricks
+  it permanently (stale canceled ticker futures are cleared).
+- Completed play-on-mount (`#immediate`) animations no longer replay when an
+  inherited dependency (e.g. `HyperEffectsAnimationConfig`) changes.
+- Migrated deprecated `EquatableMixin` and `Matrix4.translate`/`scale`
+  usages to their replacements.
+
+### Removed (BREAKING)
+These were removed outright, with no deprecation window. The timeline API
+replaces all of them.
+
+- `AnimatedGroup` / `AnimatedChild` (experimental) — removed after review
+  found removed children were never disposed (subtrees kept ticking
+  indefinitely), removal re-ran `initState` on exiting children, slots only
+  ever grew, and reordering was not actually animated. Use
+  `AnimatedSwitcher`/`AnimatedSize` with `.roll()` for the same effects.
+- `AnimatedEffectStateRetainer` (experimental) — removed after review found
+  it recorded "was mounted" as "has played", fabricating end states for
+  never-played keyed animations on any dependency change, freezing looping
+  animations on remount, and never evicting recycled keys. Track played
+  items yourself with `skipIf: () => !played.add(index)`.
+
+- `.animateAfter()` and the entire `AnimationTriggerType` enum (including
+  `AnimationTriggerType.afterLast`) — chained segments composed as stacked
+  transforms, could not rest at their declared values, replayed
+  inconsistently, and severed on `skipIf`/`playIf`.
+
+  **Migration:** declare the sequence as timeline keyframes. Before:
+  ```dart
+  icon
+      .scale(1.5).animate(trigger: done, duration: const Duration(milliseconds: 350))
+      .scale(1 / 1.5) // reciprocal needed to undo the first segment
+      .animateAfter(duration: const Duration(milliseconds: 300))
+      .resetAll();
+  ```
+  After:
+  ```dart
+  icon
+      .scale(0)
+      .step(duration: const Duration(milliseconds: 350))
+      .scale(1.5)
+      .step(duration: const Duration(milliseconds: 300))
+      .scale(1) // absolute — no reciprocals
+      .timeline(trigger: done);
+  ```
+  Replace `resetAll` looping with `.timeline(trigger: #immediate, repeat: -1)`,
+  and reverse-on-dismiss patterns with `TimelineController.reverse()`.
+
+- `.oneShot()` — replaced by `.immediate()`, which has the same
+  play-once-on-mount semantics.
+
+  **Migration:** `.oneShot(...)` → `.immediate(...)`, or
+  `.animate(trigger: #immediate, ...)`.
+
+- `AnimationStartState.playImmediately`, `.useCurrentValues` and `.idle` —
+  the enum is now `{eager, lazy}`, and start state no longer doubles as a
+  play-on-mount switch.
+
+  **Migration:**
+  - `startState: AnimationStartState.playImmediately` →
+    `trigger: #immediate` (or `.immediate()`), dropping `startState`.
+  - `startState: AnimationStartState.useCurrentValues` →
+    `startState: AnimationStartState.eager`.
+  - `startState: AnimationStartState.idle` →
+    `startState: AnimationStartState.lazy` (also the new default, so it can
+    simply be dropped).
+
+### Deprecated
+- `.resetAll()`, `ResetAllAnimationsEffect` and
+  `ResetAllAnimationsEffectState` — auto-resetting chains fire on every
+  completion and cross-talk between unrelated animations. Loop with
+  `.timeline(repeat: -1)` or rewind with `TimelineController.seek(0)`
+  instead. They will be removed in 0.5.0.
+
 ## [0.3.0+1] - Aug 15, 2025
 
 - Loosen dependency constraints for equatable to `>=2.0.5 <3.0.0`.
