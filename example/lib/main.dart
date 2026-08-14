@@ -7,8 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_box_transform/flutter_box_transform.dart';
 import 'package:hyper_effects_demo/stories/color_filter_scroll_transition.dart';
 import 'package:hyper_effects_demo/stories/counter_app.dart';
-import 'package:hyper_effects_demo/stories/group_animation.dart';
-import 'package:hyper_effects_demo/stories/one_shot_reset_animation.dart';
 import 'package:hyper_effects_demo/stories/rolling_app_bar_animation.dart';
 import 'package:hyper_effects_demo/stories/rolling_pictures_animation.dart';
 import 'package:hyper_effects_demo/stories/scroll_phase_blur.dart';
@@ -17,6 +15,11 @@ import 'package:hyper_effects_demo/stories/scroll_wheel_transition.dart';
 import 'package:hyper_effects_demo/stories/shake_and_spring_animation.dart';
 import 'package:hyper_effects_demo/stories/success_card_animation.dart';
 import 'package:hyper_effects_demo/stories/text_animation.dart';
+import 'package:hyper_effects_demo/stories/timeline_journey.dart';
+import 'package:hyper_effects_demo/stories/timeline_notification_bell.dart';
+import 'package:hyper_effects_demo/stories/timeline_pulse_button.dart';
+import 'package:hyper_effects_demo/stories/timeline_rocket_launch.dart';
+import 'package:hyper_effects_demo/stories/timeline_toast.dart';
 import 'package:hyper_effects_demo/stories/windows_settings_transition.dart';
 
 import 'story.dart';
@@ -86,20 +89,12 @@ class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
   final List<Story> animationStories = [
     const Story(title: 'Success Card Animation', child: SuccessCardAnimation()),
     const Story(
-      title: 'Group Animation',
-      child: GroupAnimation(),
-    ),
-    const Story(
       title: 'Text Rolling Animations',
       child: TextAnimation(),
     ),
     const Story(
       title: 'Rolling Counter App',
       child: CounterApp(),
-    ),
-    const Story(
-      title: 'One-Shot Reset Animation',
-      child: OneShotResetAnimation(),
     ),
     const Story(
       title: 'Spring Animation',
@@ -112,6 +107,28 @@ class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
     const Story(
       title: 'Rolling App Bar Animation',
       child: RollingAppBarAnimation(),
+    ),
+  ];
+  final List<Story> timelineStories = [
+    const Story(
+      title: 'Pulse Button (simple)',
+      child: TimelinePulseButton(),
+    ),
+    const Story(
+      title: 'Notification Bell (medium)',
+      child: TimelineNotificationBell(),
+    ),
+    const Story(
+      title: 'Toast Choreography (complex)',
+      child: TimelineToast(),
+    ),
+    const Story(
+      title: 'Rocket Launch (very complex)',
+      child: TimelineRocketLaunch(),
+    ),
+    const Story(
+      title: 'Looping Journey (auto-play)',
+      child: TimelineJourney(),
     ),
   ];
   final List<Story> transitionStories = [
@@ -138,6 +155,7 @@ class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
   ];
 
   int? selectedAnimation;
+  int? selectedTimeline;
   int? selectedTransition;
   int? selectedCategory;
 
@@ -247,11 +265,48 @@ class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
                                 setState(() {
                                   selectedAnimation =
                                       animationStories.indexOf(story);
+                                  selectedTimeline = null;
                                   selectedTransition = null;
                                 });
                               },
                               selected: animationStories.indexOf(story) ==
                                   selectedAnimation,
+                            ),
+                          ),
+                        const Divider(height: 32, indent: 16, endIndent: 16),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            bottom: 16,
+                            top: 0,
+                          ),
+                          child: Text('Timelines',
+                              style: Theme.of(context).textTheme.titleLarge),
+                        ),
+                        for (final Story story in timelineStories)
+                          Material(
+                            type: MaterialType.transparency,
+                            borderRadius: const BorderRadius.only(
+                              topRight: Radius.circular(32),
+                              bottomRight: Radius.circular(32),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: ListTile(
+                              title: Padding(
+                                padding: const EdgeInsets.only(left: 16),
+                                child: Text(story.title),
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  selectedTimeline =
+                                      timelineStories.indexOf(story);
+                                  selectedAnimation = null;
+                                  selectedTransition = null;
+                                });
+                              },
+                              selected: timelineStories.indexOf(story) ==
+                                  selectedTimeline,
                             ),
                           ),
                         const Divider(height: 32, indent: 16, endIndent: 16),
@@ -283,6 +338,7 @@ class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
                                   selectedTransition =
                                       transitionStories.indexOf(story);
                                   selectedAnimation = null;
+                                  selectedTimeline = null;
                                 });
                               },
                               selected: transitionStories.indexOf(story) ==
@@ -305,11 +361,13 @@ class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
                 duration: const Duration(milliseconds: 300),
                 child: selectedAnimation != null
                     ? animationStories[selectedAnimation!].child
-                    : selectedTransition != null
-                        ? transitionStories[selectedTransition!].child
-                        : const Center(
-                            child: Text('Select a story to view.'),
-                          ),
+                    : selectedTimeline != null
+                        ? timelineStories[selectedTimeline!].child
+                        : selectedTransition != null
+                            ? transitionStories[selectedTransition!].child
+                            : const Center(
+                                child: Text('Select a story to view.'),
+                              ),
               ),
             ),
           ),
@@ -474,7 +532,7 @@ class _CustomExpansionTileState extends State<CustomExpansionTile> {
               color: Theme.of(context)
                   .colorScheme
                   .primaryContainer
-                  .withOpacity(0.05),
+                  .withValues(alpha: 0.05),
               child: Column(
                 children: widget.children,
               ),

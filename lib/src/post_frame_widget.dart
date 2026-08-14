@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// A widget that doesn't render first frame. This is useful for widgets that
-/// need to be rendered after the first frame
+/// A widget that doesn't render first frame.
 class PostFrame extends StatefulWidget {
   /// The widget below this widget in the tree.
   final Widget child;

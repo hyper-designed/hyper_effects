@@ -210,12 +210,12 @@ class _TagLineState extends State<TagLine> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.white.withOpacity(0),
+              Colors.white.withValues(alpha: 0),
               Colors.white,
               Colors.white,
               Colors.white,
               Colors.white,
-              Colors.white.withOpacity(0),
+              Colors.white.withValues(alpha: 0),
               // Colors.white,
             ],
           ).createShader(rect),
@@ -310,12 +310,12 @@ class _TranslationState extends State<Translation> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.white.withOpacity(0),
+              Colors.white.withValues(alpha: 0),
               Colors.white,
               Colors.white,
               Colors.white,
               Colors.white,
-              Colors.white.withOpacity(0),
+              Colors.white.withValues(alpha: 0),
               // Colors.white,
             ],
           ).createShader(rect),
@@ -426,7 +426,7 @@ class _LikeButtonState extends State<LikeButton> {
                     color: Theme.of(context)
                         .colorScheme
                         .onPrimaryContainer
-                        .withOpacity(0.5),
+                        .withValues(alpha: 0.5),
                     indent: 4,
                     endIndent: 4,
                   ),
@@ -765,7 +765,7 @@ class _ColorPalettePageState extends State<ColorPalettePage> {
                           spacing: 6,
                           radius: 12,
                           activeDotColor: Colors.white,
-                          dotColor: Colors.white.withOpacity(0.25),
+                          dotColor: Colors.white.withValues(alpha: 0.25),
                         ),
                       ),
                     ),

@@ -16,7 +16,7 @@ import 'package:flutter/widgets.dart';
 ///
 /// If no parent [AnimatedEffect] or [ScrollTransition] is provided, the
 /// animation value is 0.
-abstract class Effect with EquatableMixin {
+abstract class Effect with Equatable {
   /// Creates an [Effect].
   const Effect();
 

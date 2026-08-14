@@ -141,8 +141,8 @@ class TransformEffect extends Effect {
     matrix.rotateX(rotateX);
     matrix.rotateY(rotateY);
     matrix.rotateZ(rotateZ);
-    matrix.translate(translateX, translateY, translateZ);
-    matrix.scale(scaleX, scaleY, scaleZ);
+    matrix.translateByDouble(translateX, translateY, translateZ, 1);
+    matrix.scaleByDouble(scaleX, scaleY, scaleZ, 1);
 
     return Transform(
       transform: matrix,

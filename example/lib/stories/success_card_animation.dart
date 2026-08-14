@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -13,6 +14,25 @@ class SuccessCardAnimation extends StatefulWidget {
 class _SuccessCardAnimationState extends State<SuccessCardAnimation> {
   bool isCompleted = false;
 
+  /// Drives the stamp card. The timeline plays forward on completion and
+  /// reverses on un-completion; direction is imperative, not trigger-based.
+  final TimelineController stampController = TimelineController();
+
+  @override
+  void dispose() {
+    stampController.dispose();
+    super.dispose();
+  }
+
+  void _toggle() {
+    setState(() => isCompleted = !isCompleted);
+    if (isCompleted) {
+      unawaited(stampController.play());
+    } else {
+      unawaited(stampController.reverse());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -27,11 +47,7 @@ class _SuccessCardAnimationState extends State<SuccessCardAnimation> {
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  isCompleted = !isCompleted;
-                });
-              },
+              onTap: _toggle,
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Container(
@@ -66,8 +82,7 @@ class _SuccessCardAnimationState extends State<SuccessCardAnimation> {
                                 )
                                 .animate(
                                   trigger: isCompleted,
-                                  startState:
-                                      AnimationStartState.useCurrentValues,
+                                  startState: AnimationStartState.eager,
                                   curve: !isCompleted
                                       ? Curves.easeInBack
                                       : Curves.easeOutBack,
@@ -82,8 +97,7 @@ class _SuccessCardAnimationState extends State<SuccessCardAnimation> {
                               )
                               .animate(
                                 trigger: isCompleted,
-                                startState:
-                                    AnimationStartState.useCurrentValues,
+                                startState: AnimationStartState.eager,
                                 curve: Curves.easeInOutSine,
                                 duration: const Duration(
                                   milliseconds: 400,
@@ -106,11 +120,7 @@ class _SuccessCardAnimationState extends State<SuccessCardAnimation> {
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  isCompleted = !isCompleted;
-                });
-              },
+              onTap: _toggle,
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Container(
@@ -135,44 +145,32 @@ class _SuccessCardAnimationState extends State<SuccessCardAnimation> {
                                   color: Color(0x3A079455),
                                 ),
                                 alignment: Alignment.center,
+                                // A "stamp": slam in overshooting at 1.5x
+                                // and tilted, hold, then settle to rest.
+                                // Keyframe values are absolute — the settle
+                                // targets 1.0 directly, no reciprocals.
                                 child: const Icon(
                                   Icons.check_circle,
                                   size: 74,
                                 )
-                                    .scale(isCompleted ? 1.5 : 0)
-                                    .rotate(isCompleted ? 15 * pi / 180 : 0)
-                                    .animate(
-                                      trigger: isCompleted,
-                                      curve: Curves.easeOutQuart,
+                                    .scale(0)
+                                    .rotate(0)
+                                    .step(
                                       duration:
                                           const Duration(milliseconds: 350),
+                                      curve: Curves.easeOutQuart,
                                     )
-                                    .scale(
-                                      isCompleted ? 1 / 1.5 : 1,
-                                    )
-                                    .rotate(
-                                      isCompleted ? -15 * pi / 180 : 0,
-                                    )
-                                    .animateAfter(
-                                      curve: Curves.easeOutBack,
-                                      delay: const Duration(milliseconds: 150),
+                                    .scale(1.5)
+                                    .rotate(15 * pi / 180)
+                                    .step(
                                       duration:
                                           const Duration(milliseconds: 300),
-                                    ))
-                            // .opacity(
-                            //   isCompleted ? 1 : 0,
-                            //   from: isCompleted ? 0 : 1,
-                            // )
-                            // .animate(
-                            //   trigger: isCompleted,
-                            //   startState:
-                            //       AnimationStartState.useCurrentValues,
-                            //   curve: Curves.easeInOutSine,
-                            //   duration: const Duration(
-                            //     milliseconds: 400,
-                            //   ),
-                            // ),
-                            ),
+                                      curve: Curves.easeOutBack,
+                                      delay: const Duration(milliseconds: 150),
+                                    )
+                                    .scale(1)
+                                    .rotate(0)
+                                    .timeline(controller: stampController))),
                       ],
                     ),
                   ),

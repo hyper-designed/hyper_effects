@@ -35,8 +35,8 @@ class _WindowsSettingsTransitionState extends State<WindowsSettingsTransition> {
                     gradient: RadialGradient(
                       focalRadius: 10000,
                       colors: [
-                        Colors.white.withOpacity(0.5),
-                        Colors.white.withOpacity(0),
+                        Colors.white.withValues(alpha: 0.5),
+                        Colors.white.withValues(alpha: 0),
                       ],
                     ),
                   ),
@@ -71,8 +71,8 @@ class _WindowsSettingsTransitionState extends State<WindowsSettingsTransition> {
                   decoration: BoxDecoration(
                     gradient: RadialGradient(
                       colors: [
-                        Colors.white.withOpacity(0.2),
-                        Colors.white.withOpacity(0),
+                        Colors.white.withValues(alpha: 0.2),
+                        Colors.white.withValues(alpha: 0),
                       ],
                     ),
                   ),
