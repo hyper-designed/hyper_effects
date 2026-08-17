@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/widgets.dart';
 
 import '../hyper_effects.dart';
@@ -271,12 +272,23 @@ class _PointerTransitionState extends State<PointerTransition>
   }
 
   void updateState(PointerEvent event) {
+    globalPosition = event.position;
+
     if (event is PointerDownEvent) {
       isPointerDown = true;
     } else if (event is PointerUpEvent || event is PointerCancelEvent) {
       isPointerDown = false;
+
+      if (event.kind != PointerDeviceKind.mouse) {
+        // A lifted or cancelled touch/stylus contact ceases to exist, so
+        // unlike a mouse cursor it cannot remain hovering inside the
+        // bounds of the widget after release.
+        resetValue();
+        if (mounted) setState(() {});
+        return;
+      }
     }
-    globalPosition = event.position;
+
     recalculateValue();
   }
 
