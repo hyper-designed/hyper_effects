@@ -25,13 +25,28 @@ class PointerTransitionEvent {
   /// Whether the pointer device is inside the bounds of the widget.
   final bool isInsideBounds;
 
+  /// Whether a pointer device is currently pressed down, regardless of
+  /// whether it is inside the bounds of the widget. A mouse button being
+  /// held or a touch contact on the screen both count as down.
+  final bool isDown;
+
+  /// Whether the pointer device is pressed down inside the bounds of the
+  /// widget. This is the typical condition for a button's pressed state:
+  /// holding a button down then dragging off of it makes this false again.
+  bool get isPressed => isDown && isInsideBounds;
+
+  /// Whether the pointer device is inside the bounds of the widget without
+  /// being pressed down.
+  bool get isHovering => !isDown && isInsideBounds;
+
   /// Creates a new [PointerTransitionEvent] with the given [position],
-  /// [value], [valueOffset], and [isInsideBounds].
+  /// [value], [valueOffset], [isInsideBounds], and [isDown].
   const PointerTransitionEvent({
     required this.position,
     required this.value,
     required this.valueOffset,
     required this.isInsideBounds,
+    this.isDown = false,
   });
 }
 
@@ -195,6 +210,9 @@ class _PointerTransitionState extends State<PointerTransition>
   /// Whether the pointer device was inside the bounds of the widget.
   bool wasInsideBounds = false;
 
+  /// Whether a pointer device is currently pressed down.
+  bool isPointerDown = false;
+
   @override
   void initState() {
     super.initState();
@@ -253,6 +271,11 @@ class _PointerTransitionState extends State<PointerTransition>
   }
 
   void updateState(PointerEvent event) {
+    if (event is PointerDownEvent) {
+      isPointerDown = true;
+    } else if (event is PointerUpEvent || event is PointerCancelEvent) {
+      isPointerDown = false;
+    }
     globalPosition = event.position;
     recalculateValue();
   }
@@ -391,15 +414,24 @@ class _PointerTransitionState extends State<PointerTransition>
             value: currentValue,
             valueOffset: currentValueOffset,
             isInsideBounds: wasInsideBounds,
+            isDown: isPointerDown,
           ),
         ) ??
         widget.child;
 
     if (!widget.usePointerRouter) {
-      child = MouseRegion(
-        onHover: (event) => updateState(event),
-        onExit: (event) => resetValue(),
-        child: child,
+      // MouseRegion only reports hover events, which stop while a button is
+      // pressed, so down/up/move tracking needs a Listener alongside it.
+      child = Listener(
+        onPointerDown: updateState,
+        onPointerMove: updateState,
+        onPointerUp: updateState,
+        onPointerCancel: updateState,
+        child: MouseRegion(
+          onHover: (event) => updateState(event),
+          onExit: (event) => resetValue(),
+          child: child,
+        ),
       );
     }
 
