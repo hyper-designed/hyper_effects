@@ -2,7 +2,20 @@
 
 All notable changes to the Hyper Effects package are documented in this file.
 
-## [0.4.0] - Unreleased
+## [0.4.0] - Aug 26, 2026
+
+### Breaking
+- **`AlignEffect` factors now default to null** — `widthFactor` and
+  `heightFactor` on `AlignEffect` and `.align()` are now `double?`
+  defaulting to null, matching Flutter's `Align`: null expands to fill the
+  incoming constraints instead of shrink-wrapping to the child. Previously
+  the hardcoded default of `1` forced every `.align()`, `.alignX()`,
+  `.alignY()`, and `.alignXY()` to shrink-wrap, which made the alignment a
+  visual no-op under loose constraints. Pass `widthFactor: 1` /
+  `heightFactor: 1` explicitly to restore the old shrink-wrap behavior.
+  Mixed null/non-null factor endpoints snap to the target value rather
+  than interpolating (there is no numeric interpolation between "fill
+  constraints" and a size factor).
 
 ### Added
 - **Velocity handoff for springs** — retargeting a spring-driven

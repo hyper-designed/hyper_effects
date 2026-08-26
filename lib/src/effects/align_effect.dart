@@ -6,12 +6,21 @@ import '../../hyper_effects.dart';
 
 /// Provides a extension method to apply an [AlignEffect] to a [Widget].
 extension AlignEffectExt on Widget {
-  /// Applies an [AlignEffect] to a [Widget] with the given [alignment].
+  /// Applies an [AlignEffect] to a [Widget] with the given [alignment],
+  /// optionally animating from [from].
+  ///
+  /// [widthFactor] and [heightFactor] mirror [Align]'s parameters: when
+  /// null (the default), the widget expands to fill its incoming
+  /// constraints; when set, the widget sizes itself to the child's size
+  /// multiplied by the factor. [fromWidthFactor] and [fromHeightFactor]
+  /// provide the starting factors, defaulting to [widthFactor] and
+  /// [heightFactor]. A null and a non-null factor cannot be interpolated,
+  /// so such a pair snaps to the target value instead of animating.
   Widget align(
     AlignmentGeometry alignment, {
     AlignmentGeometry? from,
-    double heightFactor = 1,
-    double widthFactor = 1,
+    double? heightFactor,
+    double? widthFactor,
     double? fromHeightFactor,
     double? fromWidthFactor,
   }) {
@@ -33,6 +42,9 @@ extension AlignEffectExt on Widget {
   }
 
   /// Applies an [AlignEffect] to a [Widget] only on the x-axis.
+  ///
+  /// The widget expands to fill its incoming constraints, matching the
+  /// default behavior of [Align].
   Widget alignX(double x, {double? from}) {
     return EffectWidget(
       start: from == null ? null : AlignEffect(alignment: Alignment(from, 0)),
@@ -42,6 +54,9 @@ extension AlignEffectExt on Widget {
   }
 
   /// Applies an [AlignEffect] to a [Widget] only on the y-axis.
+  ///
+  /// The widget expands to fill its incoming constraints, matching the
+  /// default behavior of [Align].
   Widget alignY(double y, {double? from}) {
     return EffectWidget(
       start: from == null ? null : AlignEffect(alignment: Alignment(0, from)),
@@ -52,6 +67,9 @@ extension AlignEffectExt on Widget {
 
   /// Applies an [AlignEffect] to a [Widget] with the given [x] and [y]
   /// values.
+  ///
+  /// The widget expands to fill its incoming constraints, matching the
+  /// default behavior of [Align].
   Widget alignXY(
     double x,
     double y, {
@@ -71,16 +89,21 @@ class AlignEffect extends Effect {
   final AlignmentGeometry alignment;
 
   /// Sets its width to the child's width multiplied by this factor.
-  final double widthFactor;
+  /// If null, the widget expands to fill its incoming width constraints,
+  /// matching the default behavior of [Align].
+  final double? widthFactor;
 
   /// Sets its height to the child's height multiplied by this factor.
-  final double heightFactor;
+  /// If null, the widget expands to fill its incoming height constraints,
+  /// matching the default behavior of [Align].
+  final double? heightFactor;
 
-  /// Creates a [AlignEffect] with the given [alignment] and [fractional].
+  /// Creates an [AlignEffect] with the given [alignment], [widthFactor],
+  /// and [heightFactor].
   AlignEffect({
     this.alignment = AlignmentDirectional.topStart,
-    this.widthFactor = 1,
-    this.heightFactor = 1,
+    this.widthFactor,
+    this.heightFactor,
   });
 
   @override
@@ -88,11 +111,17 @@ class AlignEffect extends Effect {
     return AlignEffect(
       alignment: AlignmentGeometry.lerp(alignment, other.alignment, value) ??
           AlignmentDirectional.topStart,
-      widthFactor: (lerpDouble(widthFactor, other.widthFactor, value) ?? 1)
-          .clampUnderZero,
-      heightFactor: (lerpDouble(heightFactor, other.heightFactor, value) ?? 1)
-          .clampUnderZero,
+      widthFactor: _lerpFactor(widthFactor, other.widthFactor, value),
+      heightFactor: _lerpFactor(heightFactor, other.heightFactor, value),
     );
+  }
+
+  /// A null factor means "fill the incoming constraints", which cannot be
+  /// numerically interpolated with a size factor, so mixed endpoints snap
+  /// to the target value.
+  static double? _lerpFactor(double? a, double? b, double value) {
+    if (a == null || b == null) return b;
+    return (lerpDouble(a, b, value) ?? 1).clampUnderZero;
   }
 
   @override
