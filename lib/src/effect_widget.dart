@@ -105,9 +105,31 @@ class _EffectWidgetState extends State<EffectWidget> {
     previousLinearValue = effectQuery?.linearValue ?? 0;
   }
 
+  /// Set on hot reload ([reassemble] fires only then) and consumed by the
+  /// next [didUpdateWidget]: a hot reload must behave like a fresh mount,
+  /// re-seeding from the edited widget configuration. Otherwise the
+  /// animation-continuation state below masks source edits whenever a
+  /// driving [EffectQuery] — its own `.animate()` or ANY ancestor one —
+  /// rests at an animation value of 0.
+  bool _reassembled = false;
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    _reassembled = true;
+  }
+
   @override
   void didUpdateWidget(covariant EffectWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    if (_reassembled) {
+      _reassembled = false;
+      start = widget.start ?? widget.end;
+      end = widget.end;
+      velocity = null;
+      return;
+    }
 
     final effectQuery = EffectQuery.maybeOf(context);
 
