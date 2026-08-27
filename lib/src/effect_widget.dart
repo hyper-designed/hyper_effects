@@ -109,16 +109,25 @@ class _EffectWidgetState extends State<EffectWidget> {
   void didUpdateWidget(covariant EffectWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // TODO: This was introduced in 7th commit of update pack v2 for some reason
-    // but it breaks the scroll transitions. So we've disabled it for now. So if
-    // something breaks in the future, this is the first place to look!
-    // start= widget.start ?? widget.end;
+    final effectQuery = EffectQuery.maybeOf(context);
+
+    // Static usage: with no animation or transition driving this widget,
+    // the rendered state must track the widget configuration directly,
+    // otherwise rebuilds (e.g. hot reload with a changed parameter) keep
+    // showing the values captured in initState. An unconditional version of
+    // this sync (see git history of update pack v2) broke scroll
+    // transitions, which is why it is gated on the absence of a query.
+    if (effectQuery == null) {
+      start = widget.start ?? widget.end;
+      end = widget.end;
+      velocity = null;
+      return;
+    }
 
     if (oldWidget.end != widget.end &&
         oldWidget.end.runtimeType == widget.end.runtimeType &&
         start.runtimeType == end.runtimeType) {
-      final effectQuery = EffectQuery.maybeOf(context);
-      if (effectQuery != null && !effectQuery.isTransition) {
+      if (!effectQuery.isTransition) {
         if (_isSpringDriven(effectQuery)) {
           // Capture BOTH the rendered position and the instantaneous
           // velocity of the in-flight spring: the new run starts from the
