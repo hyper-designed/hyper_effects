@@ -114,6 +114,15 @@ class TimelineEffectState extends State<TimelineEffect>
     _runGeneration++;
     _pendingCycles = 0;
     if (widget.repeat == -1) {
+      if (spec.totalDuration == Duration.zero) {
+        throw FlutterError(
+          'A timeline asked to repeat has no duration to repeat over. A '
+          'chain with no step() compiles to a single keyframe, which is a '
+          'static value, not an animation. Separate two keyframes with a '
+          'step(duration: ...) — the timeline loops over the span between '
+          'them — or drop the repeat to apply the keyframe as-is.',
+        );
+      }
       // Native repeat is safe here: it never completes, so it cannot rest
       // at a wrapped value the way a counted repeat would.
       controller.value = 0;
