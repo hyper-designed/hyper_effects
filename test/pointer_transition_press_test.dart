@@ -207,6 +207,56 @@ void main() {
     expect(lastEvent!.isHovering, isFalse);
   });
 
+  testWidgets('a removed indirect mouse pointer is no longer hovering',
+      (tester) async {
+    const targetKey = ValueKey('indirect-pointer-target');
+    PointerTransitionEvent? lastEvent;
+
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(
+          child: const SizedBox.square(
+            key: targetKey,
+            dimension: 100,
+          ).pointerTransition((context, child, event) {
+            lastEvent = event;
+            final target = event.isPressed
+                ? 0.9
+                : event.isHovering
+                    ? 1.1
+                    : 1.0;
+            return child
+                .scale(target)
+                .animate(trigger: target, curve: Curves.easeOutQuart);
+          }),
+        ),
+      ),
+    );
+
+    final center = tester.getCenter(find.byKey(targetKey));
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await mouse.addPointer(location: Offset.zero);
+    await mouse.moveTo(center);
+    await mouse.down(center);
+    await tester.pumpAndSettle();
+    expect(lastEvent!.isPressed, isTrue);
+    expect(_scaleOf(tester, targetKey), closeTo(0.9, 1e-9));
+
+    await mouse.up();
+    await tester.pumpAndSettle();
+    expect(lastEvent!.isHovering, isTrue);
+    expect(_scaleOf(tester, targetKey), closeTo(1.1, 1e-9));
+
+    // iOS sends PointerRemovedEvent immediately after PointerUpEvent for an
+    // indirect pointer click, including clicks made in the Simulator.
+    await mouse.removePointer();
+    await tester.pumpAndSettle();
+    expect(lastEvent!.isDown, isFalse);
+    expect(lastEvent!.isHovering, isFalse);
+    expect(_scaleOf(tester, targetKey), closeTo(1.0, 1e-9));
+  });
+
   testWidgets('hover resets when the target moves away from a still mouse',
       (tester) async {
     const targetKey = ValueKey('moving-target');
