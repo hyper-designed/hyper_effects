@@ -1,4 +1,5 @@
-import 'package:flutter/gestures.dart' show PointerDeviceKind;
+import 'package:flutter/gestures.dart'
+    show PointerDeviceKind, PointerRemovedEvent;
 import 'package:flutter/widgets.dart';
 
 import '../hyper_effects.dart';
@@ -274,7 +275,15 @@ class _PointerTransitionState extends State<PointerTransition>
   void updateState(PointerEvent event) {
     globalPosition = event.position;
 
-    if (event is PointerDownEvent) {
+    if (event is PointerRemovedEvent) {
+      // A removed device no longer has a cursor that can hover. In
+      // particular, iOS represents each indirect-pointer click as a
+      // short-lived mouse device and removes it immediately after pointer-up.
+      isPointerDown = false;
+      resetValue();
+      if (mounted) setState(() {});
+      return;
+    } else if (event is PointerDownEvent) {
       isPointerDown = true;
     } else if (event is PointerUpEvent || event is PointerCancelEvent) {
       isPointerDown = false;
