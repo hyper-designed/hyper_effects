@@ -81,6 +81,9 @@ All notable changes to the Hyper Effects package are documented in this file.
   Play-on-mount is now expressed exclusively by `trigger: #immediate`.
 
 ### Fixed
+- `PointerTransition` no longer keeps stale hover/bounds state when its target
+  moves beneath a stationary mouse while using the default global pointer
+  router.
 - `.animate()` re-triggers now restore the `repeat`/`reverse` budget — pulse
   animations no longer play once and rest stuck at their peak value.
 - Fresh triggers reset the reverse-leg state machine — re-triggering

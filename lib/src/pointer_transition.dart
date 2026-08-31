@@ -292,6 +292,12 @@ class _PointerTransitionState extends State<PointerTransition>
     recalculateValue();
   }
 
+  void handlePointerExit(PointerEvent event) {
+    globalPosition = event.position;
+    resetValue();
+    if (mounted) setState(() {});
+  }
+
   /// Calculates the current value offset of the pointer device based on the
   /// [origin] and [globalPosition].
   void recalculateValue() {
@@ -431,7 +437,18 @@ class _PointerTransitionState extends State<PointerTransition>
         ) ??
         widget.child;
 
-    if (!widget.usePointerRouter) {
+    if (widget.usePointerRouter && !widget.useGlobalPointer) {
+      // Global routes only run when the pointer emits an event. A MouseRegion
+      // also tracks enter/exit changes caused by this widget moving beneath a
+      // stationary cursor, keeping the bounds and hover state from going
+      // stale during layout or transform animations.
+      child = MouseRegion(
+        opaque: false,
+        onEnter: updateState,
+        onExit: handlePointerExit,
+        child: child,
+      );
+    } else if (!widget.usePointerRouter) {
       // MouseRegion only reports hover events, which stop while a button is
       // pressed, so down/up/move tracking needs a Listener alongside it.
       child = Listener(
@@ -440,8 +457,9 @@ class _PointerTransitionState extends State<PointerTransition>
         onPointerUp: updateState,
         onPointerCancel: updateState,
         child: MouseRegion(
+          onEnter: updateState,
           onHover: (event) => updateState(event),
-          onExit: (event) => resetValue(),
+          onExit: handlePointerExit,
           child: child,
         ),
       );
