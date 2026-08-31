@@ -14,6 +14,31 @@ double compositeScaleOf(WidgetTester tester, Finder target) {
   return scale;
 }
 
+
+/// The vertical translation applied to [target] by its Transform ancestors.
+double translateYOf(WidgetTester tester, Finder target) {
+  final transforms = tester.widgetList<Transform>(
+    find.ancestor(of: target, matching: find.byType(Transform)),
+  );
+  var dy = 0.0;
+  for (final t in transforms) {
+    dy += t.transform.entry(1, 3);
+  }
+  return dy;
+}
+
+/// The composite opacity applied to [target] by its Opacity ancestors.
+double opacityOf(WidgetTester tester, Finder target) {
+  final layers = tester.widgetList<Opacity>(
+    find.ancestor(of: target, matching: find.byType(Opacity)),
+  );
+  var opacity = 1.0;
+  for (final o in layers) {
+    opacity *= o.opacity;
+  }
+  return opacity;
+}
+
 void main() {
   testWidgets('stamp card overshoots on every press, not just the first',
       (tester) async {
@@ -54,5 +79,43 @@ void main() {
     await release();
     // The second press must behave exactly like the first.
     await press();
+  });
+
+  testWidgets('check card mounts hidden and stays put until tapped',
+      (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: Scaffold(body: SuccessCardAnimation())),
+    );
+
+    // The first card's icon is the slide-and-fade check mark.
+    final checkIcon = find.byIcon(Icons.check_circle).first;
+
+    // Frame one must already be the resting, hidden state. Nothing may
+    // animate before the user has interacted.
+    expect(translateYOf(tester, checkIcon), closeTo(100, 0.01),
+        reason: 'the check mark mounts pushed down out of view');
+    expect(opacityOf(tester, checkIcon), closeTo(0, 0.01),
+        reason: 'the check mark mounts fully transparent');
+
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(translateYOf(tester, checkIcon), closeTo(100, 0.01),
+        reason: 'an untouched card must not animate on mount');
+    expect(opacityOf(tester, checkIcon), closeTo(0, 0.01));
+
+    // Tapping slides it up and fades it in.
+    await tester.tap(find.byType(GestureDetector).first, warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(translateYOf(tester, checkIcon), closeTo(0, 0.01),
+        reason: 'completing the card brings the check mark to rest on screen');
+    expect(opacityOf(tester, checkIcon), closeTo(1, 0.01));
+
+    // Tapping again reverses it, with no snap on the way out.
+    await tester.tap(find.byType(GestureDetector).first, warnIfMissed: false);
+    await tester.pump();
+    expect(translateYOf(tester, checkIcon), closeTo(0, 0.01),
+        reason: 'the exit starts from where the check mark actually is');
+    await tester.pumpAndSettle();
+    expect(translateYOf(tester, checkIcon), closeTo(100, 0.01));
+    expect(opacityOf(tester, checkIcon), closeTo(0, 0.01));
   });
 }

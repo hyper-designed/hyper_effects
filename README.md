@@ -307,13 +307,15 @@ This is what the Widget tree looks like internally when you use this library.
   in-flight animation is interrupted and re-driven from the beginning right away. When false, the new run waits for the
   in-flight one to finish before it starts.
 * startState: Determines the behavior of the animation as soon as it is added to the widget tree. `AnimationStartState`
-  has two values, and neither of them plays an animation on mount:
-  * `lazy` (default): the widget is inserted inert, with its effects held at their starting values. Nothing happens
-    until the animation is triggered at least once.
-  * `eager`: the widget is inserted with its effects already applied at their ending values, so the end state is what
-    the widget looks like from its very first frame. The next trigger interpolates from there.
+  has two values, and both insert the widget at its starting values:
+  * `lazy` (default): the widget is inserted inert. Nothing happens until the animation is triggered at least once.
+  * `eager`: the animation plays straight through to its ending values on mount, once per `State` lifetime. Rebuilds do
+    not replay it, and the trigger stays live, so every later trigger change plays it again. Reach for this when an
+    animation should both introduce the widget and keep reacting to state afterwards.
 
-  To play on mount, use `#immediate` instead — see [Immediate Animations](#immediate-animations).
+  `eager` and `#immediate` both play on mount; they differ in what happens next. `#immediate` spends the trigger to say
+  "now", so it can never play again, while `eager` leaves your own trigger free to replay it. See
+  [Immediate Animations](#immediate-animations).
 * skipIf: A callback that determines whether the animation should be skipped. If the callback returns true, the animation
   will be skipped entirely.
 * key: Forwarded to the underlying `AnimatedEffect`. Useful to identify an
@@ -324,6 +326,10 @@ This is what the Widget tree looks like internally when you use this library.
 If you want an animation to play as soon as the widget is built, pass the `#immediate` sentinel as the trigger. The
 `immediate` method is a shorthand for exactly that, and takes all the normal `animate` parameters except `trigger` and
 `startState`.
+
+Because `#immediate` occupies the trigger slot, an animation written this way can only ever play on mount. If you want
+it to play on mount *and* keep responding to a real trigger afterwards, keep your own trigger and pass
+`startState: AnimationStartState.eager` instead.
 
 The animation plays once per `State` lifetime. Because the sentinel's identity never changes, rebuilds will not replay
 it. If the widget's `State` is disposed and recreated, however — inside a `ListView.builder`, for example — it will play
