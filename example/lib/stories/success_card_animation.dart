@@ -14,6 +14,15 @@ class SuccessCardAnimation extends StatefulWidget {
 class _SuccessCardAnimationState extends State<SuccessCardAnimation> {
   bool isCompleted = false;
 
+  /// The completion state the first card is animating away from.
+  ///
+  /// Before the first tap there is no previous state, so this matches
+  /// [isCompleted] and every effect's `from` equals its target. The card
+  /// therefore mounts at rest, hidden, rather than animating on its first
+  /// frame. After a tap it holds the state just left behind, which is what
+  /// makes the slide and fade reverse cleanly without snapping.
+  bool previouslyCompleted = false;
+
   /// Drives the stamp card. The timeline plays forward on completion and
   /// reverses on un-completion; direction is imperative, not trigger-based.
   final TimelineController stampController = TimelineController();
@@ -25,7 +34,10 @@ class _SuccessCardAnimationState extends State<SuccessCardAnimation> {
   }
 
   void _toggle() {
-    setState(() => isCompleted = !isCompleted);
+    setState(() {
+      previouslyCompleted = isCompleted;
+      isCompleted = !isCompleted;
+    });
     if (isCompleted) {
       unawaited(stampController.play());
     } else {
@@ -78,11 +90,10 @@ class _SuccessCardAnimationState extends State<SuccessCardAnimation> {
                             )
                                 .translateY(
                                   isCompleted ? 0 : 100,
-                                  from: isCompleted ? 100 : 0,
+                                  from: previouslyCompleted ? 0 : 100,
                                 )
                                 .animate(
                                   trigger: isCompleted,
-                                  startState: AnimationStartState.eager,
                                   curve: !isCompleted
                                       ? Curves.easeInBack
                                       : Curves.easeOutBack,
@@ -93,11 +104,10 @@ class _SuccessCardAnimationState extends State<SuccessCardAnimation> {
                           )
                               .opacity(
                                 isCompleted ? 1 : 0,
-                                from: isCompleted ? 0 : 1,
+                                from: previouslyCompleted ? 1 : 0,
                               )
                               .animate(
                                 trigger: isCompleted,
-                                startState: AnimationStartState.eager,
                                 curve: Curves.easeInOutSine,
                                 duration: const Duration(
                                   milliseconds: 400,

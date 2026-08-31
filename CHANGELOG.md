@@ -67,18 +67,21 @@ All notable changes to the Hyper Effects package are documented in this file.
 - `repeat:` on `.timeline()` — loop with `repeat: -1` (forever) or
   `repeat: n` (n extra cycles, resting at the final keyframe; `onEnd` fires
   once at the true end).
-- `key:` on `.animate()` — enables `AnimatedEffectStateRetainer` usage
-  directly from the standard animate entry point.
-- `AnimationStartState` overhauled to `{eager, lazy}`, with start state and
-  play-on-mount now cleanly separated concerns. Neither value plays an
-  animation on mount:
-  - `eager` inserts the widget with its effects already applied at their
-    ENDING values (the controller starts at 1). The next trigger
-    interpolates from there.
-  - `lazy` (the default) inserts the widget inert, with its effects held at
-    their STARTING values, until it is triggered at least once.
+- `key:` on `.animate()`, forwarded to the underlying `AnimatedEffect` so an
+  animation can be identified across `State` disposal and recreation.
+- `AnimationStartState` overhauled to `{eager, lazy}`. Both values insert the
+  widget at its STARTING values; they differ only in whether the animation
+  runs on mount:
+  - `eager` plays the animation through to its ending values immediately on
+    mount, once per `State` lifetime. Rebuilds do not replay it, and
+    `trigger` stays live: every later change of it plays the animation again.
+  - `lazy` (the default) inserts the widget inert, until it is triggered at
+    least once.
 
-  Play-on-mount is now expressed exclusively by `trigger: #immediate`.
+  `eager` and `trigger: #immediate` both play on mount and differ in what
+  follows. `#immediate` spends the trigger slot to say "now" and so can never
+  replay; `eager` leaves the caller's trigger free. Play-on-mount combined
+  with a live trigger had no expression before this release.
 
 ### Fixed
 - `PointerTransition` no longer keeps stale hover/bounds state when its target
@@ -156,17 +159,25 @@ replaces all of them.
   `.animate(trigger: #immediate, ...)`.
 
 - `AnimationStartState.playImmediately`, `.useCurrentValues` and `.idle` —
-  the enum is now `{eager, lazy}`, and start state no longer doubles as a
-  play-on-mount switch.
+  the enum is now `{eager, lazy}`. Mounting a widget at its ENDING values is
+  no longer offered: both values mount at the starting values, and the enum
+  now only controls whether the animation runs on mount.
 
   **Migration:**
   - `startState: AnimationStartState.playImmediately` →
-    `trigger: #immediate` (or `.immediate()`), dropping `startState`.
-  - `startState: AnimationStartState.useCurrentValues` →
-    `startState: AnimationStartState.eager`.
+    `startState: AnimationStartState.eager`, which keeps a live trigger. Use
+    `trigger: #immediate` (or `.immediate()`) instead if the animation should
+    never replay.
   - `startState: AnimationStartState.idle` →
     `startState: AnimationStartState.lazy` (also the new default, so it can
     simply be dropped).
+  - `startState: AnimationStartState.useCurrentValues` has no direct
+    replacement. It existed so that a state-mirroring animation would render
+    its current state on the first frame instead of its `from` values. Express
+    that in the effects themselves: track the state the widget is animating
+    away from and feed it to `from`, so that on the very first build `from`
+    equals the target and the widget mounts at rest. See
+    `example/lib/stories/success_card_animation.dart`.
 
 ### Deprecated
 - `.resetAll()`, `ResetAllAnimationsEffect` and

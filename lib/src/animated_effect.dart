@@ -47,8 +47,11 @@ extension AnimatedEffectExt on Widget? {
   /// finish before it starts.
   ///
   /// The [startState] parameter is used to determine the behavior of the
-  /// animation as soon as it is added to the widget tree. See
-  /// [AnimationStartState.eager] and [AnimationStartState.lazy].
+  /// animation as soon as it is added to the widget tree.
+  /// [AnimationStartState.lazy], the default, holds the effects at their
+  /// starting values until [trigger] changes for the first time.
+  /// [AnimationStartState.eager] plays the animation once on mount and then
+  /// keeps following [trigger] as usual.
   ///
   /// The [playIf] parameter is used to determine whether the animation should
   /// be played or skipped. If the callback returns false, the animation will
@@ -100,7 +103,9 @@ extension AnimatedEffectExt on Widget? {
   /// changes, rebuilds do not replay it.
   ///
   /// There is no `startState` parameter here: play-on-mount is what this
-  /// method already expresses.
+  /// method already expresses. To play on mount AND keep a live trigger for
+  /// later replays, use `animate(trigger: ..., startState:
+  /// AnimationStartState.eager)` instead.
   ///
   /// The [key] parameter is forwarded to the underlying [AnimatedEffect].
   ///
@@ -185,15 +190,17 @@ extension AnimatedEffectExt on Widget? {
 /// Determines the behavior of the [AnimatedEffect] as soon as it is added
 /// to the widget tree.
 ///
-/// Neither value plays an animation on mount. To play on mount, pass
-/// `trigger: #immediate` (or use `immediate()`).
+/// Both values insert the widget at its STARTING values. They differ only in
+/// whether the animation runs on mount without waiting for a trigger change.
 enum AnimationStartState {
-  /// The widget is inserted with its effects already applied at their ENDING
-  /// values: the internal controller starts at 1 rather than 0.
+  /// The widget is inserted at its STARTING values and immediately plays
+  /// through to its ending values, once per [State] lifetime. Rebuilds do not
+  /// replay it.
   ///
-  /// Nothing animates on insertion — the end state is simply what the widget
-  /// looks like from its very first frame. The next trigger interpolates from
-  /// there towards the then-current effect values.
+  /// The [AnimatedEffect.trigger] stays live: every subsequent change of it
+  /// plays the animation again, exactly as it would under [lazy]. This is the
+  /// difference from `trigger: #immediate`, which pins the trigger to a
+  /// sentinel whose identity never changes and therefore never replays.
   eager,
 
   /// The widget is inserted inert, with its effects held at their STARTING
@@ -216,7 +223,9 @@ class AnimatedEffect extends StatefulWidget {
   final Object? trigger;
 
   /// Determines the behavior of this [AnimatedEffect] as soon as it is added
-  /// to the widget tree.
+  /// to the widget tree. [AnimationStartState.eager] plays the animation once
+  /// on mount; [AnimationStartState.lazy] waits for the first [trigger]
+  /// change.
   final AnimationStartState startState;
 
   /// How the animation moves: a [CurvedMotion] built from the
@@ -309,7 +318,7 @@ class AnimatedEffectState extends State<AnimatedEffect>
   /// The animation controller that drives the animation.
   late final AnimationController controller = AnimationController(
     vsync: this,
-    value: widget.startState == AnimationStartState.eager || shouldSkip ? 1 : 0,
+    value: shouldSkip ? 1 : 0,
     duration: widget.motion.effectiveDuration,
     animationBehavior: widget.animationBehavior ??
         HyperEffectsAnimationConfig.maybeOf(context)?.animationBehavior ??
@@ -331,8 +340,13 @@ class AnimatedEffectState extends State<AnimatedEffect>
 
     if (didPlay) return;
 
-    // The `#immediate` sentinel plays on mount, once per State lifetime.
-    if (widget.trigger == #immediate) {
+    // Both the `#immediate` sentinel and [AnimationStartState.eager] play on
+    // mount, once per State lifetime. They differ in what happens afterwards:
+    // `#immediate` pins the trigger to a sentinel whose identity never
+    // changes, so it can never replay, while `eager` leaves the caller's
+    // trigger live and plays again on every subsequent change of it.
+    if (widget.trigger == #immediate ||
+        widget.startState == AnimationStartState.eager) {
       drive();
       didPlay = true;
     }
