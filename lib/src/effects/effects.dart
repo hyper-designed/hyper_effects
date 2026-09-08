@@ -13,6 +13,7 @@ export 'roll/text_extensions.dart';
 export 'rotation_effect.dart';
 export 'scale_effect.dart';
 export 'shake_effect.dart';
+export 'size_effect.dart';
 export 'skew_effect.dart';
 export 'transform_effect.dart';
 export 'translate_effect.dart';
