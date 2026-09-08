@@ -36,6 +36,12 @@ extension AnimatedEffectExt on Widget? {
   /// play backwards after each repetition.
   ///
   /// The [delay] parameter is used to set a delay before the animation starts.
+  /// Throughout the wait the effects are held at the values the run is about
+  /// to start from — the delay is dead time, not a preview of the target. A
+  /// re-trigger that lands mid-flight therefore freezes wherever it was
+  /// interrupted and continues from there once the wait is over. When
+  /// [repeat] is set, every repetition waits out its own delay, holding at
+  /// the value that repetition begins at.
   ///
   /// The [resetValues] parameter is used to determine whether the animation
   /// should start from idle values or from the current state of the widget.
@@ -136,6 +142,10 @@ extension AnimatedEffectExt on Widget? {
   /// finish before it starts.
   ///
   /// The [delay] parameter is used to set a delay before the animation starts.
+  /// Throughout the wait the effects are held at the values the run is about
+  /// to start from — the delay is dead time, not a preview of the target.
+  /// When [repeat] is set, every repetition waits out its own delay, holding
+  /// at the value that repetition begins at.
   ///
   /// The [playIf] parameter is used to determine whether the animation should
   /// be played or skipped. If the callback returns false, the animation will
@@ -257,6 +267,17 @@ class AnimatedEffect extends StatefulWidget {
   final bool interruptable;
 
   /// A delay before the animation starts.
+  ///
+  /// The wait is dead time, not a preview of where the animation is going:
+  /// the internal controller is parked at the value the upcoming run starts
+  /// from before the wait begins, so the effects hold at their starting
+  /// values for the full delay and only then move. A re-trigger that lands
+  /// mid-flight freezes at the position it interrupted and resumes from
+  /// there.
+  ///
+  /// With [repeat], each repetition waits out this delay in turn, holding at
+  /// the value that leg begins at — 1 for a [reverse] leg, the start value
+  /// for a forward one.
   final Duration delay;
 
   /// A callback that returns whether the animation should be played
@@ -334,6 +355,16 @@ class AnimatedEffectState extends State<AnimatedEffect>
   /// A future that represents a single animation cycle.
   Future<void>? driveFuture;
 
+  /// Identifies the newest interruptable logical run.
+  ///
+  /// [Future.delayed] cannot be cancelled. Every fresh interruptable trigger
+  /// advances this generation instead, so an older delayed callback can wake,
+  /// see that it no longer owns the animation, and retire without touching the
+  /// controller. Repetitions inherit their logical run's generation rather
+  /// than advancing it, while non-interruptable runs deliberately ignore this
+  /// token and retain their serialized wait-on-[driveFuture] behavior.
+  int _driveGeneration = 0;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -381,7 +412,7 @@ class AnimatedEffectState extends State<AnimatedEffect>
   /// In addition, once the run is truly over, it notifies the nearest
   /// deprecated `ResetAllAnimationsEffect` ancestor, if any, so that it can
   /// reset the animations below it.
-  Future<void> onAnimationStatusChanged() async {
+  Future<void> onAnimationStatusChanged(int? generation) async {
     final status = controller.status;
     if (status == AnimationStatus.completed ||
         status == AnimationStatus.dismissed) {
@@ -394,8 +425,11 @@ class AnimatedEffectState extends State<AnimatedEffect>
           repeatTimes--;
         }
 
-        // The animation must be repeated, call [drive] again.
-        drive();
+        // A repetition is another cycle of this same logical run. Awaiting it
+        // here keeps a non-interruptable run's [driveFuture] pending until its
+        // full repeat/reverse budget is exhausted, so later queued triggers
+        // cannot overlap one of its repetitions.
+        return _driveNow(generation);
       } else if (repeatTimes == 0) {
         if (!mounted) return;
 
@@ -413,17 +447,79 @@ class AnimatedEffectState extends State<AnimatedEffect>
   void reset() {
     repeatTimes = widget.repeat;
     driveFuture = null;
+    _driveGeneration++;
     controller.reset();
   }
 
   /// Drives the animation.
-  Future<void> drive() async {
-    if (!widget.interruptable && driveFuture != null) {
-      await driveFuture;
+  ///
+  /// A fresh interruptable invocation starts a new logical run and supersedes
+  /// every older one. A repetition passes its existing [generation] back in,
+  /// because it is another leg of the same run rather than a competing run.
+  /// Non-interruptable invocations do not use generations: each one attaches
+  /// itself to [driveFuture] immediately, preserving their serialized order.
+  Future<void> drive({int? generation}) {
+    if (!widget.interruptable) {
+      final previous = driveFuture;
+      final future = _driveAfter(previous);
+      driveFuture = future;
+      return future;
     }
 
-    return driveFuture = ensureDelay(() async {
+    final currentGeneration = generation ?? ++_driveGeneration;
+    final future = _driveNow(currentGeneration);
+    driveFuture = future;
+    return future;
+  }
+
+  /// Waits for the preceding non-interruptable cycle before starting this one.
+  Future<void> _driveAfter(Future<void>? previous) async {
+    if (previous != null) {
+      await previous;
       if (!mounted) return;
+    }
+    return _driveNow(null);
+  }
+
+  /// Runs one animation cycle.
+  ///
+  /// A non-null [generation] belongs to an interruptable logical run. The
+  /// generation is checked at every asynchronous resume point so an obsolete
+  /// delay or a controller future cancelled by a newer trigger cannot restart
+  /// the animation, consume its repeat budget, or call [AnimatedEffect.onEnd].
+  Future<void> _driveNow(int? generation) async {
+    bool isCurrentRun() => generation == null || generation == _driveGeneration;
+
+    // Park the controller at the value the upcoming run will start from,
+    // BEFORE the delay window opens.
+    //
+    // A delay defers the controller's start, but on its own it does not
+    // rewind the controller: through the whole wait, the controller keeps
+    // reporting whatever the PREVIOUS run left it at — 1 after a completed
+    // forward leg. Meanwhile the descendant [EffectWidget]s have already
+    // folded that finished run into their `start` and adopted the new `end`,
+    // so their `start.lerp(end, curvedValue)` evaluates at 1 and paints the
+    // NEW TARGET instantly. The effect flashes its destination, holds it for
+    // the length of the delay, snaps back to the start value, and only then
+    // animates. The very first run of any effect hides this, because a
+    // controller that has never run already rests at 0 — which is why the bug
+    // only shows up from the second run onward.
+    //
+    // The parked value must mirror the branch below that chooses between
+    // `reverse()` (which runs 1 -> 0) and `forward(from: 0)`, so a delayed
+    // reverse leg holds at its own start of 1 rather than snapping to 0.
+    //
+    // Only park a run that is actually going to play. `playIf` returning
+    // false makes the body below return without touching the controller at
+    // all, and `skipIf` returning true makes it jump straight to 1; rewinding
+    // the controller for either would be a visible reset for an animation
+    // that never runs — the same class of glitch this is fixing.
+    if (widget.delay != Duration.zero && shouldPlay && !shouldSkip) {
+      controller.value = (widget.reverse && shouldReverse) ? 1 : 0;
+    }
+
+    await ensureDelay(() async {
+      if (!mounted || !isCurrentRun()) return;
       if (!shouldPlay) return;
       if (shouldSkip) {
         controller.value = 1;
@@ -441,8 +537,10 @@ class AnimatedEffectState extends State<AnimatedEffect>
         });
       }
 
-      return onAnimationStatusChanged();
+      if (!mounted || !isCurrentRun()) return;
+      return onAnimationStatusChanged(generation);
     });
+    if (!mounted || !isCurrentRun()) return;
   }
 
   /// Ensures that the animation is delayed if [widget.delay] is not

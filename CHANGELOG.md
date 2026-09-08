@@ -2,6 +2,77 @@
 
 All notable changes to the Hyper Effects package are documented in this file.
 
+## [Unreleased]
+
+### Added
+- **Layout-driven size effects** — `SizeEffect` and the `.widthTo()`,
+  `.heightTo()`, `.sizeTo()`, and `.sizeOf()` widget extensions animate the
+  actual width and height reported during layout, so surrounding widgets
+  reflow instead of merely seeing paint-time scaling. Each axis can remain
+  unconstrained independently, bouncy springs preserve overshoot and carry
+  velocity across mid-flight retargets, and negative overshoot is floored
+  only when the effect builds its `SizedBox`.
+
+- **Spring-downgrade diagnostic** — in debug builds, driving an effect that
+  doesn't mix in `VectorEffect` (e.g. `.blur()`, `.clip()`, `.colorFilter()`)
+  with a `SpringMotion` now prints a debug warning the first time it
+  happens for that effect type, naming the offending effect, spelling out
+  what the silent fallback actually costs — overshoot and settle-back
+  become dependent on whether that effect's `lerp` extrapolates or clamps,
+  rather than guaranteed vector spring physics, and a mid-flight retarget
+  can no longer hand off velocity, restarting from rest instead — and
+  recommending either
+  mixing in `VectorEffect<T>` on that effect or switching the `.animate()`
+  to a `CurvedMotion`. The check sits at the exact point `build()` decides
+  to fall back to the normalized lerp, so it cannot fire for `isTransition`
+  queries, `lerpValues: false` queries, or curve-driven motions, and it
+  warns once per effect TYPE rather than once per widget instance, since
+  the fix is a one-line change to the effect's class, not to any one call
+  site. It deliberately bypasses `FlutterError.onError`, so developer guidance
+  isn't forwarded to crash reporting or promoted to a test failure.
+  Assert-gated, so it costs nothing in release or profile builds.
+
+### Changed
+- **`PaddingEffect` and `AlignEffect` are now `VectorEffect`s** — `.pad()`,
+  `.padAll()`, `.padOnly()` and friends, along with `.align()`, `.alignX()`,
+  `.alignY()` and `.alignXY()`, are driven by real spring physics instead of
+  falling back to a normalized lerp. Two visible consequences:
+  - **Padding overshoots under spring motions.** `PaddingEffect.lerp`
+    previously clamped its progress to 0..1, so `.pad()` under
+    `CupertinoMotion.bouncy()` eased flatly into its target while a sibling
+    `.translateY()` on the same motion bounced — the same declared motion
+    produced two different curves on one widget. Padding now describes the
+    same curve as everything else. Insets are floored at zero in `apply`
+    (where `RenderPadding` requires non-negativity) rather than in `lerp`,
+    so only the components that actually went negative are touched and the
+    upward half of the bounce survives intact. Interpolation is also
+    unclamped for overshooting CURVES now, not just springs: a `.pad()` on
+    `Curves.easeOutBack` will pass its target and come back. If a padding
+    animation must not overshoot, use a monotone curve or a non-bouncy
+    spring such as `CupertinoMotion.smooth()`.
+  - **Momentum carries across a mid-flight retarget.** Re-triggering a
+    padding or alignment animation while it is still moving now starts the
+    new spring from the captured velocity instead of from rest, so rapid
+    re-triggers whip rather than hitch.
+
+  `AlignEffect`'s nullable `widthFactor` / `heightFactor` keep their existing
+  semantics exactly: a null factor is the "fill the incoming constraints"
+  layout mode, not a number, so nullability rides along from the left operand
+  of the vector algebra and a mixed null / non-null pair still snaps to the
+  target value rather than interpolating.
+
+### Fixed
+- `.animate(delay:)` no longer flashes the animation's target value while it
+  waits — a delayed re-trigger now holds the effects at the values the run is
+  about to start from, then animates. Previously the controller kept
+  reporting the value the PREVIOUS run left it at for the whole delay, so
+  every run after the first painted its destination instantly, held it, and
+  snapped back before easing in. Only the very first run looked correct.
+  Interruptible delayed re-triggers also retire superseded timers now, so an
+  older wait cannot wake after a newer trigger, restart the controller, or
+  call `onEnd`; non-interruptible delayed triggers remain serialized in
+  arrival order.
+
 ## [0.4.0] - Aug 26, 2026
 
 ### Breaking
