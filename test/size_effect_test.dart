@@ -350,4 +350,30 @@ void main() {
           reason: 'precondition: the animation must actually hit the floor');
     });
   });
+
+  test('SizeEffect rejects NaN width', () {
+    expect(
+      () => SizeEffect(width: double.nan),
+      throwsA(
+        isA<AssertionError>().having(
+          (error) => error.message,
+          'message',
+          contains('width'),
+        ),
+      ),
+    );
+  });
+
+  test('SizeEffect rejects NaN height', () {
+    expect(
+      () => SizeEffect(height: double.nan),
+      throwsA(
+        isA<AssertionError>().having(
+          (error) => error.message,
+          'message',
+          contains('height'),
+        ),
+      ),
+    );
+  });
 }

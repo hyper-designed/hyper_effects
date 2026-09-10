@@ -175,7 +175,9 @@ class SizeEffect extends Effect with VectorEffect<SizeEffect> {
   final double? height;
 
   /// Creates a [SizeEffect] with the given [width] and [height].
-  SizeEffect({this.width, this.height});
+  SizeEffect({this.width, this.height})
+      : assert(width == null || !width.isNaN, 'width must not be NaN'),
+        assert(height == null || !height.isNaN, 'height must not be NaN');
 
   @override
   SizeEffect lerp(covariant SizeEffect other, double value) {
@@ -234,8 +236,8 @@ class SizeEffect extends Effect with VectorEffect<SizeEffect> {
   /// means "unconstrained" rather than "zero" when null.
   @override
   SizeEffect operator +(SizeEffect other) => SizeEffect(
-        width: _addAxis(width, other.width),
-        height: _addAxis(height, other.height),
+        width: VectorEffect.addLane(width, other.width),
+        height: VectorEffect.addLane(height, other.height),
       );
 
   /// Field-wise difference — the displacement term of the spring solution.
@@ -246,8 +248,8 @@ class SizeEffect extends Effect with VectorEffect<SizeEffect> {
   /// and [operator *] safe without their own finite checks.
   @override
   SizeEffect operator -(SizeEffect other) => SizeEffect(
-        width: _subtractAxis(width, other.width),
-        height: _subtractAxis(height, other.height),
+        width: VectorEffect.subtractLane(width, other.width),
+        height: VectorEffect.subtractLane(height, other.height),
       );
 
   /// Scales width and height by [factor]. A null axis stays null: there is
@@ -257,27 +259,6 @@ class SizeEffect extends Effect with VectorEffect<SizeEffect> {
         width: width == null ? null : width! * factor,
         height: height == null ? null : height! * factor,
       );
-
-  /// Combines two axis values under [op], keeping nullability from the
-  /// LEFT operand. A null left operand means the result is unconstrained
-  /// on that axis; a null right operand contributes nothing, leaving the
-  /// left value as-is.
-  static double? _addAxis(double? a, double? b) {
-    if (a == null) return null;
-    if (b == null) return a;
-    return a + b;
-  }
-
-  /// Subtracts two axis values, preserving a present left value when the
-  /// right side is null and poisoning the result to null when the left side
-  /// is null or either present side is non-finite. See the class documentation
-  /// for why a non-finite pair cannot produce a usable displacement.
-  static double? _subtractAxis(double? a, double? b) {
-    if (a == null) return null;
-    if (b == null) return a;
-    if (!a.isFinite || !b.isFinite) return null;
-    return a - b;
-  }
 
   /// The squared magnitude of the animatable values, used for settle
   /// detection. Null axes contribute nothing, matching their "no numeric

@@ -12,6 +12,22 @@ class EffectQuery extends InheritedWidget {
   /// The linear animation value. It's value is between 0 and 1.
   final double linearValue;
 
+  /// Identifies the logical animation run that owns these values.
+  final int runId;
+
+  /// Whether the active run continues from the render it interrupted rather
+  /// than replaying from its start. True only for a run that superseded a
+  /// mid-flight run AND parks through a nonzero delay: a delayed same-target
+  /// retrigger must hold the interrupted position through its delay window.
+  /// A zero-delay retrigger is a replay, and a completed predecessor —
+  /// however recently — is never an interruption. Descendants must use this,
+  /// never a stale build value, to decide whether to carry the rendered
+  /// position into the new run.
+  final bool continuesInterrupted;
+
+  /// Whether the active run is solving its ending-to-starting leg.
+  final bool reverseLeg;
+
   /// The animation value. It's value is between 0 and 1, interpolated by the
   /// [Curve] provided.
   final double curvedValue;
@@ -50,6 +66,9 @@ class EffectQuery extends InheritedWidget {
     super.key,
     required super.child,
     required this.linearValue,
+    this.runId = 0,
+    this.continuesInterrupted = false,
+    this.reverseLeg = false,
     required this.curvedValue,
     required this.isTransition,
     this.lerpValues = true,
@@ -61,7 +80,11 @@ class EffectQuery extends InheritedWidget {
 
   @override
   bool updateShouldNotify(covariant EffectQuery oldWidget) {
-    return oldWidget.curvedValue != curvedValue ||
+    return oldWidget.linearValue != linearValue ||
+        oldWidget.runId != runId ||
+        oldWidget.continuesInterrupted != continuesInterrupted ||
+        oldWidget.reverseLeg != reverseLeg ||
+        oldWidget.curvedValue != curvedValue ||
         oldWidget.isTransition != isTransition ||
         oldWidget.lerpValues != lerpValues ||
         oldWidget.resetValues != resetValues ||

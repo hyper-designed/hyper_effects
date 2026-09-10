@@ -62,8 +62,7 @@ void main() {
     );
     var peak = 0.0;
     for (var i = 1; i < 200; i++) {
-      final scale =
-          (spec.evaluate(i / 200).single as ScaleEffect).scale!;
+      final scale = (spec.evaluate(i / 200).single as ScaleEffect).scale!;
       peak = max(peak, scale);
     }
     expect(peak, greaterThan(1.001), reason: 'the spring must overshoot');

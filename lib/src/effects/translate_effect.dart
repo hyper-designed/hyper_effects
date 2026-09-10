@@ -352,8 +352,7 @@ extension TranslateEffectExt on Widget {
 }
 
 /// An effect that translates a [Widget] by a given [offset].
-class TranslateEffect extends Effect
-    with VectorEffect<TranslateEffect> {
+class TranslateEffect extends Effect with VectorEffect<TranslateEffect> {
   /// The offset by which the [Widget] is translated.
   final Offset offset;
 

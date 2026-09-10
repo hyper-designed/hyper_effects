@@ -55,7 +55,8 @@ void main() {
       expect(sum.widthFactor, 5);
       expect(sum.heightFactor, 6);
 
-      final difference = AlignEffect(widthFactor: 2) - AlignEffect(widthFactor: 3);
+      final difference =
+          AlignEffect(widthFactor: 2) - AlignEffect(widthFactor: 3);
       expect(difference.widthFactor, -1,
           reason: 'the displacement term is routinely negative');
     });
@@ -282,5 +283,39 @@ void main() {
       expect(sawFloor, isTrue,
           reason: 'precondition: the animation must actually hit the floor');
     });
+  });
+
+  test('AlignEffect rejects NaN widthFactor', () {
+    expect(
+      () => AlignEffect(widthFactor: double.nan),
+      throwsA(isA<AssertionError>().having(
+        (error) => error.message,
+        'message',
+        contains('widthFactor'),
+      )),
+    );
+  });
+
+  test('AlignEffect rejects NaN heightFactor', () {
+    expect(
+      () => AlignEffect(heightFactor: double.nan),
+      throwsA(isA<AssertionError>().having(
+        (error) => error.message,
+        'message',
+        contains('heightFactor'),
+      )),
+    );
+  });
+
+  test('infinite factors never manufacture NaN', () {
+    final start = AlignEffect(widthFactor: double.infinity);
+    final target = AlignEffect(widthFactor: double.infinity);
+
+    for (final coefficient in <double>[1, 0.5, 0]) {
+      final solved = target + (start - target) * coefficient;
+      expect(solved.widthFactor?.isNaN, isFalse,
+          reason: 'coefficient $coefficient');
+      expect(solved.widthFactor, double.infinity);
+    }
   });
 }

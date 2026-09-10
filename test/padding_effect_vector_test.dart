@@ -218,4 +218,65 @@ void main() {
 
     expect(maxJump, lessThan(20));
   });
+
+  test('PaddingEffect rejects NaN components', () {
+    final cases = <String, EdgeInsets>{
+      'left': const EdgeInsets.only(left: double.nan),
+      'top': const EdgeInsets.only(top: double.nan),
+      'right': const EdgeInsets.only(right: double.nan),
+      'bottom': const EdgeInsets.only(bottom: double.nan),
+    };
+
+    for (final entry in cases.entries) {
+      expect(
+        () => PaddingEffect(padding: entry.value),
+        throwsA(isA<AssertionError>().having(
+          (error) => error.message,
+          'message',
+          contains(entry.key),
+        )),
+        reason: entry.key,
+      );
+    }
+  });
+
+  testWidgets('infinite padding remains a valid render endpoint',
+      (tester) async {
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: SizedBox(
+          width: 100,
+          height: 100,
+          child: PaddingEffect(
+            padding: const EdgeInsets.all(double.infinity),
+          ).apply(
+            tester.binding.rootElement! as BuildContext,
+            const SizedBox.square(dimension: 10),
+          ),
+        ),
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+  });
+
+  test('infinite insets never manufacture NaN', () {
+    final start = PaddingEffect(
+      padding: const EdgeInsets.all(double.infinity),
+    );
+    final target = PaddingEffect(
+      padding: const EdgeInsets.all(double.infinity),
+    );
+
+    for (final coefficient in <double>[1, 0.5, 0]) {
+      final solved = target + (start - target) * coefficient;
+      final insets = solved.padding;
+      expect(insets.left.isNaN, isFalse, reason: 'coefficient $coefficient');
+      expect(insets.top.isNaN, isFalse);
+      expect(insets.right.isNaN, isFalse);
+      expect(insets.bottom.isNaN, isFalse);
+      expect(insets, const EdgeInsets.all(double.infinity));
+    }
+  });
 }

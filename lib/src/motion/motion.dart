@@ -309,8 +309,16 @@ abstract class SpringMotion extends Motion {
 
   static final Expando<SpringSimulation> _simulations = Expando();
 
+  /// [effectiveDuration] is derived purely from the immutable [description]
+  /// and [tolerance], but it is read on every animation frame (directly and
+  /// via [transform]); memoizing per instance avoids re-solving the settling
+  /// bound each time.
+  static final Expando<Duration> _durations = Expando();
+
   @override
-  Duration get effectiveDuration {
+  Duration get effectiveDuration => _durations[this] ??= _solveDuration();
+
+  Duration _solveDuration() {
     final double omega = math.sqrt(description.stiffness / description.mass);
     final double zeta = description.damping /
         (2 * math.sqrt(description.stiffness * description.mass));

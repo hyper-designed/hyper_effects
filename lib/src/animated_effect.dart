@@ -322,6 +322,29 @@ class AnimatedEffect extends StatefulWidget {
       context.dependOnInheritedWidgetOfExactType<EffectQuery>();
 }
 
+/// Immutable configuration owned by one logical animation run.
+class _RunCycleState {
+  _RunCycleState({
+    required this.id,
+    required this.repeat,
+    required this.motion,
+    required this.delay,
+    required this.reverse,
+    required this.play,
+    required this.skip,
+    required this.onEnd,
+  });
+
+  final int id;
+  final int repeat;
+  final Motion motion;
+  final Duration delay;
+  final bool reverse;
+  final bool play;
+  final bool skip;
+  final VoidCallback? onEnd;
+}
+
 /// The state of [AnimatedEffect].
 class AnimatedEffectState extends State<AnimatedEffect>
     with SingleTickerProviderStateMixin {
@@ -339,31 +362,28 @@ class AnimatedEffectState extends State<AnimatedEffect>
   /// The animation controller that drives the animation.
   late final AnimationController controller = AnimationController(
     vsync: this,
-    value: shouldSkip ? 1 : 0,
+    value: 0,
     duration: widget.motion.effectiveDuration,
     animationBehavior: widget.animationBehavior ??
         HyperEffectsAnimationConfig.maybeOf(context)?.animationBehavior ??
         AnimationBehavior.normal,
   );
 
-  /// The number of times the animation should be repeated.
-  late int repeatTimes = widget.repeat;
-
-  /// Whether the animation should be reversed after each repetition.
-  bool shouldReverse = false;
-
-  /// A future that represents a single animation cycle.
+  /// The future of the currently executing logical run. Queued
+  /// non-interruptable runs chain onto it to preserve their order.
   Future<void>? driveFuture;
 
-  /// Identifies the newest interruptable logical run.
-  ///
-  /// [Future.delayed] cannot be cancelled. Every fresh interruptable trigger
-  /// advances this generation instead, so an older delayed callback can wake,
-  /// see that it no longer owns the animation, and retire without touching the
-  /// controller. Repetitions inherit their logical run's generation rather
-  /// than advancing it, while non-interruptable runs deliberately ignore this
-  /// token and retain their serialized wait-on-[driveFuture] behavior.
-  int _driveGeneration = 0;
+  /// Advances whenever run ownership is revoked — on [reset] and on every
+  /// fresh interruptable [drive]. [Future.delayed] and ticker futures cannot
+  /// be cancelled, so an in-flight run body compares its captured epoch
+  /// against this at every resume point and retires when it no longer owns
+  /// the animation.
+  int _cancellationEpoch = 0;
+  int _runId = 0;
+  int _nextRunId = 0;
+  Motion? _activeMotion;
+  bool _activeReverseLeg = false;
+  bool _continuesInterrupted = false;
 
   @override
   void didChangeDependencies() {
@@ -390,8 +410,6 @@ class AnimatedEffectState extends State<AnimatedEffect>
 
     // If the trigger value changed, drive the animation.
     if (widget.trigger != oldWidget.trigger) {
-      repeatTimes = widget.repeat;
-      shouldReverse = false;
       drive();
     }
   }
@@ -402,154 +420,141 @@ class AnimatedEffectState extends State<AnimatedEffect>
     super.dispose();
   }
 
-  /// Handles status changes of the animation controller. This is used to
-  /// determine whether the animation should be repeated or not, and whether
-  /// the [onEnd] callback should be called.
-  ///
-  /// If the animation is repeated, it calls [drive] again. If the animation
-  /// is not repeated, it calls [onEnd] callback if it is not null.
-  ///
-  /// In addition, once the run is truly over, it notifies the nearest
-  /// deprecated `ResetAllAnimationsEffect` ancestor, if any, so that it can
-  /// reset the animations below it.
-  Future<void> onAnimationStatusChanged(int? generation) async {
-    final status = controller.status;
-    if (status == AnimationStatus.completed ||
-        status == AnimationStatus.dismissed) {
-      // If repeatTimes is set to -1, repeat the animation indefinitely.
-      // If repeatTimes is > 0, we keep repeating the animation until
-      // repeatTimes becomes 0.
-      if (repeatTimes == -1 || repeatTimes > 0) {
-        // Only decrement if the animation is not meant to play forever.
-        if (repeatTimes != -1) {
-          repeatTimes--;
-        }
-
-        // A repetition is another cycle of this same logical run. Awaiting it
-        // here keeps a non-interruptable run's [driveFuture] pending until its
-        // full repeat/reverse budget is exhausted, so later queued triggers
-        // cannot overlap one of its repetitions.
-        return _driveNow(generation);
-      } else if (repeatTimes == 0) {
-        if (!mounted) return;
-
-        widget.onEnd?.call();
-
-        final resetState =
-            context.findAncestorStateOfType<ResetAllAnimationsEffectState>();
-        resetState?.reset();
-      }
-    }
-  }
-
   /// Resets the animation. Called by [ResetAllAnimationsEffect] if
   /// it is found in the widget tree.
   void reset() {
-    repeatTimes = widget.repeat;
     driveFuture = null;
-    _driveGeneration++;
+    _cancellationEpoch++;
+    _activeReverseLeg = false;
     controller.reset();
   }
 
   /// Drives the animation.
   ///
   /// A fresh interruptable invocation starts a new logical run and supersedes
-  /// every older one. A repetition passes its existing [generation] back in,
-  /// because it is another leg of the same run rather than a competing run.
-  /// Non-interruptable invocations do not use generations: each one attaches
-  /// itself to [driveFuture] immediately, preserving their serialized order.
-  Future<void> drive({int? generation}) {
-    if (!widget.interruptable) {
-      final previous = driveFuture;
-      final future = _driveAfter(previous);
-      driveFuture = future;
-      return future;
-    }
+  /// every older one via [_cancellationEpoch]. Non-interruptable invocations
+  /// instead attach themselves to [driveFuture], preserving their serialized
+  /// order.
+  Future<void> drive() {
+    if (!mounted) return Future<void>.value();
 
-    final currentGeneration = generation ?? ++_driveGeneration;
-    final future = _driveNow(currentGeneration);
+    final play = shouldPlay;
+    final cycleState = _RunCycleState(
+      id: ++_nextRunId,
+      repeat: widget.repeat,
+      motion: widget.motion,
+      delay: widget.delay,
+      reverse: widget.reverse,
+      play: play,
+      // The short-circuit is contractual: skipIf must not be evaluated for
+      // a run that playIf already rejected (one predicate call per run).
+      skip: play && shouldSkip,
+      onEnd: widget.onEnd,
+    );
+    if (widget.interruptable) {
+      controller.stop();
+      _cancellationEpoch++;
+    }
+    final cancellationEpoch = _cancellationEpoch;
+    final future = widget.interruptable
+        ? _driveNow(cycleState, cancellationEpoch)
+        : _driveAfter(driveFuture, cycleState, cancellationEpoch);
     driveFuture = future;
     return future;
   }
 
   /// Waits for the preceding non-interruptable cycle before starting this one.
-  Future<void> _driveAfter(Future<void>? previous) async {
+  Future<void> _driveAfter(
+    Future<void>? previous,
+    _RunCycleState cycleState,
+    int cancellationEpoch,
+  ) async {
     if (previous != null) {
       await previous;
       if (!mounted) return;
     }
-    return _driveNow(null);
+    return _driveNow(cycleState, cancellationEpoch);
   }
 
-  /// Runs one animation cycle.
-  ///
-  /// A non-null [generation] belongs to an interruptable logical run. The
-  /// generation is checked at every asynchronous resume point so an obsolete
-  /// delay or a controller future cancelled by a newer trigger cannot restart
-  /// the animation, consume its repeat budget, or call [AnimatedEffect.onEnd].
-  Future<void> _driveNow(int? generation) async {
-    bool isCurrentRun() => generation == null || generation == _driveGeneration;
+  /// Runs every leg in one logical animation run.
+  Future<void> _driveNow(
+    _RunCycleState cycleState,
+    int cancellationEpoch,
+  ) async {
+    bool isCurrentRun() => cancellationEpoch == _cancellationEpoch;
 
-    // Park the controller at the value the upcoming run will start from,
-    // BEFORE the delay window opens.
-    //
-    // A delay defers the controller's start, but on its own it does not
-    // rewind the controller: through the whole wait, the controller keeps
-    // reporting whatever the PREVIOUS run left it at — 1 after a completed
-    // forward leg. Meanwhile the descendant [EffectWidget]s have already
-    // folded that finished run into their `start` and adopted the new `end`,
-    // so their `start.lerp(end, curvedValue)` evaluates at 1 and paints the
-    // NEW TARGET instantly. The effect flashes its destination, holds it for
-    // the length of the delay, snaps back to the start value, and only then
-    // animates. The very first run of any effect hides this, because a
-    // controller that has never run already rests at 0 — which is why the bug
-    // only shows up from the second run onward.
-    //
-    // The parked value must mirror the branch below that chooses between
-    // `reverse()` (which runs 1 -> 0) and `forward(from: 0)`, so a delayed
-    // reverse leg holds at its own start of 1 rather than snapping to 0.
-    //
-    // Only park a run that is actually going to play. `playIf` returning
-    // false makes the body below return without touching the controller at
-    // all, and `skipIf` returning true makes it jump straight to 1; rewinding
-    // the controller for either would be a visible reset for an animation
-    // that never runs — the same class of glitch this is fixing.
-    if (widget.delay != Duration.zero && shouldPlay && !shouldSkip) {
-      controller.value = (widget.reverse && shouldReverse) ? 1 : 0;
-    }
+    // Whether this run supersedes a mid-flight predecessor. Sampled before
+    // this run touches the controller: an interruptable drive() has already
+    // stopped the controller at the interruption point, while a queued run
+    // only starts after its predecessor settled at a terminal value. This is
+    // the authoritative signal — descendants cannot infer interruption from
+    // their last-built frame, because a completed run's final value may
+    // never build when its successor begins within the same frame.
+    final bool interruptedHandoff =
+        controller.value > 0 && controller.value < 1;
 
-    await ensureDelay(() async {
-      if (!mounted || !isCurrentRun()) return;
-      if (!shouldPlay) return;
-      if (shouldSkip) {
+    // Only a DELAYED interrupting run continues from the interrupted render:
+    // its park would otherwise flash the original start through the delay
+    // window (spec: same-target delayed retrigger holds the interrupted
+    // position). A zero-delay retrigger replays from its own start, keeping
+    // rapid same-target triggers deterministic.
+    _continuesInterrupted =
+        interruptedHandoff && cycleState.delay != Duration.zero;
+    _runId = cycleState.id;
+    _activeMotion = cycleState.motion;
+    _activeReverseLeg = false;
+
+    var remainingRepeats = cycleState.repeat;
+    while (mounted && isCurrentRun()) {
+      // Re-asserted every leg, not hoisted: didUpdateWidget writes the NEWEST
+      // widget's duration to the controller, so a queued trigger can retarget
+      // it mid-run. Each leg of the active run must run at its own snapshot.
+      controller.duration = cycleState.motion.effectiveDuration;
+      if (cycleState.delay != Duration.zero) {
+        // A delay holds the controller at the upcoming leg's starting value.
+        // Spring reversals solve forward in time from end to start, so they
+        // begin at zero just like forward legs; curved reversals begin at one.
+        if (cycleState.play && !cycleState.skip) {
+          controller.value =
+              _activeReverseLeg && cycleState.motion is! SpringMotion ? 1 : 0;
+        }
+        await Future<void>.delayed(cycleState.delay);
+        if (!mounted || !isCurrentRun()) return;
+      }
+
+      if (!cycleState.play) return;
+      if (cycleState.skip) {
         controller.value = 1;
         return;
       }
-      if (widget.reverse && shouldReverse) {
-        shouldReverse = false;
-        await controller.reverse().catchError((err) {
-          // ignore
-        });
-      } else {
-        shouldReverse = widget.reverse;
-        await controller.forward(from: 0).catchError((err) {
-          // ignore
-        });
+
+      try {
+        if (_activeReverseLeg && cycleState.motion is! SpringMotion) {
+          await controller.reverse().orCancel;
+        } else {
+          await controller.forward(from: 0).orCancel;
+        }
+      } on TickerCanceled {
+        return;
+      }
+      if (!mounted || !isCurrentRun()) return;
+      final completedLeg = controller.status == AnimationStatus.completed ||
+          controller.status == AnimationStatus.dismissed;
+      if (!completedLeg) return;
+
+      if (remainingRepeats == -1 || remainingRepeats > 0) {
+        if (remainingRepeats != -1) {
+          remainingRepeats--;
+        }
+        _activeReverseLeg = cycleState.reverse && !_activeReverseLeg;
+        continue;
       }
 
-      if (!mounted || !isCurrentRun()) return;
-      return onAnimationStatusChanged(generation);
-    });
-    if (!mounted || !isCurrentRun()) return;
-  }
-
-  /// Ensures that the animation is delayed if [widget.delay] is not
-  /// [Duration.zero].
-  Future<void> ensureDelay(Future Function() fn) async {
-    if (widget.delay == Duration.zero) {
-      return fn();
-    } else {
-      return Future.delayed(widget.delay, fn);
+      cycleState.onEnd?.call();
+      final resetState =
+          context.findAncestorStateOfType<ResetAllAnimationsEffectState>();
+      resetState?.reset();
+      return;
     }
   }
 
@@ -557,19 +562,25 @@ class AnimatedEffectState extends State<AnimatedEffect>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder: (context, child) => EffectQuery(
-        linearValue: controller.value,
-        curvedValue: widget.motion.transform(controller.value),
-        motion: widget.motion,
-        isTransition: false,
-        resetValues: widget.resetValues,
-        duration: widget.motion.effectiveDuration,
-        curve: switch (widget.motion) {
-          CurvedMotion(:final curve) => curve,
-          _ => Curves.linear,
-        },
-        child: child!,
-      ),
+      builder: (context, child) {
+        final motion = _activeMotion ?? widget.motion;
+        return EffectQuery(
+          linearValue: controller.value,
+          runId: _runId,
+          continuesInterrupted: _continuesInterrupted,
+          reverseLeg: _activeReverseLeg,
+          curvedValue: motion.transform(controller.value),
+          motion: motion,
+          isTransition: false,
+          resetValues: widget.resetValues,
+          duration: motion.effectiveDuration,
+          curve: switch (motion) {
+            CurvedMotion(:final curve) => curve,
+            _ => Curves.linear,
+          },
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       child: widget.child,
     );
   }
@@ -601,7 +612,6 @@ class ResetAllAnimationsEffect extends StatefulWidget {
   'Deprecated along with ResetAllAnimationsEffect. '
   'Will be removed in 0.5.0.',
 )
-// ignore: deprecated_member_use_from_same_package
 class ResetAllAnimationsEffectState extends State<ResetAllAnimationsEffect> {
   /// Finds the last possible [AnimatedEffect] state in the tree while
   /// resetting all the ones on the way down.

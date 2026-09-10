@@ -74,6 +74,11 @@ class _EffectWidgetState extends State<EffectWidget> {
   /// not curved progress.
   double previousLinearValue = 0;
 
+  int? previousRunId;
+  Motion? previousMotion;
+  bool previousReverseLeg = false;
+  bool _capturedDuringWidgetUpdate = false;
+
   /// The typed velocity carried across spring retargets — an effect-shaped
   /// "units per second", captured analytically at the interruption instant.
   Effect? velocity;
@@ -164,23 +169,69 @@ class _EffectWidgetState extends State<EffectWidget> {
     }());
   }
 
-  /// Evaluates the closed-form spring state — (position, velocity) — at
-  /// [linearValue] of the current run. The coefficients are scalars; all
-  /// arithmetic happens in effect space via [VectorEffect] operators.
-  (Effect, Effect) _springState(SpringMotion motion, double linearValue) {
+  /// The endpoints the active leg runs between: a reverse leg is a fresh
+  /// forward-time solve from [end] back to the start. This is the single
+  /// owner of the endpoint rule — resting frames and mid-flight samples
+  /// both derive from it.
+  (Effect from, Effect target) _legEndpoints(
+    bool reverse,
+    Effect? effectiveStart,
+  ) {
+    final Effect resolvedStart = effectiveStart ?? start;
+    return reverse ? (end, resolvedStart) : (resolvedStart, end);
+  }
+
+  /// Evaluates the closed-form spring position at [linearValue] of the
+  /// current run — the per-frame path, which never needs the velocity half
+  /// of the solution. The coefficients are scalars; all arithmetic happens
+  /// in effect space via [VectorEffect] operators.
+  Effect _springPosition(
+    SpringMotion motion,
+    double linearValue, {
+    bool reverse = false,
+    Effect? effectiveStart,
+  }) {
+    final (Effect from, Effect target) = _legEndpoints(reverse, effectiveStart);
+    // Endpoints are exact: the settling bound leaves a sub-tolerance
+    // residual which must not leak into resting keyframes.
+    if (linearValue >= 1) return target;
     final double seconds = motion.effectiveDuration.inMicroseconds /
         Duration.microsecondsPerSecond;
     final SpringCoefficients c =
         springCoefficients(motion.description, linearValue * seconds);
-    final dynamic displacement = (start as dynamic) - end;
-    dynamic position = (end as dynamic) + displacement * c.a;
-    dynamic speed = displacement * c.da;
-    final dynamic v0 = velocity;
+    final dynamic displacement = (from as dynamic) - target;
+    dynamic position = (target as dynamic) + displacement * c.a;
+    final dynamic v0 = reverse ? null : velocity;
     if (v0 != null) {
       position = position + v0 * c.b;
+    }
+    return position as Effect;
+  }
+
+  /// Evaluates position AND instantaneous velocity. Only needed when a
+  /// retarget captures the in-flight state — per trigger, not per frame —
+  /// so re-solving the coefficients for the velocity half is fine.
+  (Effect, Effect) _springState(
+    SpringMotion motion,
+    double linearValue, {
+    bool reverse = false,
+  }) {
+    final Effect position =
+        _springPosition(motion, linearValue, reverse: reverse);
+    if (linearValue >= 1) {
+      return (position, ((position as dynamic) - position) as Effect);
+    }
+    final double seconds = motion.effectiveDuration.inMicroseconds /
+        Duration.microsecondsPerSecond;
+    final SpringCoefficients c =
+        springCoefficients(motion.description, linearValue * seconds);
+    final (Effect from, Effect target) = _legEndpoints(reverse, null);
+    dynamic speed = ((from as dynamic) - target) * c.da;
+    final dynamic v0 = reverse ? null : velocity;
+    if (v0 != null) {
       speed = speed + v0 * c.db;
     }
-    return (position as Effect, speed as Effect);
+    return (position, speed as Effect);
   }
 
   @override
@@ -194,8 +245,34 @@ class _EffectWidgetState extends State<EffectWidget> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final effectQuery = EffectQuery.maybeOf(context);
-    final double animationValue = effectQuery?.curvedValue ?? 0;
-    previousAnimationValue = animationValue;
+    final int? runId = effectQuery?.runId;
+    if (previousRunId != null && runId != previousRunId) {
+      // Only a run that HOLDS its interrupted predecessor (a delayed
+      // same-target retrigger) carries the rendered position into its
+      // start. The last-built frame value cannot decide this: a completed
+      // run's final frame may never build when its successor starts within
+      // the same frame, leaving previousLinearValue stranded strictly
+      // inside (0, 1). Every other new run is a replay: it repaints from
+      // the author's explicit start when given, and otherwise keeps the
+      // pair start untouched — the only record of where this pair began.
+      if (!_capturedDuringWidgetUpdate) {
+        if (effectQuery != null && !effectQuery.isTransition) {
+          if (effectQuery.continuesInterrupted &&
+              previousLinearValue > 0 &&
+              previousLinearValue < 1) {
+            start = start.lerp(end, previousAnimationValue);
+          } else if (widget.start != null) {
+            start = widget.start!;
+          }
+        }
+        velocity = null;
+      }
+    }
+    _capturedDuringWidgetUpdate = false;
+    previousRunId = runId;
+    previousMotion = effectQuery?.motion;
+    previousReverseLeg = effectQuery?.reverseLeg ?? false;
+    previousAnimationValue = effectQuery?.curvedValue ?? 0;
     previousLinearValue = effectQuery?.linearValue ?? 0;
   }
 
@@ -213,15 +290,26 @@ class _EffectWidgetState extends State<EffectWidget> {
     _reassembled = true;
   }
 
+  /// Re-adopts the widget configuration as the rendered pair, discarding any
+  /// continuation state. The single body behind every "this is not a
+  /// continuable retarget" branch in [didUpdateWidget].
+  void _adoptWidgetPair() {
+    start = widget.start ?? widget.end;
+    end = widget.end;
+    velocity = null;
+  }
+
   @override
   void didUpdateWidget(covariant EffectWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (_reassembled) {
+    // A hot reload, an incompatible effect subtype, or a changed explicit
+    // start is not a continuable retarget: re-seed from configuration.
+    if (_reassembled ||
+        oldWidget.end.runtimeType != widget.end.runtimeType ||
+        (oldWidget.end == widget.end && oldWidget.start != widget.start)) {
       _reassembled = false;
-      start = widget.start ?? widget.end;
-      end = widget.end;
-      velocity = null;
+      _adoptWidgetPair();
       return;
     }
 
@@ -234,23 +322,24 @@ class _EffectWidgetState extends State<EffectWidget> {
     // this sync (see git history of update pack v2) broke scroll
     // transitions, which is why it is gated on the absence of a query.
     if (effectQuery == null) {
-      start = widget.start ?? widget.end;
-      end = widget.end;
-      velocity = null;
+      _adoptWidgetPair();
       return;
     }
 
-    if (oldWidget.end != widget.end &&
-        oldWidget.end.runtimeType == widget.end.runtimeType &&
-        start.runtimeType == end.runtimeType) {
+    if (oldWidget.end != widget.end && start.runtimeType == end.runtimeType) {
+      _capturedDuringWidgetUpdate = true;
       if (!effectQuery.isTransition) {
         if (_isSpringDriven(effectQuery)) {
           // Capture BOTH the rendered position and the instantaneous
           // velocity of the in-flight spring: the new run starts from the
           // captured position with the captured momentum.
+          final outgoingMotion = previousMotion;
           final (Effect position, Effect speed) = _springState(
-            effectQuery.motion! as SpringMotion,
+            outgoingMotion is SpringMotion
+                ? outgoingMotion
+                : effectQuery.motion! as SpringMotion,
             previousLinearValue,
+            reverse: previousReverseLeg,
           );
           start = position;
           velocity = speed;
@@ -263,6 +352,9 @@ class _EffectWidgetState extends State<EffectWidget> {
       end = widget.end;
     }
   }
+
+  Effect _effectiveStart(EffectQuery? query) =>
+      widget.start == null && query?.resetValues == true ? end.idle() : start;
 
   @override
   Widget build(BuildContext context) {
@@ -278,15 +370,11 @@ class _EffectWidgetState extends State<EffectWidget> {
       }
 
       if (_isSpringDriven(effectQuery)) {
-        final double linearValue = effectQuery!.linearValue;
-        // Endpoints are exact: the settling bound leaves a sub-tolerance
-        // residual which must not leak into resting keyframes.
-        if (linearValue >= 1) {
-          return end.apply(context, child);
-        }
-        final (Effect position, _) = _springState(
-          effectQuery.motion! as SpringMotion,
-          linearValue,
+        final Effect position = _springPosition(
+          effectQuery!.motion! as SpringMotion,
+          effectQuery.linearValue,
+          reverse: effectQuery.reverseLeg,
+          effectiveStart: _effectiveStart(effectQuery),
         );
         return position.apply(context, child);
       }
@@ -296,12 +384,8 @@ class _EffectWidgetState extends State<EffectWidget> {
       }
 
       final double animationValue = effectQuery?.curvedValue ?? 0;
-      Effect effectiveStart = start;
-      if (widget.start == null && effectQuery?.resetValues == true) {
-        effectiveStart = start.idle();
-      }
-
-      final Effect newEffect = effectiveStart.lerp(end, animationValue);
+      final Effect newEffect =
+          _effectiveStart(effectQuery).lerp(end, animationValue);
       return newEffect.apply(context, child);
     }
   }
