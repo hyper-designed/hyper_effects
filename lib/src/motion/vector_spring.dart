@@ -35,8 +35,8 @@ class SpringCoefficients {
 /// Evaluates the closed-form solution of [spring] at time [t] seconds.
 SpringCoefficients springCoefficients(SpringDescription spring, double t) {
   final double omega = math.sqrt(spring.stiffness / spring.mass);
-  final double zeta = spring.damping /
-      (2 * math.sqrt(spring.stiffness * spring.mass));
+  final double zeta =
+      spring.damping / (2 * math.sqrt(spring.stiffness * spring.mass));
 
   if (zeta < 1 - 1e-9) {
     // Underdamped: decaying oscillation.

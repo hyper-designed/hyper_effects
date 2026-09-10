@@ -21,6 +21,26 @@ import 'effect.dart';
 /// Effects that don't mix this in simply keep the normalized lerp path;
 /// physics features degrade gracefully.
 mixin VectorEffect<T extends Effect> on Effect {
+  /// Adds two optional value lanes, keeping nullability from the LEFT
+  /// operand: a null left lane has no numeric value at all, and a null
+  /// right lane contributes nothing.
+  static double? addLane(double? a, double? b) {
+    if (a == null) return null;
+    if (b == null) return a;
+    return a + b;
+  }
+
+  /// Subtracts two optional value lanes without ever producing NaN.
+  /// Nullability follows [addLane]; additionally, any non-finite operand
+  /// poisons the lane to null — `infinity - infinity` has no usable
+  /// displacement, and NaN must never enter the spring algebra.
+  static double? subtractLane(double? a, double? b) {
+    if (a == null) return null;
+    if (b == null) return a;
+    if (!a.isFinite || !b.isFinite) return null;
+    return a - b;
+  }
+
   /// Field-wise sum of animatable values.
   T operator +(T other);
 

@@ -61,8 +61,7 @@ extension RotationEffectExt on Widget {
 }
 
 /// An [Effect] that applies a rotation to a [Widget].
-class RotationEffect extends Effect
-    with VectorEffect<RotationEffect> {
+class RotationEffect extends Effect with VectorEffect<RotationEffect> {
   /// The angle to rotate the [Widget] in radians. This directly maps to
   /// angle property in [Transform.rotate] constructor.
   final double angle;

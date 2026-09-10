@@ -6,6 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_box_transform/flutter_box_transform.dart';
 import 'package:hyper_effects_demo/stories/color_filter_scroll_transition.dart';
 import 'package:hyper_effects_demo/stories/counter_app.dart';
+import 'package:hyper_effects_demo/stories/interrupted_delay_hold.dart';
+import 'package:hyper_effects_demo/stories/layout_spring_safety.dart';
+import 'package:hyper_effects_demo/stories/queued_run_isolation.dart';
+import 'package:hyper_effects_demo/stories/spring_lifecycle.dart';
 import 'package:hyper_effects_demo/stories/rolling_app_bar_animation.dart';
 import 'package:hyper_effects_demo/stories/rolling_pictures_animation.dart';
 import 'package:hyper_effects_demo/stories/scroll_phase_blur.dart';
@@ -159,10 +163,27 @@ class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
     ),
   ];
 
-  int? selectedAnimation;
-  int? selectedTimeline;
-  int? selectedTransition;
-  int? selectedCategory;
+  /// Low-priority edge-case exercises; listed after the showcase sections.
+  final List<Story> edgeCaseStories = [
+    const Story(
+      title: 'Interrupted Delay Hold',
+      child: InterruptedDelayHoldStory(),
+    ),
+    const Story(
+      title: 'Queued Run Isolation',
+      child: QueuedRunIsolationStory(),
+    ),
+    const Story(
+      title: 'Spring Lifecycle',
+      child: SpringLifecycleStory(),
+    ),
+    const Story(
+      title: 'Layout Spring Safety',
+      child: LayoutSpringSafetyStory(),
+    ),
+  ];
+
+  Story? selectedStory;
 
   bool openDrawer = false;
 
@@ -197,6 +218,32 @@ class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
     final screen = MediaQuery.sizeOf(context);
     openDrawer = screen.width > 800;
   }
+
+  /// One titled drawer section: a header followed by a selectable tile per
+  /// story.
+  List<Widget> _storySection(String title, List<Story> stories) => [
+        Padding(
+          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+          child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+        ),
+        for (final Story story in stories)
+          Material(
+            type: MaterialType.transparency,
+            borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(32),
+              bottomRight: Radius.circular(32),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: ListTile(
+              title: Padding(
+                padding: const EdgeInsets.only(left: 16),
+                child: Text(story.title),
+              ),
+              onTap: () => setState(() => selectedStory = story),
+              selected: story == selectedStory,
+            ),
+          ),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -243,113 +290,13 @@ class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
                     child: ListView(
                       children: [
                         const SizedBox(height: 16),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 16,
-                            right: 16,
-                            bottom: 16,
-                            top: 0,
-                          ),
-                          child: Text('Animations',
-                              style: Theme.of(context).textTheme.titleLarge),
-                        ),
-                        for (final Story story in animationStories)
-                          Material(
-                            type: MaterialType.transparency,
-                            borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(32),
-                              bottomRight: Radius.circular(32),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: ListTile(
-                              title: Padding(
-                                padding: const EdgeInsets.only(left: 16),
-                                child: Text(story.title),
-                              ),
-                              onTap: () {
-                                setState(() {
-                                  selectedAnimation =
-                                      animationStories.indexOf(story);
-                                  selectedTimeline = null;
-                                  selectedTransition = null;
-                                });
-                              },
-                              selected: animationStories.indexOf(story) ==
-                                  selectedAnimation,
-                            ),
-                          ),
+                        ..._storySection('Animations', animationStories),
                         const Divider(height: 32, indent: 16, endIndent: 16),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 16,
-                            right: 16,
-                            bottom: 16,
-                            top: 0,
-                          ),
-                          child: Text('Timelines',
-                              style: Theme.of(context).textTheme.titleLarge),
-                        ),
-                        for (final Story story in timelineStories)
-                          Material(
-                            type: MaterialType.transparency,
-                            borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(32),
-                              bottomRight: Radius.circular(32),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: ListTile(
-                              title: Padding(
-                                padding: const EdgeInsets.only(left: 16),
-                                child: Text(story.title),
-                              ),
-                              onTap: () {
-                                setState(() {
-                                  selectedTimeline =
-                                      timelineStories.indexOf(story);
-                                  selectedAnimation = null;
-                                  selectedTransition = null;
-                                });
-                              },
-                              selected: timelineStories.indexOf(story) ==
-                                  selectedTimeline,
-                            ),
-                          ),
+                        ..._storySection('Timelines', timelineStories),
                         const Divider(height: 32, indent: 16, endIndent: 16),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 16,
-                            right: 16,
-                            bottom: 16,
-                            top: 0,
-                          ),
-                          child: Text('Transitions',
-                              style: Theme.of(context).textTheme.titleLarge),
-                        ),
-                        for (final Story story in transitionStories)
-                          Material(
-                            type: MaterialType.transparency,
-                            borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(32),
-                              bottomRight: Radius.circular(32),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: ListTile(
-                              title: Padding(
-                                padding: const EdgeInsets.only(left: 16),
-                                child: Text(story.title),
-                              ),
-                              onTap: () {
-                                setState(() {
-                                  selectedTransition =
-                                      transitionStories.indexOf(story);
-                                  selectedAnimation = null;
-                                  selectedTimeline = null;
-                                });
-                              },
-                              selected: transitionStories.indexOf(story) ==
-                                  selectedTransition,
-                            ),
-                          ),
+                        ..._storySection('Transitions', transitionStories),
+                        const Divider(height: 32, indent: 16, endIndent: 16),
+                        ..._storySection('Edge Cases', edgeCaseStories),
                         const Divider(height: 16),
                       ],
                     ),
@@ -364,15 +311,10 @@ class _StoryboardState extends State<Storyboard> with WidgetsBindingObserver {
             child: ContentView(
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                child: selectedAnimation != null
-                    ? animationStories[selectedAnimation!].child
-                    : selectedTimeline != null
-                        ? timelineStories[selectedTimeline!].child
-                        : selectedTransition != null
-                            ? transitionStories[selectedTransition!].child
-                            : const Center(
-                                child: Text('Select a story to view.'),
-                              ),
+                child: selectedStory?.child ??
+                    const Center(
+                      child: Text('Select a story to view.'),
+                    ),
               ),
             ),
           ),

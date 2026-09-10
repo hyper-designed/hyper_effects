@@ -161,7 +161,10 @@ class AlignEffect extends Effect with VectorEffect<AlignEffect> {
     this.alignment = AlignmentDirectional.topStart,
     this.widthFactor,
     this.heightFactor,
-  });
+  })  : assert(widthFactor == null || !widthFactor.isNaN,
+            'widthFactor must not be NaN'),
+        assert(heightFactor == null || !heightFactor.isNaN,
+            'heightFactor must not be NaN');
 
   @override
   AlignEffect lerp(covariant AlignEffect other, double value) {
@@ -179,22 +182,6 @@ class AlignEffect extends Effect with VectorEffect<AlignEffect> {
   static double? _lerpFactor(double? a, double? b, double value) {
     if (a == null || b == null) return b;
     return (lerpDouble(a, b, value) ?? 1).clampUnderZero;
-  }
-
-  /// Combines two factors under [op], keeping nullability from the LEFT
-  /// operand.
-  ///
-  /// A null left operand means the result has no numeric factor at all; a
-  /// null right operand contributes nothing, leaving the left value as-is.
-  /// See the class documentation for why this is the right shape.
-  static double? _combineFactor(
-    double? a,
-    double? b,
-    double Function(double a, double b) op,
-  ) {
-    if (a == null) return null;
-    if (b == null) return a;
-    return op(a, b);
   }
 
   /// Builds the [Align], flooring any factor that overshot below zero.
@@ -229,8 +216,8 @@ class AlignEffect extends Effect with VectorEffect<AlignEffect> {
   @override
   AlignEffect operator +(AlignEffect other) => AlignEffect(
         alignment: alignment.add(other.alignment),
-        widthFactor: _combineFactor(widthFactor, other.widthFactor, _add),
-        heightFactor: _combineFactor(heightFactor, other.heightFactor, _add),
+        widthFactor: VectorEffect.addLane(widthFactor, other.widthFactor),
+        heightFactor: VectorEffect.addLane(heightFactor, other.heightFactor),
       );
 
   /// Field-wise difference. [AlignmentGeometry] declares no binary `-`, so
@@ -240,9 +227,9 @@ class AlignEffect extends Effect with VectorEffect<AlignEffect> {
   @override
   AlignEffect operator -(AlignEffect other) => AlignEffect(
         alignment: alignment.add(-other.alignment),
-        widthFactor: _combineFactor(widthFactor, other.widthFactor, _subtract),
+        widthFactor: VectorEffect.subtractLane(widthFactor, other.widthFactor),
         heightFactor:
-            _combineFactor(heightFactor, other.heightFactor, _subtract),
+            VectorEffect.subtractLane(heightFactor, other.heightFactor),
       );
 
   /// Scales the alignment and any present factors by [factor]. A null
@@ -273,10 +260,6 @@ class AlignEffect extends Effect with VectorEffect<AlignEffect> {
         width * width +
         height * height;
   }
-
-  static double _add(double a, double b) => a + b;
-
-  static double _subtract(double a, double b) => a - b;
 
   @override
   bool operator ==(Object other) {

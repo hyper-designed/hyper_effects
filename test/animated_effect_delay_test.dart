@@ -326,4 +326,45 @@ void main() {
     expect(opacityOf(tester), closeTo(1, 1e-6),
         reason: 'no delay means the run finishes within its own duration');
   });
+
+  testWidgets('same-target delayed retrigger freezes at interrupted position',
+      (tester) async {
+    var trigger = 0;
+
+    Widget host() => MaterialApp(
+          home: Center(
+            child: const SizedBox.square(dimension: 50, key: key)
+                .translateX(120, from: -120)
+                .animate(
+                  trigger: trigger,
+                  duration: duration,
+                  curve: Curves.linear,
+                  delay: delay,
+                ),
+          ),
+        );
+
+    await tester.pumpWidget(host());
+    trigger = 1;
+    await tester.pumpWidget(host());
+    await tester.pump(delay + frame);
+    await tester.pump(const Duration(milliseconds: 120));
+
+    final interrupted = translationXOf(tester);
+    expect(interrupted, greaterThan(-100));
+    expect(interrupted, lessThan(100));
+
+    trigger = 2;
+    await tester.pumpWidget(host());
+    var maxDrift = (translationXOf(tester) - interrupted).abs();
+    for (var elapsed = Duration.zero; elapsed < delay; elapsed += frame) {
+      await tester.pump(frame);
+      final drift = (translationXOf(tester) - interrupted).abs();
+      if (drift > maxDrift) maxDrift = drift;
+    }
+
+    expect(maxDrift, lessThan(1),
+        reason: 'a trigger-only retrigger must hold the interrupted render, '
+            'not snap to the original from value');
+  });
 }

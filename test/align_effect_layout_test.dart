@@ -4,8 +4,7 @@ import 'package:hyper_effects/hyper_effects.dart';
 
 void main() {
   group('AlignEffect layout semantics', () {
-    testWidgets(
-        'align() expands to fill loose constraints like a plain Align',
+    testWidgets('align() expands to fill loose constraints like a plain Align',
         (tester) async {
       const childKey = Key('child');
       await tester.pumpWidget(
@@ -83,18 +82,16 @@ void main() {
     });
 
     test('mixed null and non-null snaps to the target value', () {
-      final nullToValue =
-          AlignEffect().lerp(AlignEffect(widthFactor: 2), 0.5);
+      final nullToValue = AlignEffect().lerp(AlignEffect(widthFactor: 2), 0.5);
       expect(nullToValue.widthFactor, 2);
 
-      final valueToNull =
-          AlignEffect(widthFactor: 2).lerp(AlignEffect(), 0.5);
+      final valueToNull = AlignEffect(widthFactor: 2).lerp(AlignEffect(), 0.5);
       expect(valueToNull.widthFactor, isNull);
     });
 
     test('interpolated factors are clamped at zero', () {
-      final result = AlignEffect(widthFactor: 0)
-          .lerp(AlignEffect(widthFactor: -4), 0.5);
+      final result =
+          AlignEffect(widthFactor: 0).lerp(AlignEffect(widthFactor: -4), 0.5);
       expect(result.widthFactor, 0);
     });
 

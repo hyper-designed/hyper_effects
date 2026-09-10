@@ -14,7 +14,6 @@ double compositeScaleOf(WidgetTester tester, Finder target) {
   return scale;
 }
 
-
 /// The vertical translation applied to [target] by its Transform ancestors.
 double translateYOf(WidgetTester tester, Finder target) {
   final transforms = tester.widgetList<Transform>(

@@ -198,7 +198,10 @@ class PaddingEffect extends Effect with VectorEffect<PaddingEffect> {
   /// Creates a [PaddingEffect] with the given [padding].
   PaddingEffect({
     this.padding = EdgeInsets.zero,
-  });
+  })  : assert(!padding.left.isNaN, 'padding.left must not be NaN'),
+        assert(!padding.top.isNaN, 'padding.top must not be NaN'),
+        assert(!padding.right.isNaN, 'padding.right must not be NaN'),
+        assert(!padding.bottom.isNaN, 'padding.bottom must not be NaN');
 
   /// Interpolates toward [other], unclamped in both the parameter and the
   /// result.
@@ -210,7 +213,8 @@ class PaddingEffect extends Effect with VectorEffect<PaddingEffect> {
   @override
   PaddingEffect lerp(covariant PaddingEffect other, double value) {
     return PaddingEffect(
-      padding: EdgeInsets.lerp(padding, other.padding, value) ?? EdgeInsets.zero,
+      padding:
+          EdgeInsets.lerp(padding, other.padding, value) ?? EdgeInsets.zero,
     );
   }
 
@@ -253,8 +257,19 @@ class PaddingEffect extends Effect with VectorEffect<PaddingEffect> {
   /// Field-wise difference of the four insets. Routinely negative: this is
   /// the displacement term of the spring solution, not a renderable state.
   @override
-  PaddingEffect operator -(PaddingEffect other) =>
-      PaddingEffect(padding: padding - other.padding);
+  PaddingEffect operator -(PaddingEffect other) => PaddingEffect(
+        padding: EdgeInsets.fromLTRB(
+          _subtractInset(padding.left, other.padding.left),
+          _subtractInset(padding.top, other.padding.top),
+          _subtractInset(padding.right, other.padding.right),
+          _subtractInset(padding.bottom, other.padding.bottom),
+        ),
+      );
+
+  /// Insets are non-nullable, so a lane [VectorEffect.subtractLane] poisons
+  /// (a non-finite pair with no usable displacement) collapses to zero.
+  static double _subtractInset(double a, double b) =>
+      VectorEffect.subtractLane(a, b) ?? 0;
 
   /// Scales all four insets by [factor].
   @override
