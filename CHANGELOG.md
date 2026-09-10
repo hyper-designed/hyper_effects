@@ -32,6 +32,17 @@ All notable changes to the Hyper Effects package are documented in this file.
   isn't forwarded to crash reporting or promoted to a test failure.
   Assert-gated, so it costs nothing in release or profile builds.
 
+### Breaking
+- **Translated widgets now move their hit-test region by default** — every
+  `.translate*()` extension and `TranslateEffect` now defaults
+  `transformHitTests` to `true`, matching Flutter's `Transform.translate`
+  and `FractionalTranslation` defaults as well as `ScaleEffect`. RollEffect's
+  internal `FractionalTranslation`s now inherit that framework default too.
+  Interactive children therefore answer where they are painted instead of
+  leaving an invisible hit target at their pre-transform layout position.
+  Pass `transformHitTests: false` explicitly on translate effects for
+  deliberate paint-only movement.
+
 ### Changed
 - **`PaddingEffect` and `AlignEffect` are now `VectorEffect`s** — `.pad()`,
   `.padAll()`, `.padOnly()` and friends, along with `.align()`, `.alignX()`,

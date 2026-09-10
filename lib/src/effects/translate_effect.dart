@@ -11,10 +11,13 @@ extension TranslateEffectExt on Widget {
   /// Applies a [TranslateEffect] to a [Widget] with the given [offset].
   /// [fractional] determines whether the [offset] moves the [Widget] by using
   /// its own size as a percentage or by a fixed amount.
+  /// [transformHitTests] matches Flutter's [Transform.translate] default:
+  /// hit testing follows the painted widget. Pass false only for deliberately
+  /// paint-only movement whose interactive region must stay in layout space.
   Widget translate(
     Offset offset, {
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
     Offset? from,
   }) {
     return EffectWidget(
@@ -40,7 +43,7 @@ extension TranslateEffectExt on Widget {
   Widget translateX(
     double x, {
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
     double? from,
   }) {
     return EffectWidget(
@@ -66,7 +69,7 @@ extension TranslateEffectExt on Widget {
   Widget translateY(
     double y, {
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
     double? from,
   }) {
     return EffectWidget(
@@ -94,7 +97,7 @@ extension TranslateEffectExt on Widget {
     double x,
     double y, {
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
     Offset? from,
   }) {
     return EffectWidget(
@@ -119,7 +122,7 @@ extension TranslateEffectExt on Widget {
   Widget slideIn(
     Offset offset, {
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
   }) {
     return EffectWidget(
       start: TranslateEffect(
@@ -141,7 +144,7 @@ extension TranslateEffectExt on Widget {
   Widget slideInVertically(
     double y, {
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
   }) {
     return EffectWidget(
       start: TranslateEffect(
@@ -163,7 +166,7 @@ extension TranslateEffectExt on Widget {
   Widget slideInHorizontally(
     double x, {
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
   }) {
     return EffectWidget(
       start: TranslateEffect(
@@ -185,7 +188,7 @@ extension TranslateEffectExt on Widget {
   Widget slideOut(
     Offset offset, {
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
   }) {
     return EffectWidget(
       start: TranslateEffect(
@@ -207,7 +210,7 @@ extension TranslateEffectExt on Widget {
   Widget slideOutVertically(
     double y, {
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
   }) {
     return EffectWidget(
       start: TranslateEffect(
@@ -229,7 +232,7 @@ extension TranslateEffectExt on Widget {
   Widget slideOutHorizontally(
     double x, {
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
   }) {
     return EffectWidget(
       start: TranslateEffect(
@@ -251,7 +254,7 @@ extension TranslateEffectExt on Widget {
   Widget slideInFromLeft({
     double? value,
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
   }) =>
       slideIn(
         Offset(value ?? (fractional ? -1 : -_kDefaultSlideOffset), 0),
@@ -264,7 +267,7 @@ extension TranslateEffectExt on Widget {
   Widget slideInFromRight({
     double? value,
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
   }) =>
       slideIn(
         Offset(value ?? (fractional ? 1 : _kDefaultSlideOffset), 0),
@@ -277,7 +280,7 @@ extension TranslateEffectExt on Widget {
   Widget slideInFromTop({
     double? value,
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
   }) =>
       slideIn(
         Offset(0, value ?? (fractional ? -1 : -_kDefaultSlideOffset)),
@@ -290,7 +293,7 @@ extension TranslateEffectExt on Widget {
   Widget slideInFromBottom({
     double? value,
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
   }) =>
       slideIn(
         Offset(0, value ?? (fractional ? 1 : _kDefaultSlideOffset)),
@@ -303,7 +306,7 @@ extension TranslateEffectExt on Widget {
   Widget slideOutToLeft({
     double? value,
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
   }) =>
       slideOut(
         Offset(value ?? (fractional ? -1 : -_kDefaultSlideOffset), 0),
@@ -316,7 +319,7 @@ extension TranslateEffectExt on Widget {
   Widget slideOutToRight({
     double? value,
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
   }) =>
       slideOut(
         Offset(value ?? (fractional ? 1 : _kDefaultSlideOffset), 0),
@@ -329,7 +332,7 @@ extension TranslateEffectExt on Widget {
   Widget slideOutToTop({
     double? value,
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
   }) =>
       slideOut(
         Offset(0, value ?? (fractional ? -1 : -_kDefaultSlideOffset)),
@@ -342,7 +345,7 @@ extension TranslateEffectExt on Widget {
   Widget slideOutToBottom({
     double? value,
     bool fractional = false,
-    bool transformHitTests = false,
+    bool transformHitTests = true,
   }) =>
       slideOut(
         Offset(0, value ?? (fractional ? 1 : _kDefaultSlideOffset)),
@@ -360,14 +363,20 @@ class TranslateEffect extends Effect with VectorEffect<TranslateEffect> {
   /// of the [Widget]'s size. If false, the [offset] is a fixed amount.
   final bool fractional;
 
-  /// Whether the [Widget] should be hit tested.
+  /// Whether hit testing follows this effect's painted translation.
+  ///
+  /// Defaults to true, matching Flutter's [Transform.translate]. False is an
+  /// explicit paint-only mode: the widget draws at [offset], but any gesture
+  /// target inside it continues answering where layout originally placed it.
+  /// That split is useful for visual-only motion and surprising for controls,
+  /// so the framework's interactive-safe behavior is the default.
   final bool transformHitTests;
 
   /// Creates a [TranslateEffect] with the given [offset] and [fractional].
   TranslateEffect({
     this.offset = Offset.zero,
     this.fractional = false,
-    this.transformHitTests = false,
+    this.transformHitTests = true,
   });
 
   @override
