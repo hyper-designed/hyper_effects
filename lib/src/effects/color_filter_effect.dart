@@ -72,25 +72,37 @@ class ColorFilterEffect extends Effect {
 
   @override
   ColorFilterEffect lerp(covariant ColorFilterEffect other, double value) {
+    final double clampedValue = value.clamp(0, 1).toDouble();
+    if (clampedValue == 0) return this;
+    if (clampedValue == 1) return other;
+
+    if (color != null || other.color != null) {
+      return ColorFilterEffect(
+        color: Color.lerp(
+          color ?? const Color(0x00000000),
+          other.color ?? const Color(0x00000000),
+          clampedValue,
+        ),
+        mode: clampedValue < 0.5 ? mode : other.mode,
+      );
+    }
+
+    final List<double> from = matrix ?? ColorFilterMatrix.identity;
+    final List<double> to = other.matrix ?? ColorFilterMatrix.identity;
+    final int maxLength = from.length > to.length ? from.length : to.length;
     final List<double> lerped = [];
-    for (final (index, item) in (matrix ?? []).indexed) {
+    for (int index = 0; index < maxLength; index++) {
       final double? val = lerpDouble(
-        item,
-        other.matrix?[index],
-        value.clamp(0, 1),
+        index < from.length ? from[index] : 0,
+        index < to.length ? to[index] : 0,
+        clampedValue,
       );
       lerped.add(val ?? 0);
     }
     return ColorFilterEffect(
-      color: color != null
-          ? Color.lerp(
-              color,
-              other.color,
-              value.clamp(0, 1),
-            )
-          : null,
+      color: null,
       matrix: lerped,
-      mode: mode,
+      mode: clampedValue < 0.5 ? mode : other.mode,
     );
   }
 
@@ -105,7 +117,8 @@ class ColorFilterEffect extends Effect {
   }
 
   @override
-  ColorFilterEffect idle() => ColorFilterEffect(mode: mode);
+  ColorFilterEffect idle() =>
+      ColorFilterEffect(mode: mode, matrix: ColorFilterMatrix.identity);
 
   @override
   bool operator ==(Object other) {
