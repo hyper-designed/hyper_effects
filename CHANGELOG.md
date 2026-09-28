@@ -2,7 +2,30 @@
 
 All notable changes to the Hyper Effects package are documented in this file.
 
-## [Unreleased]
+## [0.4.0] - Sep 27, 2026
+
+### Breaking
+- **Translated widgets now move their hit-test region by default** — every
+  `.translate*()` extension and `TranslateEffect` now defaults
+  `transformHitTests` to `true`, matching Flutter's `Transform.translate`
+  and `FractionalTranslation` defaults as well as `ScaleEffect`. RollEffect's
+  internal `FractionalTranslation`s now inherit that framework default too.
+  Interactive children therefore answer where they are painted instead of
+  leaving an invisible hit target at their pre-transform layout position.
+  Pass `transformHitTests: false` explicitly on translate effects for
+  deliberate paint-only movement.
+
+- **`AlignEffect` factors now default to null** — `widthFactor` and
+  `heightFactor` on `AlignEffect` and `.align()` are now `double?`
+  defaulting to null, matching Flutter's `Align`: null expands to fill the
+  incoming constraints instead of shrink-wrapping to the child. Previously
+  the hardcoded default of `1` forced every `.align()`, `.alignX()`,
+  `.alignY()`, and `.alignXY()` to shrink-wrap, which made the alignment a
+  visual no-op under loose constraints. Pass `widthFactor: 1` /
+  `heightFactor: 1` explicitly to restore the old shrink-wrap behavior.
+  Mixed null/non-null factor endpoints snap to the target value rather
+  than interpolating (there is no numeric interpolation between "fill
+  constraints" and a size factor).
 
 ### Added
 - **Layout-driven size effects** — `SizeEffect` and the `.widthTo()`,
@@ -32,74 +55,6 @@ All notable changes to the Hyper Effects package are documented in this file.
   isn't forwarded to crash reporting or promoted to a test failure.
   Assert-gated, so it costs nothing in release or profile builds.
 
-### Breaking
-- **Translated widgets now move their hit-test region by default** — every
-  `.translate*()` extension and `TranslateEffect` now defaults
-  `transformHitTests` to `true`, matching Flutter's `Transform.translate`
-  and `FractionalTranslation` defaults as well as `ScaleEffect`. RollEffect's
-  internal `FractionalTranslation`s now inherit that framework default too.
-  Interactive children therefore answer where they are painted instead of
-  leaving an invisible hit target at their pre-transform layout position.
-  Pass `transformHitTests: false` explicitly on translate effects for
-  deliberate paint-only movement.
-
-### Changed
-- **`PaddingEffect` and `AlignEffect` are now `VectorEffect`s** — `.pad()`,
-  `.padAll()`, `.padOnly()` and friends, along with `.align()`, `.alignX()`,
-  `.alignY()` and `.alignXY()`, are driven by real spring physics instead of
-  falling back to a normalized lerp. Two visible consequences:
-  - **Padding overshoots under spring motions.** `PaddingEffect.lerp`
-    previously clamped its progress to 0..1, so `.pad()` under
-    `CupertinoMotion.bouncy()` eased flatly into its target while a sibling
-    `.translateY()` on the same motion bounced — the same declared motion
-    produced two different curves on one widget. Padding now describes the
-    same curve as everything else. Insets are floored at zero in `apply`
-    (where `RenderPadding` requires non-negativity) rather than in `lerp`,
-    so only the components that actually went negative are touched and the
-    upward half of the bounce survives intact. Interpolation is also
-    unclamped for overshooting CURVES now, not just springs: a `.pad()` on
-    `Curves.easeOutBack` will pass its target and come back. If a padding
-    animation must not overshoot, use a monotone curve or a non-bouncy
-    spring such as `CupertinoMotion.smooth()`.
-  - **Momentum carries across a mid-flight retarget.** Re-triggering a
-    padding or alignment animation while it is still moving now starts the
-    new spring from the captured velocity instead of from rest, so rapid
-    re-triggers whip rather than hitch.
-
-  `AlignEffect`'s nullable `widthFactor` / `heightFactor` keep their existing
-  semantics exactly: a null factor is the "fill the incoming constraints"
-  layout mode, not a number, so nullability rides along from the left operand
-  of the vector algebra and a mixed null / non-null pair still snaps to the
-  target value rather than interpolating.
-
-### Fixed
-- `.animate(delay:)` no longer flashes the animation's target value while it
-  waits — a delayed re-trigger now holds the effects at the values the run is
-  about to start from, then animates. Previously the controller kept
-  reporting the value the PREVIOUS run left it at for the whole delay, so
-  every run after the first painted its destination instantly, held it, and
-  snapped back before easing in. Only the very first run looked correct.
-  Interruptible delayed re-triggers also retire superseded timers now, so an
-  older wait cannot wake after a newer trigger, restart the controller, or
-  call `onEnd`; non-interruptible delayed triggers remain serialized in
-  arrival order.
-
-## [0.4.0] - Aug 26, 2026
-
-### Breaking
-- **`AlignEffect` factors now default to null** — `widthFactor` and
-  `heightFactor` on `AlignEffect` and `.align()` are now `double?`
-  defaulting to null, matching Flutter's `Align`: null expands to fill the
-  incoming constraints instead of shrink-wrapping to the child. Previously
-  the hardcoded default of `1` forced every `.align()`, `.alignX()`,
-  `.alignY()`, and `.alignXY()` to shrink-wrap, which made the alignment a
-  visual no-op under loose constraints. Pass `widthFactor: 1` /
-  `heightFactor: 1` explicitly to restore the old shrink-wrap behavior.
-  Mixed null/non-null factor endpoints snap to the target value rather
-  than interpolating (there is no numeric interpolation between "fill
-  constraints" and a size factor).
-
-### Added
 - **Velocity handoff for springs** — retargeting a spring-driven
   `.animate()` mid-flight (changing the effect's target while it moves)
   now carries momentum: the new spring starts from the captured position
@@ -164,8 +119,49 @@ All notable changes to the Hyper Effects package are documented in this file.
   follows. `#immediate` spends the trigger slot to say "now" and so can never
   replay; `eager` leaves the caller's trigger free. Play-on-mount combined
   with a live trigger had no expression before this release.
+- Rewritten getting-started guide and portable consumer agent skills for effects, motion, and timelines.
+
+### Changed
+- **`PaddingEffect` and `AlignEffect` are now `VectorEffect`s** — `.pad()`,
+  `.padAll()`, `.padOnly()` and friends, along with `.align()`, `.alignX()`,
+  `.alignY()` and `.alignXY()`, are driven by real spring physics instead of
+  falling back to a normalized lerp. Two visible consequences:
+  - **Padding overshoots under spring motions.** `PaddingEffect.lerp`
+    previously clamped its progress to 0..1, so `.pad()` under
+    `CupertinoMotion.bouncy()` eased flatly into its target while a sibling
+    `.translateY()` on the same motion bounced — the same declared motion
+    produced two different curves on one widget. Padding now describes the
+    same curve as everything else. Insets are floored at zero in `apply`
+    (where `RenderPadding` requires non-negativity) rather than in `lerp`,
+    so only the components that actually went negative are touched and the
+    upward half of the bounce survives intact. Interpolation is also
+    unclamped for overshooting CURVES now, not just springs: a `.pad()` on
+    `Curves.easeOutBack` will pass its target and come back. If a padding
+    animation must not overshoot, use a monotone curve or a non-bouncy
+    spring such as `CupertinoMotion.smooth()`.
+  - **Momentum carries across a mid-flight retarget.** Re-triggering a
+    padding or alignment animation while it is still moving now starts the
+    new spring from the captured velocity instead of from rest, so rapid
+    re-triggers whip rather than hitch.
+
+  `AlignEffect`'s nullable `widthFactor` / `heightFactor` keep their existing
+  semantics exactly: a null factor is the "fill the incoming constraints"
+  layout mode, not a number, so nullability rides along from the left operand
+  of the vector algebra and a mixed null / non-null pair still snaps to the
+  target value rather than interpolating.
 
 ### Fixed
+- `.animate(delay:)` no longer flashes the animation's target value while it
+  waits — a delayed re-trigger now holds the effects at the values the run is
+  about to start from, then animates. Previously the controller kept
+  reporting the value the PREVIOUS run left it at for the whole delay, so
+  every run after the first painted its destination instantly, held it, and
+  snapped back before easing in. Only the very first run looked correct.
+  Interruptible delayed re-triggers also retire superseded timers now, so an
+  older wait cannot wake after a newer trigger, restart the controller, or
+  call `onEnd`; non-interruptible delayed triggers remain serialized in
+  arrival order.
+
 - `PointerTransition` no longer keeps stale hover/bounds state when its target
   moves beneath a stationary mouse while using the default global pointer
   router.
