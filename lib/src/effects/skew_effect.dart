@@ -193,7 +193,11 @@ class SkewEffect extends Effect {
   }
 
   @override
-  SkewEffect idle() => SkewEffect();
+  SkewEffect idle() => SkewEffect(
+        skew: 0,
+        alignment: alignment,
+        origin: origin,
+      );
 
   @override
   bool operator ==(Object other) {

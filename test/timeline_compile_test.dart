@@ -91,6 +91,39 @@ void main() {
     expect(opacityTrack.keyframes[2], OpacityEffect(opacity: 0));
   });
 
+  test('late color and skew tracks start from valid idle effects', () {
+    const content = SizedBox.square(dimension: 74);
+    final chain = content
+        .step(duration: const Duration(milliseconds: 100))
+        .color(color: const Color(0xFFFF0000), mode: BlendMode.overlay)
+        .skewX(0.3);
+
+    final spec = TimelineSpec.compile(chain);
+    final colorTrack =
+        spec.tracks.singleWhere((t) => t.effectType == ColorFilterEffect);
+    final skewTrack =
+        spec.tracks.singleWhere((t) => t.effectType == SkewEffect);
+
+    expect(
+      colorTrack.keyframes.first,
+      ColorFilterEffect(
+        mode: BlendMode.overlay,
+        matrix: ColorFilterMatrix.identity,
+      ),
+    );
+    expect(skewTrack.keyframes.first, const SkewEffect(skewX: 0));
+
+    final startEffects = spec.evaluate(0);
+    final ColorFilterEffect startColor = startEffects
+        .singleWhere((effect) => effect is ColorFilterEffect)
+        as ColorFilterEffect;
+    final SkewEffect startSkew =
+        startEffects.singleWhere((effect) => effect is SkewEffect) as SkewEffect;
+
+    expect(startColor.matrix, ColorFilterMatrix.identity);
+    expect(startSkew, const SkewEffect(skewX: 0));
+  });
+
   test('duplicate effect type within one keyframe throws', () {
     const content = SizedBox.square(dimension: 74);
     final chain = content.scale(0.5).scale(2);
