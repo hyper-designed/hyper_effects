@@ -33,10 +33,10 @@ class TimelineController extends ChangeNotifier {
   double get progress => _controller.value;
 
   /// Plays the timeline forward from its current position.
-  Future<void> play() => _controller.forward();
+  TickerFuture play() => _controller.forward();
 
   /// Plays the timeline backward from its current position.
-  Future<void> reverse() => _controller.reverse();
+  TickerFuture reverse() => _controller.reverse();
 
   /// Freezes the timeline at its current position.
   void pause() => _controller.stop();
