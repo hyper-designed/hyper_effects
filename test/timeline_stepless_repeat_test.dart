@@ -24,4 +24,26 @@ void main() {
       ),
     );
   });
+
+  testWidgets('any negative repeat on a chain with no step() explains what is missing',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: const SizedBox(width: 10, height: 10)
+            .rotate(1.0)
+            .timeline(trigger: #immediate, repeat: -2),
+      ),
+    );
+
+    final Object? error = tester.takeException();
+    expect(error, isFlutterError);
+    expect(
+      (error as FlutterError).message,
+      allOf(
+        contains('step()'),
+        contains('repeat'),
+        isNot(contains('_periodInSeconds')),
+      ),
+    );
+  });
 }

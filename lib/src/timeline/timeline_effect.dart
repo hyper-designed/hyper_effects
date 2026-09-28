@@ -62,7 +62,7 @@ class TimelineEffect extends StatefulWidget {
   final VoidCallback? onEnd;
 
   /// How many ADDITIONAL times a run plays after its first cycle: 0 plays
-  /// once, 2 plays three cycles, -1 loops forever. Applies to every run
+  /// once, 2 plays three cycles, any negative value loops forever. Applies to every run
   /// started by a [trigger] change or the `#immediate` sentinel.
   final int repeat;
 
@@ -113,7 +113,7 @@ class TimelineEffectState extends State<TimelineEffect>
   void _play() {
     _runGeneration++;
     _pendingCycles = 0;
-    if (widget.repeat == -1) {
+    if (widget.repeat < 0) {
       if (spec.totalDuration == Duration.zero) {
         throw FlutterError(
           'A timeline asked to repeat has no duration to repeat over. A '

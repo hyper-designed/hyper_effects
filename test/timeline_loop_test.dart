@@ -49,8 +49,8 @@ void main() {
     expect(compositeScaleOf(tester, key), closeTo(1.0, 1e-9));
   });
 
-  testWidgets('repeat -1 loops forever', (tester) async {
-    await tester.pumpWidget(host(repeat: -1));
+  testWidgets('negative repeat loops forever', (tester) async {
+    await tester.pumpWidget(host(repeat: -2));
     await tester.pump(const Duration(milliseconds: 150));
     expect(compositeScaleOf(tester, key), closeTo(0.5, 1e-6));
     // One full cycle later: mid-flight again, not resting.
