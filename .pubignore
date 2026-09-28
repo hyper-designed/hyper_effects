@@ -36,3 +36,17 @@ build/
 .firebase/
 .firebaserc
 firebase.json
+
+# Example platform scaffolding
+/example/macos/
+/example/web/
+
+# Development and contribution files
+/test/
+/example/test/
+/CONTRIBUTING.md
+/CODE_OF_CONDUCT.md
+/PULL_REQUEST_TEMPLATE.md
+
+# Full showcase stays on GitHub
+/example/
