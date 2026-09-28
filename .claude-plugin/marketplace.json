@@ -1,0 +1,16 @@
+{
+  "name": "hyper-effects-marketplace",
+  "owner": {
+    "name": "Hyperdesigned"
+  },
+  "plugins": [
+    {
+      "name": "hyper-effects",
+      "description": "A Flutter hyper_effects skill covering effects, motion, scroll transitions, and timelines.",
+      "source": "."
+    }
+  ],
+  "metadata": {
+    "description": "Consumer guidance for building Flutter animations with Hyper Effects."
+  }
+}

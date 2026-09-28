@@ -1,0 +1,8 @@
+{
+  "name": "hyper-effects",
+  "description": "Consumer guidance for Flutter hyper_effects, including effects, springs, scroll transitions, and timelines.",
+  "version": "0.4.0",
+  "author": {
+    "name": "Hyperdesigned"
+  }
+}
