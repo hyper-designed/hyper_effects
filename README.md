@@ -7,7 +7,79 @@
 **Composable effects, spring animations, and keyframe timelines for Flutter.**
 Want a favorite button to bounce when tapped? A feed of cards to blur, tilt, and come into focus as you scroll? A card to slide into view? A checkmark to pop, overshoot, and settle? Start with your Flutter widget, add the effects you want after it, and tell them when to move. Hyper Effects takes inspiration from SwiftUI's modifier syntax, while keeping everything in Flutter's widget tree.
 
-[Live demo](https://hyper-effects-demo.web.app/) · [API reference](https://pub.dev/documentation/hyper_effects/latest/) · [Examples](example/lib/stories) · [Migration notes](CHANGELOG.md)
+[Live demo](https://hyper-effects-demo.web.app/) · [API reference](https://pub.dev/documentation/hyper_effects/latest/)
+
+## Examples
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/scroll_transition.gif" width="200px">
+      <br />
+      Scroll Transition
+    </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/scroll_wheel.gif" width="200px">
+      <br />
+      Scroll Wheel
+    </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/scroll_blur.gif" width="200px">
+      <br />
+      Scroll Blur
+    </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/shake.gif" width="200px">
+      <br />
+      Shake
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/windows.gif" width="200px">
+      <br />
+      Windows Hover Effect
+    </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/scroll_color_filter.gif" width="200px">
+      <br />
+      Scroll Color Filter
+    </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/spring.gif" width="200px">
+      <br />
+      Spring Animation
+    </td>
+    <td align="bottom">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/animation_chain.gif" width="200px">
+      <br />
+      Animation Chain
+    </td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/rolling_text_1.gif">
+      <br />
+      Rolling Text 2
+    </td>
+</tr> 
+  <tr>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/rolling_text_2.gif">
+      <br />
+      Rolling Text 3
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/hyper-designed/hyper_effects/main/.github/assets/rolling_text_3.gif">
+      <br />
+      Rolling Text 4
+    </td>
+  </tr>
+</table>
 
 ## Quick start
 
