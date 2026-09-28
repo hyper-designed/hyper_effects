@@ -11,6 +11,9 @@ import 'timeline_effect.dart';
 ///
 /// Listeners are notified whenever the timeline's [progress] changes.
 class TimelineController extends ChangeNotifier {
+  /// Creates a new [TimelineController].
+  TimelineController();
+
   AnimationController? _driven;
 
   /// Whether this controller is currently attached to a mounted

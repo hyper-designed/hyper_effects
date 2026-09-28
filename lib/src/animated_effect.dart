@@ -348,6 +348,9 @@ class _RunCycleState {
 /// The state of [AnimatedEffect].
 class AnimatedEffectState extends State<AnimatedEffect>
     with SingleTickerProviderStateMixin {
+  /// Creates an [AnimatedEffectState].
+  AnimatedEffectState();
+
   /// Tracks whether the animation has played or not.
   bool didPlay = false;
 
@@ -613,6 +616,9 @@ class ResetAllAnimationsEffect extends StatefulWidget {
   'Will be removed in 0.5.0.',
 )
 class ResetAllAnimationsEffectState extends State<ResetAllAnimationsEffect> {
+  /// Creates a [ResetAllAnimationsEffectState].
+  ResetAllAnimationsEffectState();
+
   /// Finds the last possible [AnimatedEffect] state in the tree while
   /// resetting all the ones on the way down.
   AnimatedEffectState? findLeafAnimatedEffectState(BuildContext context) {

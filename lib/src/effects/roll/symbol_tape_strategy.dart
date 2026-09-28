@@ -26,6 +26,9 @@ extension _StringHelper on String {
 /// A builder that constructs a tape of characters tailored for a specific
 /// condition of characters such as emojis.
 abstract class CharacterTapeBuilder {
+  /// Default const constructor for subclasses.
+  const CharacterTapeBuilder();
+
   /// The characters that are used to build the tape of characters. For example,
   /// an entire emoji set.
   String get characters;

@@ -1,3 +1,4 @@
+/// Composable effects, spring animations, and keyframe timelines for Flutter.
 library;
 
 export 'src/animated_effect.dart';

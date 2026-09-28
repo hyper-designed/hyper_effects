@@ -2,6 +2,13 @@
 
 All notable changes to the Hyper Effects package are documented in this file.
 
+## [0.4.0+2] - Sep 28, 2026
+
+### Documentation
+- Include example directory in published package for pub.dev.
+- Add dartdoc documentation to public library and constructors.
+- Add examples showcase section to README.
+
 ## [0.4.0] - Sep 27, 2026
 
 ### Breaking

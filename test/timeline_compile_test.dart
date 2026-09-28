@@ -111,7 +111,7 @@ void main() {
         matrix: ColorFilterMatrix.identity,
       ),
     );
-    expect(skewTrack.keyframes.first, const SkewEffect(skewX: 0));
+    expect(skewTrack.keyframes.first, const SkewEffect(skew: 0));
 
     final startEffects = spec.evaluate(0);
     final ColorFilterEffect startColor = startEffects
@@ -121,7 +121,7 @@ void main() {
         startEffects.singleWhere((effect) => effect is SkewEffect) as SkewEffect;
 
     expect(startColor.matrix, ColorFilterMatrix.identity);
-    expect(startSkew, const SkewEffect(skewX: 0));
+    expect(startSkew, const SkewEffect(skew: 0));
   });
 
   test('duplicate effect type within one keyframe throws', () {

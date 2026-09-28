@@ -83,6 +83,9 @@ class TimelineEffect extends StatefulWidget {
 /// The state of a [TimelineEffect].
 class TimelineEffectState extends State<TimelineEffect>
     with SingleTickerProviderStateMixin {
+  /// Creates a [TimelineEffectState].
+  TimelineEffectState();
+
   /// The compiled timeline. Recompiled on every widget update so keyframe
   /// values that depend on outside state stay current.
   late TimelineSpec spec = TimelineSpec.compile(widget.chain);
