@@ -471,7 +471,7 @@ class AnimatedEffectState extends State<AnimatedEffect>
   ) async {
     if (previous != null) {
       await previous;
-      if (!mounted) return;
+      if (!mounted || cancellationEpoch != _cancellationEpoch) return;
     }
     return _driveNow(cycleState, cancellationEpoch);
   }
