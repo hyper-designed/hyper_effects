@@ -23,7 +23,9 @@ extension RotationEffectExt on Widget {
     double? from,
   }) {
     return EffectWidget(
-      start: from == null ? null : RotationEffect(angle: from),
+      start: from == null
+          ? null
+          : RotationEffect(angle: from, origin: origin, alignment: alignment),
       end: RotationEffect(
         angle: angle,
         origin: origin,
@@ -40,7 +42,11 @@ extension RotationEffectExt on Widget {
     AlignmentGeometry alignment = Alignment.center,
   }) {
     return EffectWidget(
-      start: RotationEffect(angle: from ?? -pi / 2),
+      start: RotationEffect(
+        angle: from ?? -pi / 2,
+        origin: origin,
+        alignment: alignment,
+      ),
       end: RotationEffect(angle: 0, origin: origin, alignment: alignment),
       child: this,
     );
@@ -54,7 +60,11 @@ extension RotationEffectExt on Widget {
   }) {
     return EffectWidget(
       start: RotationEffect(angle: 0, origin: origin, alignment: alignment),
-      end: RotationEffect(angle: to ?? pi / 2),
+      end: RotationEffect(
+        angle: to ?? pi / 2,
+        origin: origin,
+        alignment: alignment,
+      ),
       child: this,
     );
   }
@@ -101,7 +111,7 @@ class RotationEffect extends Effect with VectorEffect<RotationEffect> {
   }
 
   @override
-  RotationEffect idle() => const RotationEffect();
+  RotationEffect idle() => RotationEffect(origin: origin, alignment: alignment);
 
   @override
   RotationEffect operator +(RotationEffect other) => RotationEffect(

@@ -27,6 +27,8 @@ extension ScaleEffectExt on Widget {
           ? null
           : ScaleEffect(
               scale: from,
+              alignment: alignment,
+              origin: origin,
               transformHitTests: transformHitTests,
             ),
       end: ScaleEffect(
@@ -58,6 +60,8 @@ extension ScaleEffectExt on Widget {
           ? null
           : ScaleEffect(
               scaleX: from,
+              alignment: alignment,
+              origin: origin,
               transformHitTests: transformHitTests,
             ),
       end: ScaleEffect(
@@ -89,6 +93,8 @@ extension ScaleEffectExt on Widget {
           ? null
           : ScaleEffect(
               scaleY: from,
+              alignment: alignment,
+              origin: origin,
               transformHitTests: transformHitTests,
             ),
       end: ScaleEffect(
@@ -123,6 +129,8 @@ extension ScaleEffectExt on Widget {
           : ScaleEffect(
               scaleX: from.dx,
               scaleY: from.dy,
+              alignment: alignment,
+              origin: origin,
               transformHitTests: transformHitTests,
             ),
       end: ScaleEffect(
@@ -269,7 +277,12 @@ class ScaleEffect extends Effect with VectorEffect<ScaleEffect> {
       );
 
   @override
-  ScaleEffect idle() => ScaleEffect(scale: 1);
+  ScaleEffect idle() => ScaleEffect(
+        scale: 1,
+        alignment: alignment,
+        origin: origin,
+        transformHitTests: transformHitTests,
+      );
 
   double get _effectiveX => scale ?? scaleX ?? 1;
 

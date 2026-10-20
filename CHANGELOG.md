@@ -2,6 +2,18 @@
 
 All notable changes to the Hyper Effects package are documented in this file.
 
+## [0.4.1] - Oct 20, 2026
+
+### Fixed
+- **Rotations and scales keep their pivot across the run** — passing `from:`
+  to `.rotate()`, `.scale()`, `.scaleX()`, `.scaleY()` or `.scaleXY()` built
+  the start effect without the `origin` and `alignment` given for the end, so
+  the pivot drifted from the default centre to the requested point as the
+  animation played. `.rotateIn()` and `.rotateOut()` dropped them on one end
+  the same way. `RotationEffect.idle()` and `ScaleEffect.idle()` now keep the
+  effect's `origin` and `alignment` (and, for scale, `transformHitTests`), so
+  an effect animating from idle pivots where it was asked to.
+
 ## [0.4.0+2] - Sep 28, 2026
 
 ### Documentation
